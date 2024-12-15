@@ -1,4 +1,4 @@
-package com.guenbon.siso.dto.congressman;
+package com.guenbon.siso.dto.congressman.response;
 
 import com.guenbon.siso.dto.congressman.common.CongressmanDTO;
 import io.swagger.v3.oas.annotations.media.Schema;

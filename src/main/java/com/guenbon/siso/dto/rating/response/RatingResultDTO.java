@@ -1,4 +1,4 @@
-package com.guenbon.siso.dto.auth.response;
+package com.guenbon.siso.dto.rating.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-@Schema(description = "로그인 성공 응답 dto")
-public class LoginResponse {
-    private String accessToken;
+@Schema(description = "평가 작성 응답 dto")
+public class RatingResultDTO {
+
 }

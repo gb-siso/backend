@@ -1,8 +1,8 @@
 package com.guenbon.siso.controller.docs;
 
-import com.guenbon.siso.dto.auth.response.LoginResponse;
-import com.guenbon.siso.dto.auth.request.SignUpRequest;
-import com.guenbon.siso.dto.member.response.MemberInfoDTO;
+import com.guenbon.siso.dto.auth.response.LoginDTO;
+import com.guenbon.siso.dto.auth.request.SignUpDTO;
+import com.guenbon.siso.dto.member.response.MemberDetailDTO;
 import com.guenbon.siso.dto.member.response.MemberUpdateDTO;
 import com.guenbon.siso.dto.member.response.MemberUpdateFormDTO;
 import com.guenbon.siso.dto.member.response.SignUpFormDTO;
@@ -38,9 +38,9 @@ public interface MemberControllerDocs {
             @Parameter(name = "kakaoId", description = "카카오 회원번호")
     })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = LoginResponse.class)))
+            @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = LoginDTO.class)))
     })
-    ResponseEntity<LoginResponse> signUp(@RequestBody SignUpRequest signUpRequest);
+    ResponseEntity<LoginDTO> signUp(@RequestBody SignUpDTO signUpDTO);
 
     @Operation(summary = "회원 정보 수정 폼 요청", description = "로그인 한 사용자가 회원 수정 정보 폼 요청")
     @ApiResponses(value = {
@@ -104,7 +104,7 @@ public interface MemberControllerDocs {
                     },
                     responseCode = "200",
                     description = "회원 정보보기 페이지(마이페이지 or 타인 페이지)",
-                    content = @Content(schema = @Schema(implementation = MemberInfoDTO.class)))
+                    content = @Content(schema = @Schema(implementation = MemberDetailDTO.class)))
     })
-    ResponseEntity<MemberInfoDTO> info(@LoginId Long loginId, @PathVariable String memberId);
+    ResponseEntity<MemberDetailDTO> info(@LoginId Long loginId, @PathVariable String memberId);
 }

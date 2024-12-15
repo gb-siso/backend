@@ -10,6 +10,7 @@ import lombok.Setter;
 @Getter
 @Schema(description = "회원 정보 공통 dto")
 public class MemberDTO {
+    private String id;
     @Schema(description = "프로필 이미지")
     private String imageUrl;
     @Schema(description = "닉네임")

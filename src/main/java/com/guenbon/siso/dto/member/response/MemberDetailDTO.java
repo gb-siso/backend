@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @Getter
 @Schema(description = "회원 정보보기 응답 dto")
-public class MemberInfoDTO {
+public class MemberDetailDTO {
     @Schema(description = "작성 글 리스트")
     private List<ArticleDTO> articleList;
     @Schema(description = "작성 댓글 리스트")

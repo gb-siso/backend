@@ -1,9 +1,9 @@
 package com.guenbon.siso.controller;
 
 import com.guenbon.siso.controller.docs.MemberControllerDocs;
-import com.guenbon.siso.dto.auth.response.LoginResponse;
-import com.guenbon.siso.dto.auth.request.SignUpRequest;
-import com.guenbon.siso.dto.member.response.MemberInfoDTO;
+import com.guenbon.siso.dto.auth.response.LoginDTO;
+import com.guenbon.siso.dto.auth.request.SignUpDTO;
+import com.guenbon.siso.dto.member.response.MemberDetailDTO;
 import com.guenbon.siso.dto.member.response.MemberUpdateDTO;
 import com.guenbon.siso.dto.member.response.MemberUpdateFormDTO;
 import com.guenbon.siso.dto.member.response.SignUpFormDTO;
@@ -23,7 +23,7 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @PostMapping
-    public ResponseEntity<LoginResponse> signUp(SignUpRequest signUpRequest) {
+    public ResponseEntity<LoginDTO> signUp(SignUpDTO signUpDTO) {
         return null;
     }
 
@@ -47,7 +47,7 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @GetMapping("/{memberId}")
-    public ResponseEntity<MemberInfoDTO> info(@LoginId Long loginId, @PathVariable String memberId) {
+    public ResponseEntity<MemberDetailDTO> info(@LoginId Long loginId, @PathVariable String memberId) {
         return null;
     }
 }

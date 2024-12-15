@@ -1,6 +1,6 @@
 package com.guenbon.siso.controller.docs;
 
-import com.guenbon.siso.dto.auth.response.LoginResponse;
+import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,9 +27,9 @@ public interface AuthControllerDocs {
                     headers = @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
                     responseCode = "200",
                     description = "카카오 로그인",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class)))
+                    content = @Content(schema = @Schema(implementation = LoginDTO.class)))
     })
-    ResponseEntity<LoginResponse> kakaoLogin(@RequestParam String code);
+    ResponseEntity<LoginDTO> kakaoLogin(@RequestParam String code);
 
 
     @Operation(summary = "accessToken 재발급", description = "쿠키에 refreshToken 포함 요청으로 accessToken 재발급(response body에 포함), 보안을 위해 refreshToken도 재발급(cookie에 포함)")
@@ -41,9 +41,9 @@ public interface AuthControllerDocs {
                     headers = @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
                     responseCode = "200",
                     description = "accessToken 재발급",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class)))
+                    content = @Content(schema = @Schema(implementation = LoginDTO.class)))
     })
-    ResponseEntity<LoginResponse> kakaoReissue(@CookieValue("refreshToken") String refreshToken);
+    ResponseEntity<LoginDTO> kakaoReissue(@CookieValue("refreshToken") String refreshToken);
 
     @Operation(summary = "로그아웃", description = "Authorization 헤더에 accessToken 포함 요청으로 로그아웃 처리")
     @ApiResponses(value = {
