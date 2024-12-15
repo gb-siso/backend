@@ -2,11 +2,8 @@ package com.guenbon.siso.controller.docs;
 
 import com.guenbon.siso.dto.auth.LoginResponse;
 import com.guenbon.siso.dto.auth.SignUpRequest;
-import com.guenbon.siso.dto.member.MemberUpdateFormResponse;
-import com.guenbon.siso.dto.member.MemberUpdateRequest;
-import com.guenbon.siso.dto.member.MemberUpdateResponse;
-import com.guenbon.siso.dto.member.SignUpFormResponse;
-import com.guenbon.siso.support.annotation.MemberId;
+import com.guenbon.siso.dto.member.*;
+import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -17,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -41,7 +39,7 @@ public interface MemberControllerDocs {
     })
     ResponseEntity<LoginResponse> signUp(@RequestBody SignUpRequest signUpRequest);
 
-
+    @Operation(summary = "회원 정보 수정 폼 요청", description = "로그인 한 사용자가 회원 수정 정보 폼 요청")
     @ApiResponses(value = {
             @ApiResponse(
                     headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
@@ -50,8 +48,9 @@ public interface MemberControllerDocs {
                     content = @Content(schema = @Schema(implementation = MemberUpdateFormResponse.class))
             )
     })
-    ResponseEntity<MemberUpdateFormResponse> updateForm(@MemberId Long memberId);
+    ResponseEntity<MemberUpdateFormResponse> updateForm(@LoginId Long loginId);
 
+    @Operation(summary = "회원 정보 수정 요청", description = "로그인 사용자가 회원 정보 수정 폼 작성해서 수정 요청")
     @Parameters(value = {
             @Parameter(name = "memberUpdateRequest", description = "회원 수정 요청 정보", schema = @Schema(implementation = MemberUpdateRequest.class))
     })
@@ -63,9 +62,10 @@ public interface MemberControllerDocs {
                     content = @Content(schema = @Schema(implementation = MemberUpdateResponse.class))
             )
     })
-    ResponseEntity<MemberUpdateResponse> update(@MemberId Long memberId,
+    ResponseEntity<MemberUpdateResponse> update(@LoginId Long loginid,
                                                 @RequestBody MemberUpdateRequest memberUpdateRequest);
 
+    @Operation(summary = "회원탈퇴 요청", description = "로그인 한 사용자가 회원 탈퇴 요청 (refresh 토큰도 확인)")
     @ApiResponses(value = {
             @ApiResponse(
                     headers = {
@@ -84,5 +84,24 @@ public interface MemberControllerDocs {
                     description = "siso 회원탈퇴",
                     content = @Content())
     })
-    ResponseEntity<Void> withDrawl(@MemberId Long memberId);
+    ResponseEntity<Void> withDrawl(@LoginId Long loginId);
+
+    @Operation(summary = "회원정보 요청", description = "회원 정보 요청 (로그인정보=요청 정보일시 본인 정보, 아닐 경우 타인 정보)")
+    @Parameters(value = {
+            @Parameter(name = "memberId", description = "정보 요청 대상 memberId")
+    })
+    @ApiResponses(value = {
+            @ApiResponse(
+                    headers = {
+                            @Header(
+                                    name = "Authorization",
+                                    description = "accessToken",
+                                    schema = @Schema(type = "string", example = "Bearer abc123")
+                            )
+                    },
+                    responseCode = "200",
+                    description = "회원 정보보기 페이지(마이페이지 or 타인 페이지)",
+                    content = @Content(schema = @Schema(implementation = MemberInfoResponse.class)))
+    })
+    ResponseEntity<MemberInfoResponse> info(@LoginId Long loginId, @PathVariable String memberId);
 }

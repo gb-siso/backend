@@ -3,17 +3,10 @@ package com.guenbon.siso.controller;
 import com.guenbon.siso.controller.docs.MemberControllerDocs;
 import com.guenbon.siso.dto.auth.LoginResponse;
 import com.guenbon.siso.dto.auth.SignUpRequest;
-import com.guenbon.siso.dto.member.MemberUpdateFormResponse;
-import com.guenbon.siso.dto.member.MemberUpdateRequest;
-import com.guenbon.siso.dto.member.MemberUpdateResponse;
-import com.guenbon.siso.dto.member.SignUpFormResponse;
+import com.guenbon.siso.dto.member.*;
+import com.guenbon.siso.support.annotation.LoginId;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/member")
@@ -33,19 +26,25 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @GetMapping("/update")
-    public ResponseEntity<MemberUpdateFormResponse> updateForm(Long memberId) {
+    public ResponseEntity<MemberUpdateFormResponse> updateForm(@LoginId Long loginId) {
         return null;
     }
 
     @Override
     @PatchMapping
-    public ResponseEntity<MemberUpdateResponse> update(Long memberId, MemberUpdateRequest memberUpdateRequest) {
+    public ResponseEntity<MemberUpdateResponse> update(@LoginId Long loginId, MemberUpdateRequest memberUpdateRequest) {
         return null;
     }
 
     @Override
     @DeleteMapping
-    public ResponseEntity<Void> withDrawl(Long memberId) {
+    public ResponseEntity<Void> withDrawl(@LoginId Long loginId) {
+        return null;
+    }
+
+    @Override
+    @GetMapping("/{memberId}")
+    public ResponseEntity<MemberInfoResponse> info(@LoginId Long loginId, @PathVariable String memberId) {
         return null;
     }
 }

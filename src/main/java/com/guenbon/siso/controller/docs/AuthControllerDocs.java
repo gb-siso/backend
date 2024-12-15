@@ -1,7 +1,7 @@
 package com.guenbon.siso.controller.docs;
 
 import com.guenbon.siso.dto.auth.LoginResponse;
-import com.guenbon.siso.support.annotation.MemberId;
+import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -53,6 +53,6 @@ public interface AuthControllerDocs {
                     description = "로그아웃"
                     )
     })
-    ResponseEntity<Void> logOut(@MemberId Long memberId);
+    ResponseEntity<Void> logOut(@LoginId Long loginId);
 
 }
