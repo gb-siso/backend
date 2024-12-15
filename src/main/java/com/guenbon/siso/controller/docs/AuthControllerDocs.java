@@ -1,6 +1,6 @@
 package com.guenbon.siso.controller.docs;
 
-import com.guenbon.siso.dto.auth.LoginResponse;
+import com.guenbon.siso.dto.auth.response.LoginResponse;
 import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

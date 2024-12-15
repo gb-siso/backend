@@ -1,9 +1,12 @@
 package com.guenbon.siso.controller;
 
 import com.guenbon.siso.controller.docs.MemberControllerDocs;
-import com.guenbon.siso.dto.auth.LoginResponse;
-import com.guenbon.siso.dto.auth.SignUpRequest;
-import com.guenbon.siso.dto.member.*;
+import com.guenbon.siso.dto.auth.response.LoginResponse;
+import com.guenbon.siso.dto.auth.request.SignUpRequest;
+import com.guenbon.siso.dto.member.response.MemberInfoDTO;
+import com.guenbon.siso.dto.member.response.MemberUpdateDTO;
+import com.guenbon.siso.dto.member.response.MemberUpdateFormDTO;
+import com.guenbon.siso.dto.member.response.SignUpFormDTO;
 import com.guenbon.siso.support.annotation.LoginId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +17,7 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @GetMapping("/signUp")
-    public ResponseEntity<SignUpFormResponse> signUpForm(String kakaoId) {
+    public ResponseEntity<SignUpFormDTO> signUpForm(String kakaoId) {
         return null;
     }
 
@@ -26,13 +29,13 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @GetMapping("/update")
-    public ResponseEntity<MemberUpdateFormResponse> updateForm(@LoginId Long loginId) {
+    public ResponseEntity<MemberUpdateFormDTO> updateForm(@LoginId Long loginId) {
         return null;
     }
 
     @Override
     @PatchMapping
-    public ResponseEntity<MemberUpdateResponse> update(@LoginId Long loginId, MemberUpdateRequest memberUpdateRequest) {
+    public ResponseEntity<MemberUpdateDTO> update(@LoginId Long loginId, MemberUpdateDTO memberUpdateRequest) {
         return null;
     }
 
@@ -44,7 +47,7 @@ public class MemberController implements MemberControllerDocs {
 
     @Override
     @GetMapping("/{memberId}")
-    public ResponseEntity<MemberInfoResponse> info(@LoginId Long loginId, @PathVariable String memberId) {
+    public ResponseEntity<MemberInfoDTO> info(@LoginId Long loginId, @PathVariable String memberId) {
         return null;
     }
 }

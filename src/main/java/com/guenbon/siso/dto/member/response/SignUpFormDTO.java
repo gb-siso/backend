@@ -1,4 +1,4 @@
-package com.guenbon.siso.dto.member;
+package com.guenbon.siso.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @Schema(description = "회원가입 ")
-public class SignUpFormResponse {
+public class SignUpFormDTO {
     @Schema(description = "카카오 식별 id, 프론트에서 회원가입 요청 시 해당 데이터 그대로 포함해서 요청")
     private String kakaoId;
 }

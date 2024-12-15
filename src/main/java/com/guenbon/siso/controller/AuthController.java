@@ -1,7 +1,7 @@
 package com.guenbon.siso.controller;
 
 import com.guenbon.siso.controller.docs.AuthControllerDocs;
-import com.guenbon.siso.dto.auth.LoginResponse;
+import com.guenbon.siso.dto.auth.response.LoginResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

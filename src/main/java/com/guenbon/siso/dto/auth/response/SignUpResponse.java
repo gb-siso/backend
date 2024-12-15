@@ -1,4 +1,4 @@
-package com.guenbon.siso.dto.auth;
+package com.guenbon.siso.dto.auth.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

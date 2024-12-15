@@ -1,8 +1,11 @@
 package com.guenbon.siso.controller.docs;
 
-import com.guenbon.siso.dto.auth.LoginResponse;
-import com.guenbon.siso.dto.auth.SignUpRequest;
-import com.guenbon.siso.dto.member.*;
+import com.guenbon.siso.dto.auth.response.LoginResponse;
+import com.guenbon.siso.dto.auth.request.SignUpRequest;
+import com.guenbon.siso.dto.member.response.MemberInfoDTO;
+import com.guenbon.siso.dto.member.response.MemberUpdateDTO;
+import com.guenbon.siso.dto.member.response.MemberUpdateFormDTO;
+import com.guenbon.siso.dto.member.response.SignUpFormDTO;
 import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,9 +29,9 @@ public interface MemberControllerDocs {
             @Parameter(name = "kakaoId", description = "카카오 식별 id")
     })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = SignUpFormResponse.class)))
+            @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = SignUpFormDTO.class)))
     })
-    ResponseEntity<SignUpFormResponse> signUpForm(@RequestParam String kakaoId);
+    ResponseEntity<SignUpFormDTO> signUpForm(@RequestParam String kakaoId);
 
     @Operation(summary = "회원가입", description = "카카오 식별 id, imageUrl, nickname 포함 회원가입 요청")
     @Parameters(value = {
@@ -45,25 +48,25 @@ public interface MemberControllerDocs {
                     headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
                     responseCode = "200",
                     description = "회원 정보 수정 폼",
-                    content = @Content(schema = @Schema(implementation = MemberUpdateFormResponse.class))
+                    content = @Content(schema = @Schema(implementation = MemberUpdateFormDTO.class))
             )
     })
-    ResponseEntity<MemberUpdateFormResponse> updateForm(@LoginId Long loginId);
+    ResponseEntity<MemberUpdateFormDTO> updateForm(@LoginId Long loginId);
 
     @Operation(summary = "회원 정보 수정 요청", description = "로그인 사용자가 회원 정보 수정 폼 작성해서 수정 요청")
     @Parameters(value = {
-            @Parameter(name = "memberUpdateRequest", description = "회원 수정 요청 정보", schema = @Schema(implementation = MemberUpdateRequest.class))
+            @Parameter(name = "memberUpdateRequest", description = "회원 수정 요청 정보", schema = @Schema(implementation = MemberUpdateDTO.class))
     })
     @ApiResponses(value = {
             @ApiResponse(
                     headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
                     responseCode = "200",
                     description = "회원 정보 수정 결과",
-                    content = @Content(schema = @Schema(implementation = MemberUpdateResponse.class))
+                    content = @Content(schema = @Schema(implementation = MemberUpdateDTO.class))
             )
     })
-    ResponseEntity<MemberUpdateResponse> update(@LoginId Long loginid,
-                                                @RequestBody MemberUpdateRequest memberUpdateRequest);
+    ResponseEntity<MemberUpdateDTO> update(@LoginId Long loginid,
+                                           @RequestBody MemberUpdateDTO memberUpdateRequest);
 
     @Operation(summary = "회원탈퇴 요청", description = "로그인 한 사용자가 회원 탈퇴 요청 (refresh 토큰도 확인)")
     @ApiResponses(value = {
@@ -101,7 +104,7 @@ public interface MemberControllerDocs {
                     },
                     responseCode = "200",
                     description = "회원 정보보기 페이지(마이페이지 or 타인 페이지)",
-                    content = @Content(schema = @Schema(implementation = MemberInfoResponse.class)))
+                    content = @Content(schema = @Schema(implementation = MemberInfoDTO.class)))
     })
-    ResponseEntity<MemberInfoResponse> info(@LoginId Long loginId, @PathVariable String memberId);
+    ResponseEntity<MemberInfoDTO> info(@LoginId Long loginId, @PathVariable String memberId);
 }
