@@ -38,14 +38,16 @@ public interface MemberControllerDocs {
             @Parameter(name = "kakaoId", description = "카카오 회원번호")
     })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = LoginDTO.class)))
+            @ApiResponse(
+                    headers = @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
+                    responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = LoginDTO.class)))
     })
     ResponseEntity<LoginDTO> signUp(@RequestBody SignUpDTO signUpDTO);
 
     @Operation(summary = "회원 정보 수정 폼 요청", description = "로그인 한 사용자가 회원 수정 정보 폼 요청")
+    @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
                     responseCode = "200",
                     description = "회원 정보 수정 폼",
                     content = @Content(schema = @Schema(implementation = MemberUpdateFormDTO.class))
@@ -55,11 +57,11 @@ public interface MemberControllerDocs {
 
     @Operation(summary = "회원 정보 수정 요청", description = "로그인 사용자가 회원 정보 수정 폼 작성해서 수정 요청")
     @Parameters(value = {
+            @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨"),
             @Parameter(name = "memberUpdateRequest", description = "회원 수정 요청 정보", schema = @Schema(implementation = MemberUpdateDTO.class))
     })
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
                     responseCode = "200",
                     description = "회원 정보 수정 결과",
                     content = @Content(schema = @Schema(implementation = MemberUpdateDTO.class))
@@ -69,20 +71,9 @@ public interface MemberControllerDocs {
                                            @RequestBody MemberUpdateDTO memberUpdateRequest);
 
     @Operation(summary = "회원탈퇴 요청", description = "로그인 한 사용자가 회원 탈퇴 요청 (refresh 토큰도 확인)")
+    @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = {
-                            @Header(
-                                    name = "Set-Cookie",
-                                    description = "refreshToken",
-                                    schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")
-                            ),
-                            @Header(
-                                    name = "Authorization",
-                                    description = "accessToken",
-                                    schema = @Schema(type = "string", example = "Bearer abc123")
-                            )
-                    },
                     responseCode = "200",
                     description = "siso 회원탈퇴",
                     content = @Content())
@@ -91,17 +82,11 @@ public interface MemberControllerDocs {
 
     @Operation(summary = "회원정보 요청", description = "회원 정보 요청 (로그인정보=요청 정보일시 본인 정보, 아닐 경우 타인 정보)")
     @Parameters(value = {
-            @Parameter(name = "memberId", description = "정보 요청 대상 memberId")
+            @Parameter(name = "memberId", description = "정보 요청 대상 memberId"),
+            @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     })
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = {
-                            @Header(
-                                    name = "Authorization",
-                                    description = "accessToken",
-                                    schema = @Schema(type = "string", example = "Bearer abc123")
-                            )
-                    },
                     responseCode = "200",
                     description = "회원 정보보기 페이지(마이페이지 or 타인 페이지)",
                     content = @Content(schema = @Schema(implementation = MemberDetailDTO.class)))

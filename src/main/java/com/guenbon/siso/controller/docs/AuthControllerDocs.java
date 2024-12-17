@@ -46,9 +46,9 @@ public interface AuthControllerDocs {
     ResponseEntity<LoginDTO> kakaoReissue(@CookieValue("refreshToken") String refreshToken);
 
     @Operation(summary = "로그아웃", description = "Authorization 헤더에 accessToken 포함 요청으로 로그아웃 처리")
+    @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string")),
                     responseCode = "200",
                     description = "로그아웃"
                     )

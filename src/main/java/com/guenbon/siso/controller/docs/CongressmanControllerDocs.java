@@ -6,7 +6,6 @@ import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,6 +34,7 @@ public interface CongressmanControllerDocs {
 
     @Operation(summary = "국회의원 상세보기", description = "")
     @Parameters(value = {
+            @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨"),
             @Parameter(name = "size", description = "한번에 요청할 데이터 개수 (default : 20)"),
             @Parameter(name = "cursor", description = "무한스크롤 구현 위한 값 , 응답에 있는 값 그대로 사용하면 됨 (default : Long 최댓값 (최초 요청시))"),
             @Parameter(name = "sort", description = "정렬 방식 (값 : createdAt(기본값), likes, dislkes, topicality", example = "sort=likes"),
@@ -42,13 +42,7 @@ public interface CongressmanControllerDocs {
             @Parameter(name = "id", description = "조회 대상 국회의원 id"),
     })
     @ApiResponses(value = {
-            @ApiResponse(headers = {
-                    @Header(
-                            name = "Authorization",
-                            description = "accessToken",
-                            schema = @Schema(type = "string", example = "Bearer abc123")
-                    )
-            },
+            @ApiResponse(
                     responseCode = "200", description = "국회의원 목록 (홈페이지)", content = @Content(schema = @Schema(implementation = CongressmanListDTO.class)))
     })
     ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, @RequestParam Long size, @RequestParam Long cursor, @PathVariable(name = "id") String congressionmanId, @LoginId Long loginId);
