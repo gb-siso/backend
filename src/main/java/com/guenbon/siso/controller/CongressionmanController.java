@@ -16,13 +16,13 @@ public class CongressionmanController implements CongressmanControllerDocs {
 
     @Override
     @GetMapping
-    public ResponseEntity<CongressmanListDTO> list(String party, Pageable pageable, Long size, Long cursor, String search) {
+    public ResponseEntity<CongressmanListDTO> list(Long party, Pageable pageable, Long size, Long cursor, String search) {
         return null;
     }
 
     @Override
     @GetMapping("/{id}")
-    public ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, Long size, Long cursor, @PathVariable(name = "id") String congressionmanId, Long loginId) {
+    public ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, Long cursor, @PathVariable(name = "id") String congressionmanId, Long loginId) {
         return null;
     }
 }

@@ -24,7 +24,10 @@ public interface AuthControllerDocs {
     })
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
+                    headers = {
+                            @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
+                            @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string", example = "Authorization=xyz789"))
+                    },
                     responseCode = "200",
                     description = "카카오 로그인",
                     content = @Content(schema = @Schema(implementation = LoginDTO.class)))
@@ -33,12 +36,12 @@ public interface AuthControllerDocs {
 
 
     @Operation(summary = "accessToken 재발급", description = "쿠키에 refreshToken 포함 요청으로 accessToken 재발급(response body에 포함), 보안을 위해 refreshToken도 재발급(cookie에 포함)")
-    @Parameters(value = {
-            @Parameter(name = "refreshToken", description = "accessToken 재발급을 위한 refreshToken")
-    })
     @ApiResponses(value = {
             @ApiResponse(
-                    headers = @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
+                    headers = {
+                            @Header(name = "Set-Cookie", description = "refreshToken", schema = @Schema(type = "string", example = "refreshToken=xyz789; Path=/; HttpOnly; Secure")),
+                            @Header(name = "Authorization", description = "accessToken", schema = @Schema(type = "string", example = "Authorization=xyz789"))
+                    },
                     responseCode = "200",
                     description = "accessToken 재발급",
                     content = @Content(schema = @Schema(implementation = LoginDTO.class)))
@@ -46,12 +49,11 @@ public interface AuthControllerDocs {
     ResponseEntity<LoginDTO> kakaoReissue(@CookieValue("refreshToken") String refreshToken);
 
     @Operation(summary = "로그아웃", description = "Authorization 헤더에 accessToken 포함 요청으로 로그아웃 처리")
-    @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "로그아웃"
-                    )
+            )
     })
     ResponseEntity<Void> logOut(@LoginId Long loginId);
 

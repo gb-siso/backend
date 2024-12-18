@@ -3,7 +3,6 @@ package com.guenbon.siso.controller.docs;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.support.annotation.LoginId;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface RatingControllerDocs {
 
     @Operation(summary = "평가 작성 요청", description = "평가 작성 후 홈페이지로 리다이렉트 할 지 작성한 평가 상세보기를 해줄건지 결정 필요")
-    @Parameter(name = "loginId", description = "Authorization 헤더에 accessToken 넣으면 됨")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
