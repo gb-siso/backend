@@ -14,21 +14,30 @@ import java.util.List;
 @Getter
 @Schema(description = "국회의원 상세보기 응답 dto")
 public class CongressmanDetailDTO {
+    @Schema(description = "국회의원 정보")
     private CongressmanDTO congressmanDTO;
+    @Schema(description = "국회의원 뉴스 리스트")
     private List<News> newsList;
+    @Schema(description = "국회의원 발의 법안 리스트")
     private List<Bill> billList;
+    @Schema(description = "국회의원 평가 리스트")
     private List<Rating> ratings;
 
     @Schema(description = "국회의원 뉴스 dto")
     public static class News {
+        @Schema(description = "뉴스 제목")
         private String title;
+        @Schema(description = "뉴스 내용")
         private String content;
+        @Schema(description = "뉴스 작성 기자 이름")
         private String author;
     }
 
     @Schema(description = "국회의원 법안 dto, 요약 등은 추후 요약 ai api 확인하고 추가예정")
     public static class Bill {
+        @Schema(description = "법안 id")
         private String id;
+        @Schema(description = "법안 명")
         private String title;
         @Schema(description = "법안 상세페이지 링크")
         private String link;
