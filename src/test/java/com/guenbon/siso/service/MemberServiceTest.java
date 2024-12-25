@@ -7,17 +7,14 @@ import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.support.fixture.MemberFixture;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@Transactional(readOnly = true)
-@Service
-@RequiredArgsConstructor
+@ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
 
     @InjectMocks
