@@ -1,6 +1,7 @@
 package com.guenbon.siso.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.entity.Congressman;
@@ -36,5 +37,15 @@ class CongressmanServiceTest {
 
         // then
         assertThat(actual).isEqualTo(이준석);
+    }
+
+    @Test
+    @DisplayName("findById가 존재하지 않는 국회의원에 대해 NotExistException을 던진다")
+    void findById_notExist_NotExistException(){
+        // given
+        final Long 존재하지_않는_ID = 1L;
+        when(congressmanRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
+        // when then
+        assertThrows(NotExistException.class,congressmanService.findById(존재하지_않는_ID),CongressmanErrorCode.NOT_EXIST);
     }
 }
