@@ -1,8 +1,9 @@
 package com.guenbon.siso.service;
 
 import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     public Member findById(Long id) {
-        Optional<Member> member = memberRepository.findById(id);
-        return member.get();
+        return memberRepository.findById(id).orElseThrow(() -> new BadRequestException(MemberErrorCode.NOT_EXISTS));
     }
 }

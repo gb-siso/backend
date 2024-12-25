@@ -1,8 +1,9 @@
 package com.guenbon.siso.service;
 
 import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.CongressmanRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,8 @@ public class CongressmanService {
 
     private final CongressmanRepository congressmanRepository;
 
-    public Congressman findById(Long id){
-        Optional<Congressman> congressman = congressmanRepository.findById(id);
-        return congressman.get();
+    public Congressman findById(Long id) {
+        return congressmanRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
     }
 }
