@@ -50,7 +50,8 @@ public class RatingRepositoryTest {
         ratingRepository.save(given);
 
         // when
-        final Rating actual = ratingRepository.findByMemberIdAndCongressmanId(savedMember.getId(), savedCongressman.getId()).get();
+        final Rating actual = ratingRepository.findByMemberIdAndCongressmanId(savedMember.getId(),
+                savedCongressman.getId()).get();
 
         // then
         assertAll(
@@ -59,4 +60,28 @@ public class RatingRepositoryTest {
         );
     }
 
+    @Test
+    void existsByMemberAndCongressman_exists_true() {
+        // given
+        final Member 장몽이 = MemberFixture.builder()
+                .setNickname("장몽이")
+                .build();
+        final Congressman 이준석 = CongressmanFixture.builder()
+                .setName("이준석")
+                .build();
+        final Rating given = Rating.builder()
+                .member(장몽이)
+                .congressman(이준석)
+                .build();
+
+        memberRepository.save(장몽이);
+        congressmanRepository.save(이준석);
+        ratingRepository.save(given);
+
+        // when
+        boolean result = ratingRepository.existsByMemberAndCongressman(장몽이, 이준석);
+
+        // then
+        assertThat(result).isTrue();
+    }
 }
