@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CongressmanRepository extends JpaRepository<Congressman, Long> {
+    Optional<Congressman> findById(Long id);
 }
