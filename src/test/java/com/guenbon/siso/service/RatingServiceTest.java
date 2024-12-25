@@ -1,11 +1,16 @@
 package com.guenbon.siso.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.RatingRepository;
@@ -55,4 +60,25 @@ class RatingServiceTest {
         assertThrows(BadRequestException.class, () -> ratingService.create(장몽이.getId(), 이준석.getId()),
                 RatingErrorCode.DUPLICATED.getMessage());
     }
+
+    @Test
+    @DisplayName("중복되지 않는 memberId와 congressmanId에 대해 create 메서드 호출 시 Rating 생성에 성공한다")
+    void create_Rating_success() {
+        final Member 장몽이 = MemberFixture.builder()
+                .setId(1L)
+                .setNickname("장몽이")
+                .build();
+        final Congressman 이준석 = CongressmanFixture.builder()
+                .setId(1L)
+                .setName("이준석")
+                .build();
+        when(ratingRepository.existsByMemberAndCongressman(장몽이, 이준석)).thenReturn(false);
+        when(memberService.findById(장몽이.getId())).thenReturn(장몽이);
+        when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
+
+        assertDoesNotThrow(() -> ratingService.create(장몽이.getId(), 이준석.getId()));
+
+        verify(ratingRepository, times(1)).save(any(Rating.class));
+    }
+
 }
