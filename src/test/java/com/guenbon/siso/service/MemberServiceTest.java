@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.support.fixture.MemberFixture;
 import java.util.Optional;
@@ -42,11 +44,12 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("findById가 존재하지 않는 회원에 대해 NotExistException을 던진다")
-    void findById_notExist_NotExistException(){
+    void findById_notExist_NotExistException() {
         // given
         final Long 존재하지_않는_ID = 1L;
         when(memberRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
         // when then
-        assertThrows(NotExistException.class,memberService.findById(존재하지_않는_ID),MemberErrorCode.NOT_EXIST);
+        assertThrows(BadRequestException.class, () -> memberService.findById(존재하지_않는_ID),
+                MemberErrorCode.NOT_EXISTS.getMessage());
     }
 }
