@@ -20,5 +20,5 @@ public interface RatingControllerDocs {
                     description = "국회의원 평가 작성",
                     content = @Content())
     })
-    ResponseEntity<Void> info(@LoginId Long loginId, @RequestBody RatingWriteDTO ratingWriteDTO);
+    ResponseEntity<Void> create(@LoginId Long loginId, @RequestBody RatingWriteDTO ratingWriteDTO);
 }
