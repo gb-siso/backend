@@ -2,6 +2,7 @@ package com.guenbon.siso.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -9,17 +10,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
+import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.service.AESUtil;
+import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.service.JwtTokenProvider;
+import com.guenbon.siso.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest
@@ -34,6 +39,12 @@ class RatingControllerTest {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    MemberService memberService;
+
+    @MockitoBean
+    CongressmanService congressmanService;
 
     @Test
     void 빈_주입_화인() {
@@ -88,6 +99,9 @@ class RatingControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
 
+        when(memberService.findById(INVALID_MEMBER_ID))
+                .thenThrow(new BadRequestException(MemberErrorCode.NOT_EXISTS));
+
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,6 +128,9 @@ class RatingControllerTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
+
+        when(congressmanService.findById(INVALID_CONGRESSMAN_ID))
+                .thenThrow(new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
