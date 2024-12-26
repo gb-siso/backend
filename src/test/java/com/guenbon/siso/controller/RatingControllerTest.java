@@ -3,11 +3,13 @@ package com.guenbon.siso.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
+import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @WebMvcTest
 @Import({AESUtil.class, JwtTokenProvider.class})
@@ -58,12 +59,14 @@ class RatingControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/v1/ratings")
+        mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
+                .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value("중복되는 Rating 입니다"))
+                .andExpect(jsonPath("$.message").value(RatingErrorCode.DUPLICATED.getMessage()))
+                .andExpect(jsonPath("$.code").value(RatingErrorCode.DUPLICATED.name()))
                 .andReturn();
     }
 }
