@@ -1,7 +1,10 @@
 package com.guenbon.siso.service;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,28 +19,32 @@ public class AESUtil {
     }
 
     public String encrypt(String plainText) throws Exception {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), ALGORITHM);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
-        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
+        return process(plainText, Cipher.ENCRYPT_MODE);
     }
 
     public String encrypt(Long plainLong) throws Exception {
-        String plainText = String.valueOf(plainLong);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), ALGORITHM);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
-        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
+        return encrypt(String.valueOf(plainLong)); // Long 값을 String으로 변환하여 encrypt 메서드 호출
     }
 
     public String decrypt(String encryptedText) throws Exception {
+        return process(encryptedText, Cipher.DECRYPT_MODE);
+    }
+
+    // 암호화 및 복호화를 공통 메서드로 추상화
+    private String process(String input, int mode) throws Exception {
+        Cipher cipher = getCipher(mode);
+        byte[] inputBytes = mode == Cipher.ENCRYPT_MODE ? input.getBytes() : Base64.getDecoder().decode(input);
+        byte[] resultBytes = cipher.doFinal(inputBytes);
+        return mode == Cipher.ENCRYPT_MODE
+                ? Base64.getEncoder().encodeToString(resultBytes)
+                : new String(resultBytes);
+    }
+
+    private Cipher getCipher(int mode) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), ALGORITHM);
         Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
-        byte[] decodedBytes = Base64.getDecoder().decode(encryptedText);
-        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
-        return new String(decryptedBytes);
+        cipher.init(mode, secretKeySpec);
+        return cipher;
     }
 }
+
