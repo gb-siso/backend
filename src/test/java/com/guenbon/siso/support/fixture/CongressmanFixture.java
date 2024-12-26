@@ -28,6 +28,7 @@ public class CongressmanFixture {
 
     public Congressman build() {
         return Congressman.builder()
+                .id(id)
                 .name(name)
                 .build();
     }
