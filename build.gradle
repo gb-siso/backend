@@ -39,6 +39,11 @@ dependencies {
 	// jwt
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
+
+	// slf4j
+	implementation 'org.slf4j:slf4j-api:2.0.9'
+	implementation 'ch.qos.logback:logback-classic:1.4.11'
+	testAnnotationProcessor 'org.projectlombok:lombok' //추가
 }
 
 tasks.named('test') {
