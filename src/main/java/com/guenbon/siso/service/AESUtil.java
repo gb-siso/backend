@@ -22,23 +22,15 @@ public class AESUtil {
     }
 
     public String encrypt(Long plainLong) {
-        return process(plainLong, Cipher.ENCRYPT_MODE); // Long 값을 String으로 변환하여 encrypt 메서드 호출
-    }
-
-    public String decrypt(String encryptedText) {
-        return process(encryptedText, Cipher.DECRYPT_MODE);
-    }
-
-    // 암호화 및 복호화를 공통 메서드로 추상화
-    private String process(Object input, int mode) {
         try {
-            String target = convertInputToString(input);
-            Cipher cipher = getCipher(mode);
-            byte[] inputBytes = mode == Cipher.ENCRYPT_MODE ? target.getBytes() : Base64.getDecoder().decode(target);
+            if (plainLong == null) {
+                throw new IllegalArgumentException();
+            }
+            String target = String.valueOf(plainLong); // Long을 String으로 변환
+            Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
+            byte[] inputBytes = target.getBytes();
             byte[] resultBytes = cipher.doFinal(inputBytes);
-            return mode == Cipher.ENCRYPT_MODE
-                    ? Base64.getEncoder().encodeToString(resultBytes)
-                    : new String(resultBytes);
+            return Base64.getEncoder().encodeToString(resultBytes); // 암호화 후 Base64로 인코딩
         } catch (IllegalArgumentException | NullPointerException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
         } catch (Exception e) {
@@ -46,11 +38,18 @@ public class AESUtil {
         }
     }
 
-    private String convertInputToString(Object input) {
-        if (input instanceof Long) {
-            return String.valueOf(input); // Long을 String으로 변환
+    public Long decrypt(String encryptedText) {
+        try {
+            Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
+            byte[] inputBytes = Base64.getDecoder().decode(encryptedText); // Base64로 디코딩
+            byte[] resultBytes = cipher.doFinal(inputBytes);
+            String resultString = new String(resultBytes); // 복호화된 결과를 String으로 변환
+            return Long.valueOf(resultString); // String을 Long으로 변환
+        } catch (IllegalArgumentException | NullPointerException | ClassCastException e) {
+            throw new BadRequestException(AESErrorCode.INVALID_INPUT);
+        } catch (Exception e) {
+            throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
         }
-        return (String) input; // String 그대로 반환
     }
 
     private Cipher getCipher(int mode) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
@@ -60,4 +59,3 @@ public class AESUtil {
         return cipher;
     }
 }
-

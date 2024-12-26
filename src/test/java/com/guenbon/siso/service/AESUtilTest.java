@@ -33,16 +33,16 @@ class AESUtilTest {
         final Long id = 1L;
         final String encrypted = aesUtil.encrypt(id);
         // when
-        final String decrypted = aesUtil.decrypt(encrypted);
+        final Long decrypted = aesUtil.decrypt(encrypted);
         // then
         log.info("decrypted : {}", decrypted);
-        assertThat(Long.valueOf(decrypted)).isEqualTo(id);
+        assertThat(decrypted).isEqualTo(id);
     }
 
     @Test
     @DisplayName("encrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
     void encrypt_null_BadRequestException() {
-        assertThrows(BadRequestException.class, ()->aesUtil.encrypt(null));
-        assertThrows(BadRequestException.class, ()->aesUtil.decrypt(null));
+        assertThrows(BadRequestException.class, () -> aesUtil.encrypt(null));
+        assertThrows(BadRequestException.class, () -> aesUtil.decrypt(null));
     }
 }
