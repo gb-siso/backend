@@ -42,7 +42,7 @@ class CongressmanServiceTest {
     }
 
     @Test
-    @DisplayName("findById가 존재하지 않는 국회의원에 대해 NotExistException을 던진다")
+    @DisplayName("findById가 존재하지 않는 국회의원에 대해 BadRequestException을 던진다")
     void findById_notExist_NotExistException() {
         // given
         final Long 존재하지_않는_ID = 1L;
