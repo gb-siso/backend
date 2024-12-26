@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class JwtTokenProvider {
-    private final String ISSUER = "rednose";
+    private final String ISSUER = "siso";
     private final String ID = "id";
     private String encodedKey;
 
