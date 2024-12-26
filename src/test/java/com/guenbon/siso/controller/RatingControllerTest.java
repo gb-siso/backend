@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
+import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
@@ -18,6 +21,8 @@ import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.service.JwtTokenProvider;
 import com.guenbon.siso.service.MemberService;
+import com.guenbon.siso.support.fixture.CongressmanFixture;
+import com.guenbon.siso.support.fixture.MemberFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,4 +147,47 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$.code").value(CongressmanErrorCode.NOT_EXISTS.name()))
                 .andReturn();
     }
+
+    @Test
+    void create_normalInput_200() throws Exception {
+
+        final Member member = MemberFixture.builder()
+                .setId(10L)
+                .setNickname("장몽이")
+                .build();
+        final Congressman congressman = CongressmanFixture.builder()
+                .setId(1L)
+                .setName("이준석")
+                .build();
+
+        final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(congressman.getId());
+        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+
+        final RatingWriteDTO REQUEST = RatingWriteDTO.builder()
+                .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
+                .content("평범한 국회의원")
+                .rating(3.0F).build();
+
+        final Rating expected = Rating.builder()
+                .id(1L)
+                .congressman(congressman)
+                .member(member)
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        final String json = objectMapper.writeValueAsString(REQUEST);
+
+        when(memberService.findById(member.getId())).thenReturn(member);
+        when(congressmanService.findById(congressman.getId())).thenReturn(congressman);
+
+        mockMvc.perform(post("/api/v1/ratings")
+                        .header("accessToken", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+    }
+
+
 }
