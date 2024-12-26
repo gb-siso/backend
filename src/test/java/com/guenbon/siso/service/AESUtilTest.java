@@ -1,7 +1,9 @@
 package com.guenbon.siso.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.guenbon.siso.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,5 +37,12 @@ class AESUtilTest {
         // then
         log.info("decrypted : {}", decrypted);
         assertThat(Long.valueOf(decrypted)).isEqualTo(id);
+    }
+
+    @Test
+    @DisplayName("encrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
+    void encrypt_null_BadRequestException() {
+        assertThrows(BadRequestException.class, ()->aesUtil.encrypt(null));
+        assertThrows(BadRequestException.class, ()->aesUtil.decrypt(null));
     }
 }
