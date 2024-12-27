@@ -3,9 +3,12 @@ package com.guenbon.siso.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.guenbon.siso.config.QuerydslConfig;
+import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
+import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.CongressmanFixture;
 import com.guenbon.siso.support.fixture.MemberFixture;
 import java.util.List;
@@ -14,11 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(QuerydslConfig.class) // QueryDslConfig 추가
 class CongressmanRepositoryTest {
 
     @Autowired
@@ -61,41 +66,78 @@ class CongressmanRepositoryTest {
                 .setName("정승수").build());
         final Congressman 송효근 = congressmanRepository.save(CongressmanFixture.builder()
                 .setName("송효근").build());
+        final Congressman 장지담 = congressmanRepository.save(CongressmanFixture.builder()
+                .setName("장지담").build());
 
         ratingRepository.save(Rating.builder()
                 .member(jangmong99)
                 .congressman(서재민)
-                .rating(5.0F)
+                .rate(5.0)
                 .build());
         ratingRepository.save(Rating.builder()
                 .member(jangmong99)
                 .congressman(김선균)
-                .rating(4.0F)
+                .rate(4.0)
                 .build());
         ratingRepository.save(Rating.builder()
                 .member(jangmong99)
                 .congressman(정승수)
-                .rating(3.0F)
+                .rate(3.0)
                 .build());
         ratingRepository.save(Rating.builder()
                 .member(jangmong99)
                 .congressman(송효근)
-                .rating(2.0F)
+                .rate(2.0)
                 .build());
         ratingRepository.save(Rating.builder()
                 .member(chungmung99)
                 .congressman(송효근)
-                .rating(5.0F)
+                .rate(5.0)
+                .build());
+        ratingRepository.save(Rating.builder()
+                .member(chungmung99)
+                .congressman(장지담)
+                .rate(3.5)
                 .build());
 
+        CongressmanGetListDTO 서재민_DTO = CongressmanGetListDTO.builder()
+                .id(서재민.getId())
+                .name(서재민.getName())
+                .rate(5.0).build();
+
+        CongressmanGetListDTO 김선균_DTO = CongressmanGetListDTO.builder()
+                .id(김선균.getId())
+                .name(김선균.getName())
+                .rate(4.0).build();
+
+        CongressmanGetListDTO 송효근_DTO = CongressmanGetListDTO.builder()
+                .id(송효근.getId())
+                .name(송효근.getName())
+                .rate(3.5).build();
+
+        CongressmanGetListDTO 장지담_DTO = CongressmanGetListDTO.builder()
+                .id(장지담.getId())
+                .name(장지담.getName())
+                .rate(3.5).build();
+
+        CongressmanGetListDTO 정승수_DTO = CongressmanGetListDTO.builder()
+                .id(정승수.getId())
+                .name(정승수.getName())
+                .rate(3.0).build();
+
         PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rating").descending());
-        List<Congressman> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE);
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null);
 
         PageRequest pageRequest2 = PageRequest.of(1, 2, Sort.by("rating").descending());
-        List<Congressman> list2 = congressmanRepository.getList(pageRequest2, 김선균.getId());
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 송효근.getId(), 3.5);
+
+        PageRequest pageRequest3 = PageRequest.of(1, 2, Sort.by("rating").descending());
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest2, 정승수.getId(), 3.0);
 
         assertAll(
-                () -> assertThat(list1).containsExactly(서재민, 김선균),
-                () -> assertThat(list2).containsExactly(송효근, 정승수));
+                () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(서재민_DTO, 김선균_DTO, 송효근_DTO)),
+                () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(송효근_DTO, 장지담_DTO, 정승수_DTO)),
+                () -> assertThat(list3).usingRecursiveComparison().isEqualTo(List.of(정승수_DTO))
+        );
     }
 }
