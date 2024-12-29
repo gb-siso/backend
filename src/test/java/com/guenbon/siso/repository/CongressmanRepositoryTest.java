@@ -137,6 +137,49 @@ class CongressmanRepositoryTest {
         );
     }
 
+    @Test
+    @DisplayName("getList가 party 파라미터에 따라 필터링해 알맞은 리스트를 응답한다")
+    void getList_pageableParty_list() {
+        // given
+        final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
+        final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
+
+        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setName("서재민").setParty("더불어민주당").build());
+        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setName("김선균").setParty("한나라당").build());
+        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setName("정승수").setParty("국민의힘").build());
+        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setName("송효근").setParty("국민의힘").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").setParty("국민의힘").build());
+
+        saveRating(jangmong99, 서재민, 5.0);
+        saveRating(jangmong99, 김선균, 4.0);
+        saveRating(jangmong99, 정승수, 3.0);
+        saveRating(jangmong99, 송효근, 2.0);
+        saveRating(chungmung99, 송효근, 5.0);
+        saveRating(chungmung99, 장지담, 3.5);
+
+        CongressmanGetListDTO 서재민_DTO = toDTO(서재민, 5.0);
+        CongressmanGetListDTO 김선균_DTO = toDTO(김선균, 4.0);
+        CongressmanGetListDTO 정승수_DTO = toDTO(정승수, 3.0);
+        CongressmanGetListDTO 송효근_DTO = toDTO(송효근, 3.5);
+        CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
+
+        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+        PageRequest pageRequest2 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+        PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+
+        // when
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, "더불어민주당");
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, "한나라당");
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, "국민의힘");
+
+        // then
+        assertAll(
+                () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(서재민_DTO)),
+                () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(김선균_DTO)),
+                () -> assertThat(list3).usingRecursiveComparison().isEqualTo(List.of(정승수_DTO, 송효근_DTO, 장지담_DTO))
+        );
+    }
+
 
     private CongressmanGetListDTO toDTO(Congressman congressman, double rate) {
         return CongressmanGetListDTO.builder()
