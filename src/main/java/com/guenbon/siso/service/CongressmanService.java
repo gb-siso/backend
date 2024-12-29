@@ -1,10 +1,12 @@
 package com.guenbon.siso.service;
 
+import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,11 @@ public class CongressmanService {
                 .orElseThrow(() -> new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
     }
 
-    public void getList(Pageable pageable, Long cursorId, Double cursorRating, String party, String search) {
-        throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+    public List<CongressmanGetListDTO> getList(Pageable pageable, Long cursorId, Double cursorRating, String party,
+                                               String search) {
+        if (pageable == null || cursorId == null) {
+            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+        }
+        return congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
     }
 }

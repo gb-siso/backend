@@ -80,11 +80,10 @@ class CongressmanServiceTest {
     @DisplayName("getList 호출 시 유효한 입력값이면 List<CongressmanGetListDTO> 을 반환한다")
     void getList_validInput_expectedList() {
         // given
-        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setName("서재민").build());
-        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setName("김선균").build());
-        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setName("정승수").build());
+        final Congressman 서재민 = CongressmanFixture.builder().setName("서재민").build();
+        final Congressman 김선균 = CongressmanFixture.builder().setName("김선균").build();
+        final Congressman 정승수 = CongressmanFixture.builder().setName("정승수").build();
         final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by("rating").descending());
-
         final List<CongressmanGetListDTO> expected = new ArrayList<>(
                 List.of(toDTO(서재민, 5.0), toDTO(김선균, 4.0), toDTO(정승수, 3.0)));
 
