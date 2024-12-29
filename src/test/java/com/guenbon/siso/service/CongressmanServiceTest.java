@@ -97,10 +97,6 @@ class CongressmanServiceTest {
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
-    private Congressman saveCongressman(Congressman congressman) {
-        return congressmanRepository.save(congressman);
-    }
-
     private CongressmanGetListDTO toDTO(Congressman congressman, double rate) {
         return CongressmanGetListDTO.builder()
                 .id(congressman.getId())
