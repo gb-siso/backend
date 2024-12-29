@@ -96,7 +96,7 @@ class CongressmanRepositoryTest {
 
     @Test
     @DisplayName("getList가 pageable 파라미터에 rating 낮은 순으로 대해 알맞은 리스트를 응답한다")
-    void getList_pageableRatingAsc_list() {
+    void getList_paryFiltering_list() {
         // given
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
         final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
@@ -134,6 +134,48 @@ class CongressmanRepositoryTest {
                 () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(정승수_DTO, 송효근_DTO, 장지담_DTO)),
                 () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(장지담_DTO, 김선균_DTO, 서재민_DTO)),
                 () -> assertThat(list3).usingRecursiveComparison().isEqualTo(List.of(서재민_DTO))
+        );
+    }
+
+    @Test
+    @DisplayName("getList가 search 파라미터에 따라 필터링해 알맞은 리스트를 응답한다")
+    void getList_searchFiltering_list() {
+        final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
+        final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
+
+        final Congressman 김땅콩 = saveCongressman(CongressmanFixture.builder().setName("김땅콩").setParty("더불어민주당").build());
+        final Congressman 김유신 = saveCongressman(CongressmanFixture.builder().setName("김유신").setParty("한나라당").build());
+        final Congressman 레오나르도김 = saveCongressman(CongressmanFixture.builder().setName("레오나르도 김").setParty("국민의힘").build());
+        final Congressman 장몽이 = saveCongressman(CongressmanFixture.builder().setName("장몽이").setParty("국민의힘").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").setParty("국민의힘").build());
+
+        saveRating(jangmong99, 김땅콩, 5.0);
+        saveRating(jangmong99, 김유신, 4.0);
+        saveRating(jangmong99, 레오나르도김, 3.0);
+        saveRating(jangmong99, 장몽이, 2.0);
+        saveRating(chungmung99, 장몽이, 5.0);
+        saveRating(chungmung99, 장지담, 3.5);
+
+        CongressmanGetListDTO 김땅콩_DTO = toDTO(김땅콩, 5.0);
+        CongressmanGetListDTO 김유신_DTO = toDTO(김유신, 4.0);
+        CongressmanGetListDTO 레오나르도김_DTO = toDTO(레오나르도김, 3.0);
+        CongressmanGetListDTO 장몽이_DTO = toDTO(장몽이, 3.5);
+        CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
+
+        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+        PageRequest pageRequest2 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+        PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rating").ascending());
+
+        // when
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null, "김");
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, null, "장");
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, null, "장지담");
+
+        // then
+        assertAll(
+                () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(레오나르도김_DTO, 김유신_DTO, 김땅콩_DTO)),
+                () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(장몽이_DTO, 장지담_DTO)),
+                () -> assertThat(list3).usingRecursiveComparison().isEqualTo(List.of(장지담_DTO))
         );
     }
 
