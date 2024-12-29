@@ -81,10 +81,12 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest2 = PageRequest.of(1, 2, Sort.by("rating").descending());
         PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rating").descending());
 
+        // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null);
         List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 송효근.getId(), 3.5);
         List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 정승수.getId(), 3.0);
 
+        // then
         assertAll(
                 () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(서재민_DTO, 김선균_DTO, 송효근_DTO)),
                 () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(송효근_DTO, 장지담_DTO, 정승수_DTO)),
@@ -122,13 +124,15 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest2 = PageRequest.of(1, 2, Sort.by("rating").ascending());
         PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rating").ascending());
 
+        // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null);
-        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 송효근.getId(), 3.5);
-        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 정승수.getId(), 5.0);
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 장지담.getId(), 3.5);
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 서재민.getId(), 5.0);
 
+        // then
         assertAll(
-                () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(정승수_DTO, 장지담_DTO, 송효근_DTO)),
-                () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(송효근_DTO, 김선균_DTO, 서재민_DTO)),
+                () -> assertThat(list1).usingRecursiveComparison().isEqualTo(List.of(정승수_DTO, 송효근_DTO, 장지담_DTO)),
+                () -> assertThat(list2).usingRecursiveComparison().isEqualTo(List.of(장지담_DTO, 김선균_DTO, 서재민_DTO)),
                 () -> assertThat(list3).usingRecursiveComparison().isEqualTo(List.of(서재민_DTO))
         );
     }
