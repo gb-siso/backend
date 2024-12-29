@@ -82,9 +82,10 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rating").descending());
 
         // when
-        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null);
-        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 송효근.getId(), 3.5, null);
-        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 정승수.getId(), 3.0, null);
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
+                null);
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 송효근.getId(), 3.5, null, null);
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 정승수.getId(), 3.0, null, null);
 
         // then
         assertAll(
@@ -125,9 +126,10 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rating").ascending());
 
         // when
-        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null);
-        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 장지담.getId(), 3.5, null);
-        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 서재민.getId(), 5.0, null);
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
+                null);
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, 장지담.getId(), 3.5, null, null);
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, 서재민.getId(), 5.0, null, null);
 
         // then
         assertAll(
@@ -145,7 +147,8 @@ class CongressmanRepositoryTest {
 
         final Congressman 김땅콩 = saveCongressman(CongressmanFixture.builder().setName("김땅콩").setParty("더불어민주당").build());
         final Congressman 김유신 = saveCongressman(CongressmanFixture.builder().setName("김유신").setParty("한나라당").build());
-        final Congressman 레오나르도김 = saveCongressman(CongressmanFixture.builder().setName("레오나르도 김").setParty("국민의힘").build());
+        final Congressman 레오나르도김 = saveCongressman(
+                CongressmanFixture.builder().setName("레오나르도 김").setParty("국민의힘").build());
         final Congressman 장몽이 = saveCongressman(CongressmanFixture.builder().setName("장몽이").setParty("국민의힘").build());
         final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").setParty("국민의힘").build());
 
@@ -167,9 +170,12 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rating").ascending());
 
         // when
-        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null, "김");
-        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, null, "장");
-        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, null, "장지담");
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
+                "김");
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, null,
+                "장");
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, null,
+                "장지담");
 
         // then
         assertAll(
@@ -210,9 +216,12 @@ class CongressmanRepositoryTest {
         PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rating").ascending());
 
         // when
-        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, "더불어민주당");
-        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, "한나라당");
-        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, "국민의힘");
+        List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, "더불어민주당",
+                null);
+        List<CongressmanGetListDTO> list2 = congressmanRepository.getList(pageRequest2, Long.MAX_VALUE, null, "한나라당",
+                null);
+        List<CongressmanGetListDTO> list3 = congressmanRepository.getList(pageRequest3, Long.MAX_VALUE, null, "국민의힘",
+                null);
 
         // then
         assertAll(
