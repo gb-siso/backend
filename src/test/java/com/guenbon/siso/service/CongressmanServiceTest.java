@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
-import com.guenbon.siso.repository.CongressmanRepository;
+import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.CongressmanFixture;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;

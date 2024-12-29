@@ -28,4 +28,6 @@ public class Rating {
     @ManyToOne
     @JoinColumn(name = "congressman_id")
     private Congressman congressman;
+
+    private Double rate;
 }

@@ -3,9 +3,11 @@ package com.guenbon.siso.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
+import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.CongressmanFixture;
 import com.guenbon.siso.support.fixture.MemberFixture;
 import org.junit.jupiter.api.DisplayName;
@@ -13,9 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(QuerydslConfig.class) // QueryDslConfig 추가
 public class RatingRepositoryTest {
 
     @Autowired
