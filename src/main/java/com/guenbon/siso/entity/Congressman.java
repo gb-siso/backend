@@ -23,6 +23,8 @@ public class Congressman {
 
     private String name;
 
+    private String party;
+
     @Override
     public String toString() {
         return "Congressman{" +

@@ -19,7 +19,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<CongressmanGetListDTO> getList(Pageable pageable, Long cursorId, Double cursorRating) {
+    public List<CongressmanGetListDTO> getList(Pageable pageable, Long cursorId, Double cursorRating, String party) {
         List<CongressmanGetListDTO> fetch = jpaQueryFactory.select(
                         Projections.constructor(
                                 CongressmanGetListDTO.class,
@@ -32,6 +32,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                 .groupBy(congressman.id)
                 .distinct()
                 .having(cursorCondition(cursorId, cursorRating, pageable))
+                .where(party != null ? congressman.party.eq(party) : null)
                 // rating에 따라 정렬, rating 같을 경우 id 낮은 순
                 .orderBy(createOrderBy(pageable))
                 .limit(pageable.getPageSize() + 1)

@@ -12,6 +12,8 @@ public class CongressmanFixture {
 
     private String name;
 
+    private String party;
+
     public static CongressmanFixture builder() {
         return new CongressmanFixture();
     }
@@ -26,10 +28,16 @@ public class CongressmanFixture {
         return this;
     }
 
+    public CongressmanFixture setParty(String party) {
+        this.party = party;
+        return this;
+    }
+
     public Congressman build() {
         return Congressman.builder()
                 .id(id)
                 .name(name)
+                .party(party)
                 .build();
     }
 }
