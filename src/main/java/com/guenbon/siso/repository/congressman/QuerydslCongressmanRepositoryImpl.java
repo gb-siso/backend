@@ -4,9 +4,11 @@ import static com.guenbon.siso.entity.QCongressman.congressman;
 import static com.guenbon.siso.entity.QRating.rating;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,20 +31,34 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                 .on(congressman.id.eq(rating.congressman.id))
                 .groupBy(congressman.id)
                 .distinct()
-                .having(cursorCondition(cursorId, cursorRating))
-                // rating 높은 순, rating 같을 경우 id 낮은 순
-                .orderBy(rating.rate.avg().desc(), congressman.id.asc())
+                .having(cursorCondition(cursorId, cursorRating, pageable))
+                // rating에 따라 정렬, rating 같을 경우 id 낮은 순
+                .orderBy(createOrderBy(pageable))
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
         return fetch;
     }
 
-    private BooleanExpression cursorCondition(Long cursorId, Double cursorRating) {
+    private BooleanExpression cursorCondition(Long cursorId, Double cursorRating, Pageable pageable) {
         if (cursorId == Long.MAX_VALUE) {
             return null; // 첫 페이지
         }
-        return rating.rate.avg().loe(cursorRating) // rating이 낮은 것
-                .or(rating.rate.avg().eq(cursorRating)
-                        .and(congressman.id.gt(cursorId))); // 동일 rating일 경우 ID를 기준으로 필터
+        boolean isDescending = pageable.getSort().getOrderFor("rating").isDescending();
+        return rating.rate.avg().eq(cursorRating).and(congressman.id.goe(cursorId))
+                .or(
+                        rating.rate.avg().ne(cursorRating)
+                                .and(isDescending ? rating.rate.avg().loe(cursorRating)
+                                        : rating.rate.avg().goe(cursorRating)));
+    }
+
+    private OrderSpecifier<?>[] createOrderBy(Pageable pageable) {
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>(
+                List.of(pageable.getSort().getOrderFor("rating").isDescending()
+                                ? rating.rate.avg().desc()
+                                : rating.rate.avg().asc(),
+                        congressman.id.asc()
+                )
+        );
+        return orderSpecifiers.toArray(new OrderSpecifier<?>[0]);
     }
 }
