@@ -22,7 +22,9 @@ import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.service.AESUtil;
+import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.service.JwtTokenProvider;
+import com.guenbon.siso.service.MemberService;
 import com.guenbon.siso.service.RatingService;
 import com.guenbon.siso.support.fixture.CongressmanFixture;
 import com.guenbon.siso.support.fixture.MemberFixture;
@@ -53,6 +55,12 @@ class RatingControllerTest {
 
     @MockitoBean
     RatingService ratingService;
+
+    @MockitoBean
+    CongressmanService congressmanService;
+
+    @MockitoBean
+    MemberService memberService;
 
     @Value("${spring.siso.domain}")
     String domain;
