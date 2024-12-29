@@ -58,7 +58,8 @@ class CongressmanServiceTest {
     @Test
     @DisplayName("getList 호출 시 Pageable이 null이면 BadRequestException을 던진다")
     void getList_pageRequestNull_BadRequestException() {
-        assertThrows(BadRequestException.class, congressmanService.getList(null, Long.MAX_VALUE, null, null),
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.getList(null, Long.MAX_VALUE, null, null, null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
@@ -67,7 +68,8 @@ class CongressmanServiceTest {
     void getList_cursorIdNull_BadRequestException() {
         final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by("rating").ascending());
 
-        assertThrows(BadRequestException.class, congressmanService.getList(pageRequest, null, null, null),
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.getList(pageRequest, null, null, null, null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 }
