@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class CongressmanServiceTest {
@@ -50,5 +52,21 @@ class CongressmanServiceTest {
         // when then
         assertThrows(BadRequestException.class, () -> congressmanService.findById(존재하지_않는_ID),
                 CongressmanErrorCode.NOT_EXISTS.getMessage());
+    }
+
+    @Test
+    @DisplayName("getList 호출 시 Pageable이 null이면 BadRequestException을 던진다")
+    void getList_pageRequestNull_BadRequestException() {
+        assertThrows(BadRequestException.class, congressmanService.getList(null, Long.MAX_VALUE, null, null),
+                CongressmanErrorCode.NULL_PARAMETER.getMessage());
+    }
+
+    @Test
+    @DisplayName("getList 호출 시 cursorId가 null이면 BadRequestException을 던진다")
+    void getList_cursorIdNull_BadRequestException() {
+        final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by("rating").ascending());
+
+        assertThrows(BadRequestException.class, congressmanService.getList(pageRequest, null, null, null),
+                CongressmanErrorCode.NULL_PARAMETER.getMessage());
     }
 }
