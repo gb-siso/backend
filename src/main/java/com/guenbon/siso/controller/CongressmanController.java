@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/congressionman")
+@RequestMapping("/api/v1/congressman")
 public class CongressmanController implements CongressmanControllerDocs {
 
     @Override
