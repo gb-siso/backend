@@ -48,6 +48,6 @@ public interface CongressmanControllerDocs {
     ResponseEntity<CongressmanDetailDTO> detail(
             @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
             @RequestParam(required = false) Long cursor,
-            @PathVariable(name = "id") String congressionmanId,
+            @PathVariable(name = "id") String congressmanId,
             @LoginId Long loginId);
 }

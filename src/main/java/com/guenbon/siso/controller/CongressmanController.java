@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/congressionman")
-public class CongressionmanController implements CongressmanControllerDocs {
+public class CongressmanController implements CongressmanControllerDocs {
 
     @Override
     @GetMapping
@@ -22,7 +22,7 @@ public class CongressionmanController implements CongressmanControllerDocs {
 
     @Override
     @GetMapping("/{id}")
-    public ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, Long cursor, @PathVariable(name = "id") String congressionmanId, Long loginId) {
+    public ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, Long cursor, @PathVariable(name = "id") String congressmanId, Long loginId) {
         return null;
     }
 }
