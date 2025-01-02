@@ -153,6 +153,8 @@ class CongressmanServiceTest {
                 .id(12L)
                 .name("이준석")
                 .rate(4.5)
+                .party("국민의힘")
+                .timesElected(2)
                 .build();
 
         final String ENCRYPTED_ID = "dkaghghk123ehls123id1232";

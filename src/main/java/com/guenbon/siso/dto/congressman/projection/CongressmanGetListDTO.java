@@ -16,6 +16,8 @@ public class CongressmanGetListDTO {
     private Long id;
     private String name;
     private Double rate;
+    private Integer timesElected;
+    private String party;
 
     @Override
     public String toString() {
@@ -23,6 +25,8 @@ public class CongressmanGetListDTO {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", rate=" + rate +
+                ", timesElected=" + timesElected +
+                ", party='" + party + '\'' +
                 '}';
     }
 }
