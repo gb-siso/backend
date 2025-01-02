@@ -231,6 +231,41 @@ class CongressmanRepositoryTest {
         );
     }
 
+    @Test
+    @DisplayName("getRecentMemberImagesByCongressman이 정상 입력에 대해 회원들 이미지를 List<String> 형태로 반환한다")
+    void getRecentMemberImagesByCongressman_validInput_StringList() {
+        // given
+        // member 5명  , rating
+        final Member 장몽이 = saveMember(MemberFixture.builder().setNickname("jangmong99").setImageUrl("장몽image").build());
+        final Member 멍청이 = saveMember(
+                MemberFixture.builder().setNickname("chungmung99").setImageUrl("멍청image").build());
+        final Member 다미 = saveMember(MemberFixture.builder().setNickname("dami").setImageUrl("다미image").build());
+        final Member 레온이 = saveMember(MemberFixture.builder().setNickname("leon1234").setImageUrl("레온image").build());
+        final Member 얼죽이 = saveMember(MemberFixture.builder().setNickname("ulljook").setImageUrl("얼죽Image").build());
+        // congressman 2명
+        final Congressman 이준석 = saveCongressman(CongressmanFixture.builder().setName("이준석").setParty("더불어민주당").build());
+        final Congressman 윤석열 = saveCongressman(CongressmanFixture.builder().setName("윤석열").setParty("한나라당").build());
+        // rating (이준석)
+        saveRating(다미, 이준석, 3.5);
+        saveRating(레온이, 이준석, 3.5);
+        saveRating(장몽이, 이준석, 3.5);
+        saveRating(멍청이, 이준석, 3.5);
+        // rating (윤석열)
+        saveRating(얼죽이, 윤석열, 2.5);
+        saveRating(다미, 윤석열, 3.5);
+
+        // when
+        final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressman(이준석);
+        final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressman(윤석열);
+
+        // then
+        assertAll(
+                () -> assertThat(이준석_평가작성_회원_이미지리스트).usingRecursiveComparison()
+                        .isEqualTo(List.of(멍청이.getImageUrl(), 장몽이.getImageUrl(), 레온이.getImageUrl(), 다미.getImageUrl())),
+                () -> assertThat(윤석열_평가작성_회원_이미지리스트).usingRecursiveComparison()
+                        .isEqualTo(List.of(다미.getImageUrl(), 얼죽이.getImageUrl()))
+        );
+    }
 
     private CongressmanGetListDTO toDTO(Congressman congressman, double rate) {
         return CongressmanGetListDTO.builder()
