@@ -14,6 +14,8 @@ public class CongressmanFixture {
 
     private String party;
 
+    private Integer timesElected = 3;
+
     public static CongressmanFixture builder() {
         return new CongressmanFixture();
     }
@@ -33,11 +35,27 @@ public class CongressmanFixture {
         return this;
     }
 
+    public CongressmanFixture setTimesElected(Integer timesElected) {
+        this.timesElected = timesElected;
+        return this;
+    }
+
     public Congressman build() {
         return Congressman.builder()
                 .id(id)
                 .name(name)
                 .party(party)
+                .timesElected(timesElected)
                 .build();
+    }
+
+    @Override
+    public String toString() {
+        return "CongressmanFixture{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", party='" + party + '\'' +
+                ", timesElected=" + timesElected +
+                '}';
     }
 }

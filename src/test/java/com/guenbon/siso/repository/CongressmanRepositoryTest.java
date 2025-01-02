@@ -274,6 +274,8 @@ class CongressmanRepositoryTest {
                 .id(congressman.getId())
                 .name(congressman.getName())
                 .rate(rate)
+                .timesElected(congressman.getTimesElected())
+                .party(congressman.getParty())
                 .build();
     }
 

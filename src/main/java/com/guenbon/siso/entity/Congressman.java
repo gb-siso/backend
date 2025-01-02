@@ -26,11 +26,15 @@ public class Congressman extends DateEntity {
 
     private String party;
 
+    private Integer timesElected;
+
     @Override
     public String toString() {
         return "Congressman{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", party='" + party + '\'' +
+                ", timesElected=" + timesElected +
                 '}';
     }
 }
