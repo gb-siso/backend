@@ -111,6 +111,42 @@ class CongressmanServiceTest {
                 CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 
+    @Test
+    @DisplayName("getRecentRatedMembersImages 유효한 국회의원 id를 전달하면 List<String> 형태의 이미지 경로 리스트를 반환한다")
+    void getRecentRatedMembersImages_validCongressmanId_imageUrlList() {
+        // given
+        final Long VALID_ID = 13L;
+        final Optional<List<String>> EXPECTED = Optional.of(List.of("image1", "image2", "image3"));
+        when(congressmanRepository.existsById(VALID_ID)).thenReturn(true);
+        when(congressmanRepository.getRecentMemberImagesByCongressmanId(VALID_ID)).thenReturn(EXPECTED);
+
+        // when
+        final Optional<List<String>> ACTUAL = congressmanService.getRecentRatedMembersImages(VALID_ID);
+
+        // then
+        assertThat(ACTUAL).usingRecursiveComparison().isEqualTo(EXPECTED);
+    }
+
+    @Test
+    @DisplayName("buildCongressmanDTOWithImages에 null 파라미터를 전달하면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
+    void buildCongressmanDTOWithImages_nullParameter_InternalServerException() {
+        assertThrows(InternalServerException.class, congressmanService.buildCongressmanDTOWithImages(null),
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+    }
+
+    @Test
+    @DisplayName("buildCongressmanDTOWithImages에 전달한 dto의 congressmanId가 null이면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
+    void buildCongressmanDTOWithImages_nullCongressmanId_InternalServerException() {
+        // given
+        final CongressmanGetListDTO INVALID_DTO = CongressmanGetListDTO.builder()
+                .id(null).build();
+
+        // when, then
+        assertThrows(InternalServerException.class, congressmanService.buildCongressmanDTOWithImages(null),
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+    }
+
+
     private CongressmanGetListDTO toDTO(Congressman congressman, double rate) {
         return CongressmanGetListDTO.builder()
                 .id(congressman.getId())
