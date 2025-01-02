@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.guenbon.siso.dto.congressman.common.CongressmanDTO;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
@@ -36,6 +37,8 @@ class CongressmanServiceTest {
     CongressmanService congressmanService;
     @Mock
     CongressmanRepository congressmanRepository;
+    @Mock
+    AESUtil aesUtil;
 
     @Test
     @DisplayName("findById가 존재하는 국회의원을 반환한다")
@@ -140,6 +143,36 @@ class CongressmanServiceTest {
         // when, then
         assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(INVALID_DTO),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+    }
+
+    @Test
+    @DisplayName("buildCongressmanDTOWithImages가 유효한 파라미터에 대해 CongressmanDTO를 반환한다")
+    void buildCongressmanDTOWithImages_validCongressmanGetListDTO_CongressmanDTO() {
+        // given
+        final CongressmanGetListDTO 이준석 = CongressmanGetListDTO.builder()
+                .id(12L)
+                .name("이준석")
+                .rate(4.5)
+                .build();
+
+        final String ENCRYPTED_ID = "dkaghghk123ehls123id1232";
+
+        final CongressmanDTO EXPECTED = CongressmanDTO.builder()
+                .id(ENCRYPTED_ID)
+                .name(이준석.getName())
+                .rating(이준석.getRate())
+                .party(이준석.getParty())
+                .timesElected(이준석.getTimesElected())
+                .build();
+
+        when(congressmanRepository.existsById(이준석.getId())).thenReturn(true);
+        when(aesUtil.encrypt(이준석.getId())).thenReturn(ENCRYPTED_ID);
+
+        // when
+        final CongressmanDTO ACTUAL = congressmanService.buildCongressmanDTOWithImages(이준석);
+
+        // then
+        assertThat(ACTUAL).usingRecursiveComparison().isEqualTo(EXPECTED);
     }
 
     private static Stream<Arguments> provideInvalidCongressmanGetListDTO() {
