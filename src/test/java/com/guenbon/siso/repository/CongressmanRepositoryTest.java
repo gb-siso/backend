@@ -232,8 +232,8 @@ class CongressmanRepositoryTest {
     }
 
     @Test
-    @DisplayName("getRecentMemberImagesByCongressman이 정상 입력에 대해 회원들 이미지를 List<String> 형태로 반환한다")
-    void getRecentMemberImagesByCongressman_validInput_StringList() {
+    @DisplayName("getRecentMemberImagesByCongressmanId이 정상 입력에 대해 회원들 이미지를 List<String> 형태로 반환한다")
+    void getRecentMemberImagesByCongressmanId_validInput_StringList() {
         // given
         // member 5명  , rating
         final Member 장몽이 = saveMember(MemberFixture.builder().setNickname("jangmong99").setImageUrl("장몽image").build());
@@ -255,8 +255,10 @@ class CongressmanRepositoryTest {
         saveRating(다미, 윤석열, 3.5);
 
         // when
-        final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressman(이준석);
-        final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressman(윤석열);
+        final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
+                이준석.getId()).get();
+        final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
+                윤석열.getId()).get();
 
         // then
         assertAll(
