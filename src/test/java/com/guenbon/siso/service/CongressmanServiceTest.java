@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 @ExtendWith(MockitoExtension.class)
 class CongressmanServiceTest {
@@ -95,6 +96,18 @@ class CongressmanServiceTest {
 
         // then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("getRecentRatedMembersImages 파라미터로 존재하지 않는 국회의원 id를 전달하면 InternalServerException을 던지며 에러코드는 NOT_EXISTS 이다")
+    void getRecentRatedMembersImages_notExistCongressmanId_InternalServerException() {
+        // given
+        final Long 존재하지_않는_국회의원_ID = 9182L;
+        when(congressmanRepository.existsById(존재하지_않는_국회의원_ID)).thenReturn(false);
+
+        // when, then
+        assertThrows(InternalServerError.class, () -> congressmanService.getRecentRatedMembersImages(존재하지_않는_국회의원_ID),
+                CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 
     private CongressmanGetListDTO toDTO(Congressman congressman, double rate) {
