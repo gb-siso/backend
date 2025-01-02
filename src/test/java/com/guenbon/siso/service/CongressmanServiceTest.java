@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
@@ -22,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 @ExtendWith(MockitoExtension.class)
 class CongressmanServiceTest {
@@ -106,7 +106,8 @@ class CongressmanServiceTest {
         when(congressmanRepository.existsById(존재하지_않는_국회의원_ID)).thenReturn(false);
 
         // when, then
-        assertThrows(InternalServerError.class, () -> congressmanService.getRecentRatedMembersImages(존재하지_않는_국회의원_ID),
+        assertThrows(InternalServerException.class,
+                () -> congressmanService.getRecentRatedMembersImages(존재하지_않는_국회의원_ID),
                 CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 

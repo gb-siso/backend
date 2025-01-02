@@ -13,4 +13,6 @@ public interface CongressmanRepository extends JpaRepository<Congressman, Long>,
     @Query("SELECT m.imageUrl FROM Member m JOIN Rating r ON m.id = r.member.id WHERE r.congressman.id = :congressmanId ORDER BY r.createdDate DESC limit 4")
     Optional<List<String>> getRecentMemberImagesByCongressmanId(@Param("congressmanId") Long congressmanId);
 
+    boolean existsById(Long id);
+
 }
