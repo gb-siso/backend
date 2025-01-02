@@ -1,6 +1,7 @@
 package com.guenbon.siso.entity;
 
 
+import com.guenbon.siso.entity.common.DateEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Congressman {
+public class Congressman extends DateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
