@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CongressmanService {
 
+    private final AESUtil aesUtil;
+
     private final CongressmanRepository congressmanRepository;
 
     public Congressman findById(Long id) {
@@ -36,13 +38,30 @@ public class CongressmanService {
     }
 
     public Optional<List<String>> getRecentRatedMembersImages(final Long id) {
-        if (!congressmanRepository.existsById(id)) {
-            throw new InternalServerException(CongressmanErrorCode.NOT_EXISTS);
-        }
+        ensureIdExists(id);
         return congressmanRepository.getRecentMemberImagesByCongressmanId(id);
     }
 
     public CongressmanDTO buildCongressmanDTOWithImages(final CongressmanGetListDTO congressmanGetListDTO) {
-        throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+        if (congressmanGetListDTO == null) {
+            throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+        }
+        ensureIdExists(congressmanGetListDTO.getId());
+        return CongressmanDTO.builder()
+                .id(aesUtil.encrypt(congressmanGetListDTO.getId()))
+                .name(congressmanGetListDTO.getName())
+                .rating(congressmanGetListDTO.getRate())
+                .timesElected(congressmanGetListDTO.getTimesElected())
+                .party(congressmanGetListDTO.getParty())
+                .build();
+    }
+
+    private void ensureIdExists(final Long id) {
+        if (id == null) {
+            throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+        }
+        if (!congressmanRepository.existsById(id)) {
+            throw new InternalServerException(CongressmanErrorCode.NOT_EXISTS);
+        }
     }
 }
