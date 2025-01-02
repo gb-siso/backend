@@ -130,7 +130,7 @@ class CongressmanServiceTest {
     @Test
     @DisplayName("buildCongressmanDTOWithImages에 null 파라미터를 전달하면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
     void buildCongressmanDTOWithImages_nullParameter_InternalServerException() {
-        assertThrows(InternalServerException.class, congressmanService.buildCongressmanDTOWithImages(null),
+        assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
@@ -142,7 +142,7 @@ class CongressmanServiceTest {
                 .id(null).build();
 
         // when, then
-        assertThrows(InternalServerException.class, congressmanService.buildCongressmanDTOWithImages(null),
+        assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
