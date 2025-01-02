@@ -15,9 +15,14 @@ import com.guenbon.siso.support.fixture.CongressmanFixture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -127,23 +132,21 @@ class CongressmanServiceTest {
         assertThat(ACTUAL).usingRecursiveComparison().isEqualTo(EXPECTED);
     }
 
-    @Test
-    @DisplayName("buildCongressmanDTOWithImages에 null 파라미터를 전달하면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
-    void buildCongressmanDTOWithImages_nullParameter_InternalServerException() {
-        assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(null),
+    @ParameterizedTest(name = "{0} 파라미터 전달")
+    @MethodSource("provideInvalidCongressmanGetListDTO")
+    @DisplayName("buildCongressmanDTOWithImages에 null 형태 파라미터 또는 값을 전달하면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
+    void buildCongressmanDTOWithImages_invalidParameters_InternalServerException(
+            final CongressmanGetListDTO INVALID_DTO) {
+        // when, then
+        assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(INVALID_DTO),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
-    @Test
-    @DisplayName("buildCongressmanDTOWithImages에 전달한 dto의 congressmanId가 null이면 InternalServerException를 던지며 CommonErrorCode.NULL_VALUE_NOT_ALLOWED 에러코드이다")
-    void buildCongressmanDTOWithImages_nullCongressmanId_InternalServerException() {
-        // given
-        final CongressmanGetListDTO INVALID_DTO = CongressmanGetListDTO.builder()
-                .id(null).build();
-
-        // when, then
-        assertThrows(InternalServerException.class, () -> congressmanService.buildCongressmanDTOWithImages(null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+    private static Stream<Arguments> provideInvalidCongressmanGetListDTO() {
+        return Stream.of(
+                Arguments.of(Named.named("null", null)),
+                Arguments.of(Named.named("congressmanId가 null인 CongressmanGetListDTO", null))
+        );
     }
 
 
