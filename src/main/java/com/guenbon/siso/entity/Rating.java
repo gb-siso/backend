@@ -31,4 +31,16 @@ public class Rating extends DateEntity {
     private Congressman congressman;
 
     private Double rate;
+
+    @Override
+    public String toString() {
+        return "Rating{" +
+                "id=" + id +
+                ", member=" + member +
+                ", congressman=" + congressman +
+                ", rate=" + rate +
+                ", createdAt=" + getCreatedDate()
+                +
+                '}';
+    }
 }

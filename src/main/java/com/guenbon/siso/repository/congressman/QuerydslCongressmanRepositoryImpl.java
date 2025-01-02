@@ -22,10 +22,12 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
     public List<CongressmanGetListDTO> getList(Pageable pageable, Long cursorId, Double cursorRating, String party,
                                                String search) {
         List<CongressmanGetListDTO> fetch = jpaQueryFactory.select(
-                        Projections.constructor(
+                        Projections.fields(
                                 CongressmanGetListDTO.class,
                                 congressman.id,
                                 congressman.name,
+                                congressman.timesElected,
+                                congressman.party,
                                 rating.rate.avg().as("rate")))
                 .from(congressman)
                 .join(rating)
