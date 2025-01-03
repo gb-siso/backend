@@ -30,10 +30,12 @@ public interface CongressmanControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "국회의원 목록 (홈페이지)", content = @Content(schema = @Schema(implementation = CongressmanListDTO.class)))
     })
-    ResponseEntity<CongressmanListDTO> list(@RequestParam(required = false) Long party,
-                                            @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
-                                            @RequestParam Long size,
-                                            @RequestParam Long cursor, @RequestParam String search);
+    ResponseEntity<CongressmanListDTO> list(
+            @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
+            @RequestParam String cursorId,
+            @RequestParam(required = false) Double cursorRate,
+            @RequestParam(required = false) String party,
+            @RequestParam(required = false) String search);
 
     @Operation(summary = "국회의원 상세보기", description = "국회의원 상세보기 요청")
     @Parameters(value = {

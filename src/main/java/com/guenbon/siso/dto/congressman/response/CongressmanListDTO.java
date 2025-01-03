@@ -23,4 +23,14 @@ public class CongressmanListDTO {
     private Double rateCursor;
     @Schema(description = "무한스크롤 마지막 데이터 여부")
     private Boolean lastPage;
+
+    @Override
+    public String toString() {
+        return "CongressmanListDTO{" +
+                "congressmanList=" + congressmanList +
+                ", idCursor='" + idCursor + '\'' +
+                ", rateCursor=" + rateCursor +
+                ", lastPage=" + lastPage +
+                '}';
+    }
 }
