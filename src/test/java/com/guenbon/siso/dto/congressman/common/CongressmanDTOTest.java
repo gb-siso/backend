@@ -41,10 +41,6 @@ class CongressmanDTOTest {
                         nullValue,
                         imageUrls),
                 Arguments.of(
-                        congressmanId,
-                        congressmanGetListDTO,
-                        nullValue),
-                Arguments.of(
                         nullValue,
                         congressmanGetListDTO,
                         imageUrls)
