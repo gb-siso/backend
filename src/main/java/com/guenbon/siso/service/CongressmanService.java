@@ -50,7 +50,7 @@ public class CongressmanService {
         return CongressmanDTO.builder()
                 .id(aesUtil.encrypt(congressmanGetListDTO.getId()))
                 .name(congressmanGetListDTO.getName())
-                .rating(congressmanGetListDTO.getRate())
+                .rate(congressmanGetListDTO.getRate())
                 .timesElected(congressmanGetListDTO.getTimesElected())
                 .party(congressmanGetListDTO.getParty())
                 .build();

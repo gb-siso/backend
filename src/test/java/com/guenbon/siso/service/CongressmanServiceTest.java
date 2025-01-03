@@ -162,7 +162,7 @@ class CongressmanServiceTest {
         final CongressmanDTO EXPECTED = CongressmanDTO.builder()
                 .id(ENCRYPTED_ID)
                 .name(이준석.getName())
-                .rating(이준석.getRate())
+                .rate(이준석.getRate())
                 .party(이준석.getParty())
                 .timesElected(이준석.getTimesElected())
                 .build();

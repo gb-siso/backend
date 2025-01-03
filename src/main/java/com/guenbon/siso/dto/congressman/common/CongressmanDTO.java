@@ -4,6 +4,7 @@ import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,13 @@ public class CongressmanDTO {
         if (encryptedCongressmanId == null || congressmanGetListDTO == null) {
             throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
         }
-        return null;
+        return CongressmanDTO.builder()
+                .id(encryptedCongressmanId)
+                .name(congressmanGetListDTO.getName())
+                .rate(congressmanGetListDTO.getRate())
+                .party(congressmanGetListDTO.getParty())
+                .timesElected(congressmanGetListDTO.getTimesElected())
+                .ratedMemberImages(memberImages == null ? Collections.emptyList() : memberImages)
+                .build();
     }
 }
