@@ -8,7 +8,7 @@ import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
-import com.guenbon.siso.support.fixture.MemberFixture;
+import com.guenbon.siso.support.fixture.member.MemberFixture;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

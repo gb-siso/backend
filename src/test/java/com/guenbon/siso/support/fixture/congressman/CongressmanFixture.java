@@ -1,4 +1,4 @@
-package com.guenbon.siso.support.fixture;
+package com.guenbon.siso.support.fixture.congressman;
 
 import com.guenbon.siso.entity.Congressman;
 import lombok.Getter;
