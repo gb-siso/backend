@@ -3,6 +3,7 @@ package com.guenbon.siso.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.dto.congressman.common.CongressmanDTO;
@@ -18,6 +19,8 @@ import com.guenbon.siso.support.fixture.CongressmanGetListDTOFixture;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,85 +85,64 @@ class CongressmanServiceTest {
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
+    @DisplayName("getCongressmanListDTO가 유효한 파라미터에 대해 CongressmanListDTO를 반환한다")
     @Test
     void getCongressmanListDTO_validParameters_CongressmanListDTO() {
         final PageRequest pageable = PageRequest.of(0, 2);
         final String encryptedLongMax = "adjfla123123adjklf";
 
-        final CongressmanGetListDTO 살인자 = CongressmanGetListDTOFixture.builder()
-                .setId(1L)
-                .setRate(1.0).build();
-        final CongressmanGetListDTO 성추행 = CongressmanGetListDTOFixture.builder()
-                .setId(2L)
-                .setRate(2.0).build();
-        final CongressmanGetListDTO 전과없음 = CongressmanGetListDTOFixture.builder()
-                .setId(3L)
-                .setRate(3.0).build();
+        final List<CongressmanGetListDTO> congressmanGetListDTOList = List.of(
+                CongressmanGetListDTOFixture.builder().setId(3L).setRate(3.0).build(),
+                CongressmanGetListDTOFixture.builder().setId(2L).setRate(2.0).build(),
+                CongressmanGetListDTOFixture.builder().setId(1L).setRate(1.0).build());
 
-        final String encrypted_살인자_id = "dklqkdmsl123jak";
-        final String encrypted_성추행_id = "dkladokdmsl123jak";
-        final String encrypted_전과없음_id = "dklq18dla03jak";
+        final List<String> encryptedIdList = List.of("dklq18dla03jak", "dkladokdmsl123jak", "dklqkdmsl123jak");
+        final List<List<String>> recentRatedImagesList = List.of(
+                List.of("image5", "image6"), Collections.emptyList(),
+                List.of("image1", "image2", "image3", "image4"));
 
-        final List<CongressmanGetListDTO> congressmanGetListDTOList = List.of(전과없음, 성추행, 살인자);
+        List<CongressmanDTO> congressmanDTOListExpected = IntStream.range(0, 3).mapToObj(
+                i -> getCongressmanDTO(encryptedIdList.get(i), congressmanGetListDTOList.get(i),
+                        recentRatedImagesList.get(i))).collect(
+                Collectors.toList());
 
-        final List<String> 살인자_이미지 = List.of("image1", "image2", "image3", "image4");
-        final List<String> 성추행_이미지 = Collections.emptyList();
-        final List<String> 전과없음_이미지 = List.of("image5", "image6");
-
-        final CongressmanDTO 살인자_dto = CongressmanDTO.builder()
-                .id(encrypted_살인자_id)
-                .name(살인자.getName())
-                .rate(살인자.getRate())
-                .party(살인자.getParty())
-                .timesElected(살인자.getTimesElected())
-                .ratedMemberImages(살인자_이미지)
-                .build();
-        final CongressmanDTO 성추행_dto = CongressmanDTO.builder()
-                .id(encrypted_성추행_id)
-                .name(성추행.getName())
-                .rate(성추행.getRate())
-                .party(성추행.getParty())
-                .timesElected(성추행.getTimesElected())
-                .ratedMemberImages(성추행_이미지)
-                .build();
-        final CongressmanDTO 전과없음_dto = CongressmanDTO.builder()
-                .id(encrypted_전과없음_id)
-                .name(전과없음.getName())
-                .rate(전과없음.getRate())
-                .party(전과없음.getParty())
-                .timesElected(전과없음.getTimesElected())
-                .ratedMemberImages(전과없음_이미지)
-                .build();
-        final List<CongressmanDTO> congressmanDTOListExpected = List.of(전과없음_dto, 성추행_dto, 살인자_dto);
-
-        when(congressmanRepository.existsById(살인자.getId())).thenReturn(true);
-        when(congressmanRepository.existsById(성추행.getId())).thenReturn(true);
-        when(congressmanRepository.existsById(전과없음.getId())).thenReturn(true);
-
+        when(congressmanRepository.existsById(any(Long.class))).thenReturn(true);
         when(aesUtil.decrypt(encryptedLongMax)).thenReturn(Long.MAX_VALUE);
         when(congressmanRepository.getList(pageable, Long.MAX_VALUE, null, null, null)).thenReturn(
                 congressmanGetListDTOList);
 
-        when(congressmanRepository.getRecentMemberImagesByCongressmanId(살인자.getId())).thenReturn(Optional.of(살인자_이미지));
-        when(congressmanRepository.getRecentMemberImagesByCongressmanId(성추행.getId())).thenReturn(Optional.of(성추행_이미지));
-        when(congressmanRepository.getRecentMemberImagesByCongressmanId(전과없음.getId())).thenReturn(
-                Optional.of(전과없음_이미지));
-
-        when(aesUtil.encrypt(살인자.getId())).thenReturn(encrypted_살인자_id);
-        when(aesUtil.encrypt(성추행.getId())).thenReturn(encrypted_성추행_id);
-        when(aesUtil.encrypt(전과없음.getId())).thenReturn(encrypted_전과없음_id);
+        IntStream.range(0, 3).forEach(i -> {
+            final Long congressmanId = congressmanGetListDTOList.get(i).getId();
+            when(congressmanRepository.getRecentMemberImagesByCongressmanId(congressmanId)).thenReturn(
+                    Optional.of(recentRatedImagesList.get(i)));
+            when(aesUtil.encrypt(congressmanId)).thenReturn(encryptedIdList.get(i));
+        });
 
         // when
         CongressmanListDTO congressmanListDTO = congressmanService.getCongressmanListDTO(pageable, encryptedLongMax,
                 null, null, null);
 
+        final int pageSize = pageable.getPageSize();
         assertAll(
                 () -> assertThat(congressmanListDTO.getLastPage()).isFalse(),
-                () -> assertThat(congressmanListDTO.getIdCursor()).isEqualTo(encrypted_살인자_id),
-                () -> assertThat(congressmanListDTO.getRateCursor()).isEqualTo(살인자.getRate()),
+                () -> assertThat(congressmanListDTO.getIdCursor()).isEqualTo(encryptedIdList.get(pageSize)),
+                () -> assertThat(congressmanListDTO.getRateCursor()).isEqualTo(
+                        congressmanGetListDTOList.get(pageSize).getRate()),
                 () -> assertThat(congressmanListDTO.getCongressmanList()).usingRecursiveComparison()
                         .isEqualTo(congressmanDTOListExpected)
         );
+    }
+
+    private static CongressmanDTO getCongressmanDTO(String encryptedId, CongressmanGetListDTO congressmanGetListDTO,
+                                                    List<String> ratedMemberImages) {
+        return CongressmanDTO.builder()
+                .id(encryptedId)
+                .name(congressmanGetListDTO.getName())
+                .rate(congressmanGetListDTO.getRate())
+                .party(congressmanGetListDTO.getParty())
+                .timesElected(congressmanGetListDTO.getTimesElected())
+                .ratedMemberImages(ratedMemberImages)
+                .build();
     }
 
     public static Stream<Arguments> provideGetCongressmanListDTONullParameters() {
