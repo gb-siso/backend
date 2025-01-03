@@ -22,7 +22,7 @@ public class CongressmanDTO {
     private String name;
     private String party;
     private Integer timesElected;
-    private Double rating;
+    private Double rate;
     @Schema(description = "해당 의원 최근에 평가한 회원 4명 이미지")
     private List<String> ratedMemberImages;
 
