@@ -3,6 +3,7 @@ package com.guenbon.siso.service;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -31,8 +32,10 @@ public class AESUtil {
             byte[] inputBytes = target.getBytes();
             byte[] resultBytes = cipher.doFinal(inputBytes);
             return Base64.getEncoder().encodeToString(resultBytes); // 암호화 후 Base64로 인코딩
-        } catch (IllegalArgumentException | NullPointerException | ClassCastException e) {
+        } catch (IllegalArgumentException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
+        } catch (NullPointerException e) {
+            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
         } catch (Exception e) {
             throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
         }
@@ -45,8 +48,10 @@ public class AESUtil {
             byte[] resultBytes = cipher.doFinal(inputBytes);
             String resultString = new String(resultBytes); // 복호화된 결과를 String으로 변환
             return Long.valueOf(resultString); // String을 Long으로 변환
-        } catch (IllegalArgumentException | NullPointerException | ClassCastException e) {
+        } catch (IllegalArgumentException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
+        } catch (NullPointerException e) {
+            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
         } catch (Exception e) {
             throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
         }
