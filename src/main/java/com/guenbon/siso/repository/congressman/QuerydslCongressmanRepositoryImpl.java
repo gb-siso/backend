@@ -48,7 +48,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
         if (cursorId == Long.MAX_VALUE) {
             return null; // 첫 페이지
         }
-        boolean isDescending = pageable.getSort().getOrderFor("rating").isDescending();
+        boolean isDescending = pageable.getSort().getOrderFor("rate").isDescending();
         return rating.rate.avg().eq(cursorRating).and(congressman.id.goe(cursorId))
                 .or(
                         rating.rate.avg().ne(cursorRating)
@@ -58,7 +58,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
 
     private OrderSpecifier<?>[] createOrderBy(Pageable pageable) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>(
-                List.of(pageable.getSort().getOrderFor("rating").isDescending()
+                List.of(pageable.getSort().getOrderFor("rate").isDescending()
                                 ? rating.rate.avg().desc()
                                 : rating.rate.avg().asc(),
                         congressman.id.asc()
