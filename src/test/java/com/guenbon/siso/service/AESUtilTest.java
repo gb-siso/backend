@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,9 @@ class AESUtilTest {
     @Test
     @DisplayName("encrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
     void encrypt_null_BadRequestException() {
-        assertThrows(BadRequestException.class, () -> aesUtil.encrypt(null));
-        assertThrows(BadRequestException.class, () -> aesUtil.decrypt(null));
+        assertThrows(BadRequestException.class, () -> aesUtil.encrypt(null),
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+        assertThrows(BadRequestException.class, () -> aesUtil.decrypt(null),
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 }
