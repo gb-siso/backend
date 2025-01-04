@@ -72,6 +72,7 @@ public class RatingRepositoryTest {
     }
 
     @Test
+    @DisplayName("existsByMemberAndCongressman가 존재하는 rating에 대해 true를 반환한다")
     void existsByMemberAndCongressman_exists_true() {
         // given
         final Member 장몽이 = MemberFixture.builder()
@@ -97,6 +98,7 @@ public class RatingRepositoryTest {
     }
 
     @Test
+    @DisplayName("getRecentRatingByCongressmanIdSort가 유효한 파라미터에 대해 정렬된 Rating List를 반환한다")
     void getRecentRatingByCongressmanIdSort_validParamter_RatingList() {
         // given
         final Member 장몽원 = memberRepository.save(MemberFixture.builder().build());
