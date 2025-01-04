@@ -10,12 +10,15 @@ import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -28,6 +31,10 @@ public class RatingRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     CongressmanRepository congressmanRepository;
+    @Autowired
+    CongressmanLikeRepository congressmanLikeRepository;
+    @Autowired
+    CongressmanDisLikeRepository congressmanDisLikeRepository;
 
     @Test
     void ratingRepository_null_아님() {
@@ -87,5 +94,42 @@ public class RatingRepositoryTest {
 
         // then
         assertThat(result).isTrue();
+    }
+
+    @Test
+    void getRecentRatingByCongressmanIdSort_validParamter_RatingList() {
+        // given
+        final Member 장몽원 = memberRepository.save(MemberFixture.builder().build());
+        final Member 장몽투 = memberRepository.save(MemberFixture.builder().build());
+        final Member 장몽삼 = memberRepository.save(MemberFixture.builder().build());
+        final Member 장몽포 = memberRepository.save(MemberFixture.builder().build());
+        final Congressman 이준석 = congressmanRepository.save(CongressmanFixture.builder().build());
+        final Rating rate1 = ratingRepository.save(Rating.builder().member(장몽원).congressman(이준석).build());
+        final Rating rate2 = ratingRepository.save(Rating.builder().member(장몽투).congressman(이준석).build());
+        final Rating rate3 = ratingRepository.save(Rating.builder().member(장몽삼).congressman(이준석).build());
+        final Rating rate4 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
+        final Rating rate5 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
+
+        congressmanLikeRepository.save(CongressmanLike.builder().rating(rate1).member(장몽투).build());
+        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate1).member(장몽삼).build());
+        congressmanLikeRepository.save(CongressmanLike.builder().rating(rate2).member(장몽원).build());
+        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate5).member(장몽원).build());
+        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate5).member(장몽투).build());
+
+        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("topicality").descending());
+        PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("like").descending());
+        PageRequest pageRequest3 = PageRequest.of(0, 3, Sort.by("dislike").descending());
+
+        // when
+        List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest1).get();
+        List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest2).get();
+        List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest3).get();
+
+        // then
+        assertAll(
+                () -> assertThat(actual1).usingRecursiveComparison().isEqualTo(List.of(rate5, rate1, rate2, rate4)),
+                () -> assertThat(actual2).usingRecursiveComparison().isEqualTo(List.of(rate2, rate1, rate4, rate3)),
+                () -> assertThat(actual3).usingRecursiveComparison().isEqualTo(List.of(rate5, rate1, rate4, rate3))
+        );
     }
 }
