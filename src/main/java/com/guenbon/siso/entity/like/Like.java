@@ -10,14 +10,20 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Like extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
     @ManyToOne
     @JoinColumn(name = "member_id")
-    private Member member;
+    protected Member member;
 }

@@ -7,6 +7,8 @@ import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
+import com.guenbon.siso.entity.dislike.RatingDisLike;
+import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
@@ -32,9 +34,9 @@ public class RatingRepositoryTest {
     @Autowired
     CongressmanRepository congressmanRepository;
     @Autowired
-    CongressmanLikeRepository congressmanLikeRepository;
+    RatingLikeRepository ratingLikeRepository;
     @Autowired
-    CongressmanDisLikeRepository congressmanDisLikeRepository;
+    RatingDisLikeRepository ratingDisLikeRepository;
 
     @Test
     void ratingRepository_null_아님() {
@@ -112,11 +114,11 @@ public class RatingRepositoryTest {
         final Rating rate4 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
         final Rating rate5 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
 
-        congressmanLikeRepository.save(CongressmanLike.builder().rating(rate1).member(장몽투).build());
-        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate1).member(장몽삼).build());
-        congressmanLikeRepository.save(CongressmanLike.builder().rating(rate2).member(장몽원).build());
-        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate5).member(장몽원).build());
-        congressmanDisLikeRepository.save(CongressmanDisLike.builder().rating(rate5).member(장몽투).build());
+        ratingLikeRepository.save(RatingLike.builder().rating(rate1).member(장몽투).build());
+        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate1).member(장몽삼).build());
+        ratingLikeRepository.save(RatingLike.builder().rating(rate2).member(장몽원).build());
+        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate5).member(장몽원).build());
+        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate5).member(장몽투).build());
 
         PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("topicality").descending());
         PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("like").descending());
