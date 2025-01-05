@@ -10,6 +10,9 @@ import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.dislike.RatingDisLike;
 import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
+import com.guenbon.siso.repository.dislike.RatingDisLikeRepository;
+import com.guenbon.siso.repository.like.RatingLikeRepository;
+import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import java.util.List;
@@ -128,6 +131,7 @@ public class RatingRepositoryTest {
         List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest1).get();
         List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest2).get();
         List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest3).get();
+
 
         // then
         assertAll(

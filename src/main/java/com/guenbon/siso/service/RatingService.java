@@ -5,7 +5,7 @@ import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
-import com.guenbon.siso.repository.RatingRepository;
+import com.guenbon.siso.repository.rating.RatingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
