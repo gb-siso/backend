@@ -10,9 +10,9 @@ public class CongressmanFixture {
 
     private Long id;
 
-    private String name;
+    private String name = "이준석";
 
-    private String party;
+    private String party = "국민의힘";
 
     private Integer timesElected = 3;
 

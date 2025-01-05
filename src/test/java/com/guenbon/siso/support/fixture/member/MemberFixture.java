@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberFixture {
     private Long id;
-    private String nickname;
+    private String nickname = "장몽이";
     private String imageUrl = null;
     private String refreshToken = null;
 

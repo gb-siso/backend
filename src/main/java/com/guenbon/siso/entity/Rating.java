@@ -32,6 +32,8 @@ public class Rating extends DateEntity {
 
     private Double rate;
 
+    private String content;
+
     @Override
     public String toString() {
         return "Rating{" +
