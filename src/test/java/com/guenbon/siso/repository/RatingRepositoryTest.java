@@ -16,6 +16,7 @@ import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslConfig.class) // QueryDslConfig 추가
+@Slf4j
+@EnableJpaAuditing
 public class RatingRepositoryTest {
 
     @Autowired
@@ -110,34 +114,48 @@ public class RatingRepositoryTest {
         final Member 장몽투 = memberRepository.save(MemberFixture.builder().build());
         final Member 장몽삼 = memberRepository.save(MemberFixture.builder().build());
         final Member 장몽포 = memberRepository.save(MemberFixture.builder().build());
+
         final Congressman 이준석 = congressmanRepository.save(CongressmanFixture.builder().build());
+
         final Rating rate1 = ratingRepository.save(Rating.builder().member(장몽원).congressman(이준석).build());
         final Rating rate2 = ratingRepository.save(Rating.builder().member(장몽투).congressman(이준석).build());
         final Rating rate3 = ratingRepository.save(Rating.builder().member(장몽삼).congressman(이준석).build());
         final Rating rate4 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
         final Rating rate5 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
 
-        ratingLikeRepository.save(RatingLike.builder().rating(rate1).member(장몽투).build());
-        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate1).member(장몽삼).build());
-        ratingLikeRepository.save(RatingLike.builder().rating(rate2).member(장몽원).build());
-        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate5).member(장몽원).build());
-        ratingDisLikeRepository.save(RatingDisLike.builder().rating(rate5).member(장몽투).build());
+        likeRateAndSave(rate1, RatingLike.builder().member(장몽투).build());
+        likeRateAndSave(rate2, RatingLike.builder().member(장몽원).build());
+        disLikeRateAndSave(rate1, RatingDisLike.builder().rating(rate1).member(장몽삼).build());
+        disLikeRateAndSave(rate5, RatingDisLike.builder().member(장몽원).build());
+        disLikeRateAndSave(rate5, RatingDisLike.builder().member(장몽투).build());
 
         PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("topicality").descending());
         PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("like").descending());
         PageRequest pageRequest3 = PageRequest.of(0, 3, Sort.by("dislike").descending());
 
         // when
-        List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest1).get();
-        List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest2).get();
-        List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanIdSort(이준석.getId(), pageRequest3).get();
-
+        List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest1).get();
+        List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest2).get();
+        List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest3).get();
 
         // then
         assertAll(
-                () -> assertThat(actual1).usingRecursiveComparison().isEqualTo(List.of(rate5, rate1, rate2, rate4)),
-                () -> assertThat(actual2).usingRecursiveComparison().isEqualTo(List.of(rate2, rate1, rate4, rate3)),
-                () -> assertThat(actual3).usingRecursiveComparison().isEqualTo(List.of(rate5, rate1, rate4, rate3))
+                () -> assertThat(actual1.stream().map(Rating::getId)).containsExactly(rate5.getId(), rate1.getId(),
+                        rate2.getId(), rate4.getId()),
+                () -> assertThat(actual2.stream().map(Rating::getId)).containsExactly(rate2.getId(), rate1.getId(),
+                        rate5.getId(), rate4.getId()),
+                () -> assertThat(actual3.stream().map(Rating::getId)).containsExactly(rate5.getId(), rate1.getId(),
+                        rate4.getId(), rate3.getId())
         );
+    }
+
+    private void likeRateAndSave(Rating rating, RatingLike like) {
+        rating.addLike(like);
+        ratingLikeRepository.save(like);
+    }
+
+    private void disLikeRateAndSave(Rating rating, RatingDisLike disLike) {
+        rating.addDisLike(disLike);
+        ratingDisLikeRepository.save(disLike);
     }
 }
