@@ -17,6 +17,7 @@ import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,51 +111,67 @@ public class RatingRepositoryTest {
     @DisplayName("getRecentRatingByCongressmanIdSort가 유효한 파라미터에 대해 정렬된 Rating List를 반환한다")
     void getRecentRatingByCongressmanIdSort_validParamter_RatingList() {
         // given
-        final Member 장몽원 = memberRepository.save(MemberFixture.builder().build());
-        final Member 장몽투 = memberRepository.save(MemberFixture.builder().build());
-        final Member 장몽삼 = memberRepository.save(MemberFixture.builder().build());
-        final Member 장몽포 = memberRepository.save(MemberFixture.builder().build());
+        final Member 장몽원 = saveMember();
+        final Member 장몽투 = saveMember();
+        final Member 장몽삼 = saveMember();
+        final Member 장몽포 = saveMember();
 
         final Congressman 이준석 = congressmanRepository.save(CongressmanFixture.builder().build());
 
-        final Rating rate1 = ratingRepository.save(Rating.builder().member(장몽원).congressman(이준석).build());
-        final Rating rate2 = ratingRepository.save(Rating.builder().member(장몽투).congressman(이준석).build());
-        final Rating rate3 = ratingRepository.save(Rating.builder().member(장몽삼).congressman(이준석).build());
-        final Rating rate4 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
-        final Rating rate5 = ratingRepository.save(Rating.builder().member(장몽포).congressman(이준석).build());
+        final Rating rate1 = saveRating(장몽원, 이준석);
+        final Rating rate2 = saveRating(장몽투, 이준석);
+        final Rating rate3 = saveRating(장몽삼, 이준석);
+        final Rating rate4 = saveRating(장몽포, 이준석);
+        final Rating rate5 = saveRating(장몽포, 이준석);
 
-        likeRateAndSave(rate1, RatingLike.builder().member(장몽투).build());
-        likeRateAndSave(rate2, RatingLike.builder().member(장몽원).build());
-        disLikeRateAndSave(rate1, RatingDisLike.builder().rating(rate1).member(장몽삼).build());
-        disLikeRateAndSave(rate5, RatingDisLike.builder().member(장몽원).build());
-        disLikeRateAndSave(rate5, RatingDisLike.builder().member(장몽투).build());
-
-        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("topicality").descending());
-        PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("like").descending());
-        PageRequest pageRequest3 = PageRequest.of(0, 3, Sort.by("dislike").descending());
+        likeRateAndSave(rate1, 장몽투);
+        likeRateAndSave(rate2, 장몽원);
+        disLikeRateAndSave(rate1, 장몽삼);
+        disLikeRateAndSave(rate5, 장몽원);
+        disLikeRateAndSave(rate5, 장몽투);
 
         // when
-        List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest1).get();
-        List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest2).get();
-        List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(), pageRequest3).get();
+        final List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
+                createPageRequest("topicality")).get();
+        final List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
+                createPageRequest("like")).get();
+        final List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
+                createPageRequest("dislike")).get();
 
         // then
         assertAll(
-                () -> assertThat(actual1.stream().map(Rating::getId)).containsExactly(rate5.getId(), rate1.getId(),
-                        rate2.getId(), rate4.getId()),
-                () -> assertThat(actual2.stream().map(Rating::getId)).containsExactly(rate2.getId(), rate1.getId(),
-                        rate5.getId(), rate4.getId()),
-                () -> assertThat(actual3.stream().map(Rating::getId)).containsExactly(rate5.getId(), rate1.getId(),
-                        rate4.getId(), rate3.getId())
+                () -> assertRatingOrder(actual1, rate5, rate1, rate2, rate4),
+                () -> assertRatingOrder(actual2, rate2, rate1, rate5, rate4),
+                () -> assertRatingOrder(actual3, rate5, rate1, rate4, rate3)
         );
     }
 
-    private void likeRateAndSave(Rating rating, RatingLike like) {
+    private static ListAssert<Long> assertRatingOrder(List<Rating> actual1, Rating rate5, Rating rate1, Rating rate2,
+                                                      Rating rate4) {
+        return assertThat(actual1.stream().map(Rating::getId)).containsExactly(rate5.getId(), rate1.getId(),
+                rate2.getId(), rate4.getId());
+    }
+
+    private static PageRequest createPageRequest(String topicality) {
+        return PageRequest.of(0, 3, Sort.by(topicality).descending());
+    }
+
+    private Rating saveRating(Member 장몽원, Congressman 이준석) {
+        return ratingRepository.save(Rating.builder().member(장몽원).congressman(이준석).build());
+    }
+
+    private Member saveMember() {
+        return memberRepository.save(MemberFixture.builder().build());
+    }
+
+    private void likeRateAndSave(Rating rating, final Member member) {
+        final RatingLike like = RatingLike.builder().member(member).build();
         rating.addLike(like);
         ratingLikeRepository.save(like);
     }
 
-    private void disLikeRateAndSave(Rating rating, RatingDisLike disLike) {
+    private void disLikeRateAndSave(Rating rating, final Member member) {
+        final RatingDisLike disLike = RatingDisLike.builder().member(member).build();
         rating.addDisLike(disLike);
         ratingDisLikeRepository.save(disLike);
     }

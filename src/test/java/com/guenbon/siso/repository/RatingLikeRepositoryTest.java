@@ -39,20 +39,21 @@ public class RatingLikeRepositoryTest {
 
 
     @Test
-    @DisplayName("RatingLike save 시 중복되는 member - rating에 대해 예외를 던진다")
+    @DisplayName("같은 member가 같은 rating에 대해 중복 Like를 추가할 때 예외를 던진다")
     void save_duplicated_Exception() {
         // given
         final Member 장몽이 = memberRepository.save(MemberFixture.builder().setNickname("장몽이").build());
         final Congressman 이준석 = congressmanRepository.save(CongressmanFixture.builder().setName("이준석").build());
         final Rating rating = ratingRepository.save(Rating.builder().member(장몽이).congressman(이준석).build());
-        likeRateAndSave(rating, RatingLike.builder().member(장몽이).build());
+        likeRateAndSave(rating, 장몽이);
 
         // when, then
         assertThrows(DataIntegrityViolationException.class,
-                () -> likeRateAndSave(rating, RatingLike.builder().member(장몽이).build()));
+                () -> likeRateAndSave(rating, 장몽이));
     }
 
-    private void likeRateAndSave(Rating rating, RatingLike like) {
+    private void likeRateAndSave(Rating rating, final Member member) {
+        final RatingLike like = RatingLike.builder().member(member).build();
         rating.addLike(like);
         ratingLikeRepository.save(like);
     }
