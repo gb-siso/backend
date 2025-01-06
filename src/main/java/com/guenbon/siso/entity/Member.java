@@ -7,15 +7,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Member extends DateEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +25,14 @@ public class Member extends DateEntity {
     private String imageUrl;
     @Column(name = "refresh_token")
     private String refreshToken;
+
+    @Override
+    public String toString() {
+        return "Member{" +
+                "id=" + id +
+                ", nickname='" + nickname + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
+                '}';
+    }
 }

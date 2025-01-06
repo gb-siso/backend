@@ -16,4 +16,9 @@ public class RatingDisLike extends DisLike {
     @ManyToOne
     @JoinColumn(name = "rating_id")
     private Rating rating;
+
+    public RatingDisLike setRating(Rating rating) {
+        this.rating = rating;
+        return this;
+    }
 }

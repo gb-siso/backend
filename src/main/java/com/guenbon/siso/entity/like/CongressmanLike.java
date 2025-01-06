@@ -5,11 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CongressmanLike extends Like {

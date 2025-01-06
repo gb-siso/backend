@@ -10,6 +10,8 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -19,6 +21,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "`like`",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"rating_id", "member_id"})
+        })
 public class Like extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
