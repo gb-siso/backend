@@ -6,7 +6,6 @@ import com.guenbon.siso.entity.Rating;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,13 +16,13 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
 
-    public Optional<List<Rating>> getRecentRatingByCongressmanId(Long congressmanId, Pageable pageable) {
-        return Optional.of(jpaQueryFactory.select(rating)
+    public List<Rating> getRecentRatingByCongressmanId(Long congressmanId, Pageable pageable) {
+        return jpaQueryFactory.select(rating)
                 .from(rating)
                 .where(rating.congressman.id.eq(congressmanId))
                 .orderBy(getOrderBy(pageable), rating.id.desc())
                 .limit(pageable.getPageSize() + 1)
-                .fetch());
+                .fetch();
     }
 
     private static OrderSpecifier<Integer> getOrderBy(Pageable pageable) {

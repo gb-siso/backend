@@ -115,7 +115,7 @@ class CongressmanServiceTest {
         IntStream.range(0, size).forEach(i -> {
             final Long congressmanId = congressmanGetListDTOList.get(i).getId();
             when(congressmanRepository.getRecentMemberImagesByCongressmanId(congressmanId)).thenReturn(
-                    Optional.of(recentRatedImagesList.get(i)));
+                    recentRatedImagesList.get(i));
             when(aesUtil.encrypt(congressmanId)).thenReturn(encryptedIdList.get(i));
         });
 
@@ -163,7 +163,7 @@ class CongressmanServiceTest {
         IntStream.range(0, size).forEach(i -> {
             final Long congressmanId = congressmanGetListDTOList.get(i).getId();
             when(congressmanRepository.getRecentMemberImagesByCongressmanId(congressmanId)).thenReturn(
-                    Optional.of(recentRatedImagesList.get(i)));
+                    recentRatedImagesList.get(i));
             when(aesUtil.encrypt(congressmanId)).thenReturn(encryptedIdList.get(i));
         });
 

@@ -132,11 +132,11 @@ public class RatingRepositoryTest {
 
         // when
         final List<Rating> actual1 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
-                createPageRequest("topicality")).get();
+                createPageRequest("topicality"));
         final List<Rating> actual2 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
-                createPageRequest("like")).get();
+                createPageRequest("like"));
         final List<Rating> actual3 = ratingRepository.getRecentRatingByCongressmanId(이준석.getId(),
-                createPageRequest("dislike")).get();
+                createPageRequest("dislike"));
 
         // then
         assertAll(

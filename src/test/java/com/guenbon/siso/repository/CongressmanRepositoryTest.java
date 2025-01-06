@@ -259,9 +259,9 @@ class CongressmanRepositoryTest {
 
         // when
         final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
-                이준석.getId()).get();
+                이준석.getId());
         final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
-                윤석열.getId()).get();
+                윤석열.getId());
 
         // then
         assertAll(

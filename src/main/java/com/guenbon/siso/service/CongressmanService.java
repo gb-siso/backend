@@ -9,9 +9,7 @@ import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,7 +38,7 @@ public class CongressmanService {
         return congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
     }
 
-    private Optional<List<String>> getRatedMemberImageList(final Long id) {
+    private List<String> getRatedMemberImageList(final Long id) {
         ensureIdExists(id);
         return congressmanRepository.getRecentMemberImagesByCongressmanId(id);
     }
@@ -61,7 +59,7 @@ public class CongressmanService {
                 .map(congressmanGetListDTO -> CongressmanDTO.of(
                         aesUtil.encrypt(congressmanGetListDTO.getId()),
                         congressmanGetListDTO,
-                        getRatedMemberImageList(congressmanGetListDTO.getId()).orElse(Collections.emptyList())))
+                        getRatedMemberImageList(congressmanGetListDTO.getId())))
                 .toList();
     }
 
