@@ -1,7 +1,12 @@
 package com.guenbon.siso.dto.congressman.response;
 
-import com.guenbon.siso.dto.congressman.common.CongressmanDTO;
+import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.exception.InternalServerException;
+import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Collections;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -61,5 +66,36 @@ public class CongressmanDetailDTO {
         private Boolean liked;
         @Schema(description = "싫어요 눌렀는지 여부")
         private Boolean disliked;
+    }
+
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @Schema(description = "국회의원 목록 응답 dto")
+    public static class CongressmanDTO {
+        private String id;
+        private String name;
+        private String party;
+        private Integer timesElected;
+        private Double rate;
+        @Schema(description = "해당 의원 최근에 평가한 회원 4명 이미지")
+        private List<String> ratedMemberImages;
+
+        public static CongressmanDTO of(String encryptedCongressmanId, CongressmanGetListDTO congressmanGetListDTO,
+                                                                                List<String> memberImages) {
+            if (encryptedCongressmanId == null || congressmanGetListDTO == null) {
+                throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+            }
+            return CongressmanDTO.builder()
+                    .id(encryptedCongressmanId)
+                    .name(congressmanGetListDTO.getName())
+                    .rate(congressmanGetListDTO.getRate())
+                    .party(congressmanGetListDTO.getParty())
+                    .timesElected(congressmanGetListDTO.getTimesElected())
+                    .ratedMemberImages(memberImages == null ? Collections.emptyList() : memberImages)
+                    .build();
+        }
     }
 }

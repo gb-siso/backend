@@ -1,7 +1,7 @@
 package com.guenbon.siso.support.fixture.congressman;
 
 
-import com.guenbon.siso.dto.congressman.common.CongressmanDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanDetailDTO.CongressmanDTO;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
