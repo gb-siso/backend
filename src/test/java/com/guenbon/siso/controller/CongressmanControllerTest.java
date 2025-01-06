@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guenbon.siso.dto.congressman.response.CongressmanDetailDTO.CongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.service.JwtTokenProvider;

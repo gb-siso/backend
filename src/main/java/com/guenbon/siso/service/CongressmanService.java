@@ -1,8 +1,8 @@
 package com.guenbon.siso.service;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
-import com.guenbon.siso.dto.congressman.response.CongressmanDetailDTO.CongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.InternalServerException;
