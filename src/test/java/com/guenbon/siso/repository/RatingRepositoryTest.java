@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.guenbon.siso.config.QuerydslConfig;
+import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
@@ -17,7 +18,6 @@ import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(QuerydslConfig.class) // QueryDslConfig 추가
+@Import(QuerydslConfig.class)
 @Slf4j
 @EnableJpaAuditing
 public class RatingRepositoryTest {
@@ -138,29 +138,29 @@ public class RatingRepositoryTest {
         final List<Rating> likeSortResultOPage0 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
                 createPageRequest("like"), null);
         final List<Rating> likeSortResultOPage1 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
-                createPageRequest("like"), DecryptedRatingCursor.of(rate2.getId(), rate2.getLikes()));
+                createPageRequest("like"), DecryptedCountCursor.of(rate1.getId(), rate1.getLikeCount()));
         final List<Rating> disLikeSortResultOPage0 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
                 createPageRequest("dislike"), null);
         final List<Rating> disLikeSortResultOPage1 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
-                createPageRequest("dislike"), DecryptedRatingCursor.of(rate3.getId(), rate3.getDislikes()));
+                createPageRequest("dislike"), DecryptedCountCursor.of(rate1.getId(), rate1.getDisLikeCount()));
         final List<Rating> topicalitySortResultPage0 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
                 createPageRequest("topicality"), null);
         final List<Rating> topicalitySortResultPage1 = ratingRepository.getSortedRatingsByCongressmanId(이준석.getId(),
-                createPageRequest("topicality"), DecryptedRatingCursor.of(rate4.getId(),
-                        rate4.getTopicality()));
+                createPageRequest("topicality"), DecryptedCountCursor.of(rate1.getId(),
+                        rate1.getTopicality()));
         // then
-        assertAll(() -> assertRatingOrder(likeSortResultOPage0, rate4, rate1, rate2),
-                () -> assertRatingOrder(likeSortResultOPage1, rate2, rate3, rate5),
-                () -> assertRatingOrder(disLikeSortResultOPage0, rate5, rate1, rate3),
-                () -> assertRatingOrder(disLikeSortResultOPage1, rate3, rate2, rate4),
-                () -> assertRatingOrder(topicalitySortResultPage0, rate1, rate5, rate4),
-                () -> assertRatingOrder(topicalitySortResultPage1, rate4, rate2, rate3));
+        assertAll(
+                () -> assertRatingOrder(likeSortResultOPage0, rate4, rate2, rate1),
+                () -> assertRatingOrder(likeSortResultOPage1, rate1, rate5, rate3),
+                () -> assertRatingOrder(disLikeSortResultOPage0, rate5, rate3, rate1),
+                () -> assertRatingOrder(disLikeSortResultOPage1, rate1, rate4, rate2),
+                () -> assertRatingOrder(topicalitySortResultPage0, rate5, rate4, rate1),
+                () -> assertRatingOrder(topicalitySortResultPage1, rate1, rate3, rate2)
+        );
     }
 
-    private static ListAssert<Long> assertRatingOrder(List<Rating> ratingList, Rating rate1, Rating rate2,
-                                                      Rating rate3) {
-        return assertThat(ratingList.stream().map(Rating::getId)).containsExactly(rate1.getId(), rate2.getId(),
-                rate3.getId());
+    private static void assertRatingOrder(List<Rating> ratingList, Rating rate1, Rating rate2, Rating rate3) {
+        assertThat(ratingList.stream().map(Rating::getId)).containsExactly(rate1.getId(), rate2.getId(), rate3.getId());
     }
 
     private static PageRequest createPageRequest(String sort) {
