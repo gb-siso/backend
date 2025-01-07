@@ -1,19 +1,14 @@
 package com.guenbon.siso.dto.congressman.response;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
-import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
-import com.guenbon.siso.exception.InternalServerException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
+import com.guenbon.siso.dto.member.common.MemberDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @Setter
@@ -53,10 +48,10 @@ public class CongressmanDetailDTO {
     public static class Rating {
         private String id;
         @Schema(description = "작성회원")
-        private String MemberDTO;
+        private MemberDTO member;
         private LocalDateTime createdAt;
         @Schema(description = "평점")
-        private Float rating;
+        private Double rating;
         @Schema(description = "평가내용")
         private String content;
         @Schema(description = "좋아요 수")
@@ -67,5 +62,18 @@ public class CongressmanDetailDTO {
         private Boolean liked;
         @Schema(description = "싫어요 눌렀는지 여부")
         private Boolean disliked;
+    }
+
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class CongressmanDTO {
+        private String id;
+        private String name;
+        private String party;
+        private Integer timesElected;
+        private Double rate;
     }
 }

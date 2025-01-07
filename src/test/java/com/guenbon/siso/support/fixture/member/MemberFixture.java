@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class MemberFixture {
     private Long id;
     private String nickname = "장몽이";
-    private String imageUrl = null;
+    private String imageUrl = "myProfileImage";
     private String refreshToken = null;
 
     public static MemberFixture builder() {
