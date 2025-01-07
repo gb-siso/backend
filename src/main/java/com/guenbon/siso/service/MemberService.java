@@ -15,7 +15,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public Member findById(Long id) {
+    public Member findById(final Long id) {
         return memberRepository.findById(id).orElseThrow(() -> new BadRequestException(MemberErrorCode.NOT_EXISTS));
     }
 }

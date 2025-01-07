@@ -12,7 +12,7 @@ import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,40 +27,52 @@ public class RatingService {
     private final AESUtil aesUtil;
 
     @Transactional(readOnly = false)
-    public void create(Long memberId, Long congressmanId) {
+    public void create(final Long memberId, final Long congressmanId) {
         final Member member = memberService.findById(memberId);
         final Congressman congressman = congressmanService.findById(congressmanId);
-        if (ratingRepository.existsByMemberAndCongressman(member, congressman)) {
-            throw new BadRequestException(RatingErrorCode.DUPLICATED);
-        }
+        validateDuplicated(member, congressman);
         ratingRepository.save(Rating.builder()
                 .member(member)
                 .congressman(congressman)
                 .build());
     }
 
+    private void validateDuplicated(final Member member, final Congressman congressman) {
+        if (ratingRepository.existsByMemberAndCongressman(member, congressman)) {
+            throw new BadRequestException(RatingErrorCode.DUPLICATED);
+        }
+    }
 
-    public RatingListDTO validateAndGetRecentRatings(String encryptedCongressmanId, PageRequest pageRequest) {
+
+    public RatingListDTO validateAndGetRecentRatings(final String encryptedCongressmanId, final Pageable pageable) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
+        validatePageRequest(pageable);
+        final List<Rating> recentRatingByCongressmanId = ratingRepository.getRecentRatingByCongressmanId(congressmanId,
+                pageable);
+        final List<RatingDetailDTO> ratingDetailDTOList = toRatingDetailDTOList(recentRatingByCongressmanId);
+        return RatingListDTO.of(ratingDetailDTOList, getIdCursor(pageable, ratingDetailDTOList));
+    }
+
+    private static void validatePageRequest(final Pageable pageRequest) {
         if (pageRequest == null) {
             throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
         }
-        List<Rating> recentRatingByCongressmanId = ratingRepository.getRecentRatingByCongressmanId(congressmanId,
-                pageRequest);
-        List<RatingDetailDTO> ratingDetailDTOList = recentRatingByCongressmanId.stream()
+    }
+
+    private List<RatingDetailDTO> toRatingDetailDTOList(final List<Rating> recentRatingByCongressmanId) {
+        return recentRatingByCongressmanId.stream()
                 .map(rating ->
                         RatingDetailDTO.from(
                                 rating,
                                 MemberDTO.of(rating.getMember(), aesUtil.encrypt(rating.getMember().getId())),
                                 aesUtil.encrypt(rating.getId())
                         )).toList();
-        return RatingListDTO.of(ratingDetailDTOList, getIdCursor(pageRequest, ratingDetailDTOList));
     }
 
-    private static String getIdCursor(PageRequest pageRequest, List<RatingDetailDTO> ratingDetailDTOList) {
+    private static String getIdCursor(final Pageable pageable, final List<RatingDetailDTO> ratingDetailDTOList) {
         String idCursor = null;
-        if (ratingDetailDTOList.size() > pageRequest.getPageSize()) {
-            idCursor = ratingDetailDTOList.get(pageRequest.getPageSize()).getId();
+        if (ratingDetailDTOList.size() > pageable.getPageSize()) {
+            idCursor = ratingDetailDTOList.get(pageable.getPageSize()).getId();
         }
         return idCursor;
     }

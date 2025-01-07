@@ -123,6 +123,24 @@ class RatingServiceTest {
         final PageRequest pageRequest = createPageRequest("topicality");
         final Long congressmanId = 3L;
 
+        mockBehavior(encryptedCongressmanId, congressmanId, pageRequest);
+
+        // when
+        final RatingListDTO result = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageRequest);
+
+        // then
+        assertAll(
+                () -> assertThat(
+                        result.getRatingList().stream().map(rating -> rating.getId()).toList()).containsExactly("3L",
+                        "2L", "1L", "4L"),
+                () -> assertThat(
+                        result.getRatingList().stream().map(rating -> rating.getMember().getId())
+                                .toList()).containsExactly("1L", "2L", "3L", "4L"),
+                () -> assertThat(
+                        result.getIdCursor()).isEqualTo("4L"));
+    }
+
+    private void mockBehavior(String encryptedCongressmanId, Long congressmanId, PageRequest pageRequest) {
         when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(congressmanId);
         when(ratingRepository.getRecentRatingByCongressmanId(congressmanId, pageRequest)).thenReturn(
                 List.of(
@@ -136,23 +154,9 @@ class RatingServiceTest {
         when(aesUtil.encrypt(2L)).thenReturn("2L");
         when(aesUtil.encrypt(3L)).thenReturn("3L");
         when(aesUtil.encrypt(4L)).thenReturn("4L");
-
-        // when
-        final RatingListDTO result = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageRequest);
-        // then
-        assertAll(
-                () -> assertThat(
-                        result.getRatingList().stream().map(rating -> rating.getId()).toList()).containsExactly("3L",
-                        "2L", "1L", "4L"),
-                () -> assertThat(
-                        result.getRatingList().stream().map(rating -> rating.getMember().getId())
-                                .toList()).containsExactly("1L", "2L", "3L", "4L"),
-                () -> assertThat(
-                        result.getIdCursor()).isEqualTo("4L"));
     }
 
     private static PageRequest createPageRequest(String sort) {
         return PageRequest.of(0, 3, Sort.by(sort).descending());
     }
-
 }

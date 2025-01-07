@@ -24,7 +24,7 @@ public class CongressmanService {
 
     private final CongressmanRepository congressmanRepository;
 
-    public Congressman findById(Long id) {
+    public Congressman findById(final Long id) {
         return congressmanRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
     }
