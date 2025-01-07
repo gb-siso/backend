@@ -48,6 +48,18 @@ public class Rating extends DateEntity {
     @OneToMany(mappedBy = "rating")
     private List<RatingDisLike> ratingDisLikeList = new ArrayList<>();
 
+    public Integer getLikeCount() {
+        return ratingLikeList.size();
+    }
+
+    public Integer getDisLikeCount() {
+        return ratingDisLikeList.size();
+    }
+
+    public Integer getTopicality() {
+        return ratingLikeList.size() + ratingDisLikeList.size();
+    }
+
     public void addLike(RatingLike ratingLike) {
         ratingLikeList.add(ratingLike);
         ratingLike.setRating(this);
