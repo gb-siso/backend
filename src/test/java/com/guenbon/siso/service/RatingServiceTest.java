@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
@@ -95,7 +94,8 @@ class RatingServiceTest {
     void getRecentRatingByCongressmanId_nullCongressmanId_BadRequestException() {
         // given
         final PageRequest pageRequest = createPageRequest("topicality");
-        when(aesUtil.decrypt(null)).thenThrow(() -> new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED));
+        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED));
+
         // when, then
         assertThrows(BadRequestException.class, () -> ratingService.validateAndGetRecentRatings(null, pageRequest),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
@@ -110,7 +110,8 @@ class RatingServiceTest {
         final Long congressmanId = 3L;
         when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(congressmanId);
         // when, then
-        assertThrows(BadRequestException.class, () -> ratingService.validateAndGetRecentRatings(congressmanId, null),
+        assertThrows(BadRequestException.class,
+                () -> ratingService.validateAndGetRecentRatings(encryptedCongressmanId, null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 
@@ -125,10 +126,10 @@ class RatingServiceTest {
         when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(congressmanId);
         when(ratingRepository.getRecentRatingByCongressmanId(congressmanId, pageRequest)).thenReturn(
                 List.of(
-                        Rating.builder().id(3L).build(),
-                        Rating.builder().id(2L).build(),
-                        Rating.builder().id(1L).build(),
-                        Rating.builder().id(4L).build()
+                        Rating.builder().member(MemberFixture.builder().setId(1L).build()).id(3L).build(),
+                        Rating.builder().member(MemberFixture.builder().setId(2L).build()).id(2L).build(),
+                        Rating.builder().member(MemberFixture.builder().setId(3L).build()).id(1L).build(),
+                        Rating.builder().member(MemberFixture.builder().setId(4L).build()).id(4L).build()
                 )
         );
         when(aesUtil.encrypt(1L)).thenReturn("1L");
@@ -138,14 +139,16 @@ class RatingServiceTest {
 
         // when
         final RatingListDTO result = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageRequest);
-        final List<RatingDetailDTO> ratingList = result.getRatingList();
         // then
         assertAll(
                 () -> assertThat(
                         result.getRatingList().stream().map(rating -> rating.getId()).toList()).containsExactly("3L",
                         "2L", "1L", "4L"),
-                () -> assertThat(result.getIdCursor()).isEqualTo("4L")
-        );
+                () -> assertThat(
+                        result.getRatingList().stream().map(rating -> rating.getMember().getId())
+                                .toList()).containsExactly("1L", "2L", "3L", "4L"),
+                () -> assertThat(
+                        result.getIdCursor()).isEqualTo("4L"));
     }
 
     private static PageRequest createPageRequest(String sort) {
