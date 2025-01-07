@@ -152,8 +152,8 @@ public class RatingRepositoryTest {
                 rate2.getId(), rate4.getId());
     }
 
-    private static PageRequest createPageRequest(String topicality) {
-        return PageRequest.of(0, 3, Sort.by(topicality).descending());
+    private static PageRequest createPageRequest(String sort) {
+        return PageRequest.of(0, 3, Sort.by(sort).descending());
     }
 
     private Rating saveRating(Member 장몽원, Congressman 이준석) {
