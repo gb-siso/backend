@@ -1,5 +1,7 @@
 package com.guenbon.siso.service;
 
+import com.guenbon.siso.dto.cursor.count.CountCursor;
+import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.dto.member.common.MemberDTO;
 import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
@@ -13,6 +15,7 @@ import com.guenbon.siso.repository.rating.RatingRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,13 +47,18 @@ public class RatingService {
     }
 
 
-    public RatingListDTO validateAndGetRecentRatings(final String encryptedCongressmanId, final Pageable pageable) {
+    public RatingListDTO validateAndGetRecentRatings(final String encryptedCongressmanId, final Pageable pageable,
+                                                     final CountCursor countCursor) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
+        final DecryptedCountCursor decryptedCountCursor = countCursor == null ? null : DecryptedCountCursor.of(
+                aesUtil.decrypt(countCursor.getIdCursor()),
+                countCursor.getCountCursor());
         validatePageRequest(pageable);
-        final List<Rating> recentRatingByCongressmanId = ratingRepository.getRecentRatingByCongressmanId(congressmanId,
-                pageable);
+
+        final List<Rating> recentRatingByCongressmanId = ratingRepository.getSortedRatingsByCongressmanId(congressmanId,
+                pageable, decryptedCountCursor);
         final List<RatingDetailDTO> ratingDetailDTOList = toRatingDetailDTOList(recentRatingByCongressmanId);
-        return RatingListDTO.of(ratingDetailDTOList, getIdCursor(pageable, ratingDetailDTOList));
+        return RatingListDTO.of(ratingDetailDTOList, getCountCursor(pageable, ratingDetailDTOList));
     }
 
     private static void validatePageRequest(final Pageable pageRequest) {
@@ -69,11 +77,20 @@ public class RatingService {
                         )).toList();
     }
 
-    private static String getIdCursor(final Pageable pageable, final List<RatingDetailDTO> ratingDetailDTOList) {
-        String idCursor = null;
-        if (ratingDetailDTOList.size() > pageable.getPageSize()) {
-            idCursor = ratingDetailDTOList.get(pageable.getPageSize()).getId();
+    private static CountCursor getCountCursor(final Pageable pageable,
+                                              final List<RatingDetailDTO> ratingDetailDTOList) {
+        final int pageSize = pageable.getPageSize();
+        if (ratingDetailDTOList.size() > pageSize) {
+            final RatingDetailDTO lastElement = ratingDetailDTOList.get(pageSize);
+            Sort sort = pageable.getSort();
+            if (sort.getOrderFor("like") != null) {
+                return CountCursor.of(lastElement.getId(), lastElement.getLikeCount());
+            }
+            if (sort.getOrderFor("dislike") != null) {
+                return CountCursor.of(lastElement.getId(), lastElement.getDislikeCount());
+            }
+            return CountCursor.of(lastElement.getId(), lastElement.getTopicality());
         }
-        return idCursor;
+        return null;
     }
 }

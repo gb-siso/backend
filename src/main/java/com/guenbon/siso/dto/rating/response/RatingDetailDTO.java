@@ -23,4 +23,8 @@ public class RatingDetailDTO {
         return new RatingDetailDTO(encryptedId, member, rating.getContent(), rating.getRate(), rating.getLikeCount(),
                 rating.getDislikeCount());
     }
+
+    public Integer getTopicality() {
+        return likeCount + dislikeCount;
+    }
 }

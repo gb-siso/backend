@@ -44,7 +44,7 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
     }
 
     private static OrderSpecifier<Integer> getDefaultOrderSpecifier() {
-        return rating.ratingLikeList.size().add(rating.ratingDisLikeList.size()).desc();
+        return rating.ratingLikeList.size().add(rating.ratingDislikeList.size()).desc();
     }
 
     private static OrderSpecifier<Integer> getOrderSpecifier(final String sortProperty) {
@@ -52,7 +52,7 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
             return rating.ratingLikeList.size().desc();
         }
         if (SORT_DISLIKE.equalsIgnoreCase(sortProperty)) {
-            return rating.ratingDisLikeList.size().desc();
+            return rating.ratingDislikeList.size().desc();
         }
         return getDefaultOrderSpecifier();
     }
@@ -74,7 +74,7 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
     private static BooleanExpression getCursorExpression(final String sortProperty,
                                                          final DecryptedCountCursor countCursor) {
         final NumberExpression<Integer> likeCount = rating.ratingLikeList.size();
-        final NumberExpression<Integer> disLikeCount = rating.ratingDisLikeList.size();
+        final NumberExpression<Integer> disLikeCount = rating.ratingDislikeList.size();
         final NumberExpression<Integer> topicality = likeCount.add(disLikeCount);
         final Integer countCursorValue = countCursor.getCountCursor();
         final Long idCursorValue = countCursor.getIdCursor();

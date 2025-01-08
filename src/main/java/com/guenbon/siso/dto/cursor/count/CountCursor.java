@@ -11,7 +11,7 @@ public class CountCursor {
     private String idCursor;
     private Integer countCursor;
 
-    private static CountCursor of(String idCursor, Integer countCursor) {
+    public static CountCursor of(String idCursor, Integer countCursor) {
         return new CountCursor(idCursor, countCursor);
     }
 
