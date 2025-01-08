@@ -24,13 +24,23 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RatingService {
 
+    public static final String SORT_LIKE = "like";
+    public static final String SORT_DISLIKE = "dislike";
+    public static final String SORT_TOPICALITY = "topicality";
     private final RatingRepository ratingRepository;
     private final MemberService memberService;
     private final CongressmanService congressmanService;
     private final AESUtil aesUtil;
 
+    private void validateInputs(final Long memberId, final Long congressmanId) {
+        if (memberId == null || congressmanId == null) {
+            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+        }
+    }
+
     @Transactional(readOnly = false)
     public void create(final Long memberId, final Long congressmanId) {
+        validateInputs(memberId, congressmanId);
         final Member member = memberService.findById(memberId);
         final Congressman congressman = congressmanService.findById(congressmanId);
         validateDuplicated(member, congressman);
@@ -46,14 +56,13 @@ public class RatingService {
         }
     }
 
-
     public RatingListDTO validateAndGetRecentRatings(final String encryptedCongressmanId, final Pageable pageable,
                                                      final CountCursor countCursor) {
+        validatePageRequest(pageable);
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final DecryptedCountCursor decryptedCountCursor = countCursor == null ? null : DecryptedCountCursor.of(
                 aesUtil.decrypt(countCursor.getIdCursor()),
                 countCursor.getCountCursor());
-        validatePageRequest(pageable);
 
         final List<Rating> recentRatingByCongressmanId = ratingRepository.getSortedRatingsByCongressmanId(congressmanId,
                 pageable, decryptedCountCursor);
@@ -69,12 +78,16 @@ public class RatingService {
 
     private List<RatingDetailDTO> toRatingDetailDTOList(final List<Rating> recentRatingByCongressmanId) {
         return recentRatingByCongressmanId.stream()
-                .map(rating ->
-                        RatingDetailDTO.from(
-                                rating,
-                                MemberDTO.of(rating.getMember(), aesUtil.encrypt(rating.getMember().getId())),
-                                aesUtil.encrypt(rating.getId())
-                        )).toList();
+                .map(this::toRatingDetailDTO)
+                .toList();
+    }
+
+    private RatingDetailDTO toRatingDetailDTO(final Rating rating) {
+        return RatingDetailDTO.from(
+                rating,
+                MemberDTO.of(rating.getMember(), aesUtil.encrypt(rating.getMember().getId())),
+                aesUtil.encrypt(rating.getId())
+        );
     }
 
     private static CountCursor getCountCursor(final Pageable pageable,
@@ -83,13 +96,13 @@ public class RatingService {
         if (ratingDetailDTOList.size() > pageSize) {
             final RatingDetailDTO lastElement = ratingDetailDTOList.get(pageSize);
             Sort sort = pageable.getSort();
-            if (sort.getOrderFor("like") != null) {
-                return CountCursor.of(lastElement.getId(), lastElement.getLikeCount());
-            }
-            if (sort.getOrderFor("dislike") != null) {
-                return CountCursor.of(lastElement.getId(), lastElement.getDislikeCount());
-            }
-            return CountCursor.of(lastElement.getId(), lastElement.getTopicality());
+            return switch (sort.getOrderFor(SORT_LIKE) != null ? SORT_LIKE
+                    : sort.getOrderFor(SORT_DISLIKE) != null ? SORT_DISLIKE
+                            : SORT_TOPICALITY) {
+                case SORT_LIKE -> CountCursor.of(lastElement.getId(), lastElement.getLikeCount());
+                case SORT_DISLIKE -> CountCursor.of(lastElement.getId(), lastElement.getDislikeCount());
+                default -> CountCursor.of(lastElement.getId(), lastElement.getTopicality());
+            };
         }
         return null;
     }
