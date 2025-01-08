@@ -58,4 +58,10 @@ public class CongressmanFixture {
                 ", timesElected=" + timesElected +
                 '}';
     }
+
+    public static Congressman fromId(Long id) {
+        return CongressmanFixture.builder()
+                .setId(id)
+                .build();
+    }
 }

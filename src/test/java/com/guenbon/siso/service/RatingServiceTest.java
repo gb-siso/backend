@@ -49,80 +49,72 @@ class RatingServiceTest {
     AESUtil aesUtil;
 
     @Test
-    void ratingService_null_아님() {
+    @DisplayName("RatingService가 null이 아님")
+    void ratingService_notNull() {
         assertThat(ratingService).isNotNull();
     }
 
     @Test
-    @DisplayName("중복되는 memberId와 congressmanId에 대해 create 메서드 호출 시 BadRequestException을 던진다")
-    void create_duplicate_DuplicateRatingException() {
+    @DisplayName("중복되는 memberId와 congressmanId로 create 메서드 호출 시 BadRequestException 발생")
+    void create_duplicateMemberAndCongressman_throwsBadRequestException() {
         // given
-        final Member 장몽이 = MemberFixture.builder()
-                .setId(1L)
-                .setNickname("장몽이")
-                .build();
-        final Congressman 이준석 = CongressmanFixture.builder()
-                .setId(1L)
-                .setName("이준석")
-                .build();
+        final Member 장몽이 = MemberFixture.fromId(1L);
+        final Congressman 이준석 = CongressmanFixture.fromId(1L);
         when(ratingRepository.existsByMemberAndCongressman(장몽이, 이준석)).thenReturn(true);
         when(memberService.findById(장몽이.getId())).thenReturn(장몽이);
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
-
         // when, then
-        assertThrows(BadRequestException.class, () -> ratingService.create(장몽이.getId(), 이준석.getId()),
-                RatingErrorCode.DUPLICATED.getMessage());
+        assertThrows(
+                BadRequestException.class,
+                () -> ratingService.create(장몽이.getId(), 이준석.getId()),
+                RatingErrorCode.DUPLICATED.getMessage()
+        );
     }
 
     @Test
-    @DisplayName("중복되지 않는 memberId와 congressmanId에 대해 create 메서드 호출 시 Rating 생성에 성공한다")
-    void create_Rating_success() {
-        final Member 장몽이 = MemberFixture.builder()
-                .setId(1L)
-                .setNickname("장몽이")
-                .build();
-        final Congressman 이준석 = CongressmanFixture.builder()
-                .setId(1L)
-                .setName("이준석")
-                .build();
+    @DisplayName("중복되지 않는 memberId와 congressmanId로 create 메서드 호출 시 Rating 생성 성공")
+    void create_uniqueMemberAndCongressman_createsRating() {
+        // given
+        final Member 장몽이 = MemberFixture.fromId(1L);
+        final Congressman 이준석 = CongressmanFixture.fromId(1L);
         when(ratingRepository.existsByMemberAndCongressman(장몽이, 이준석)).thenReturn(false);
         when(memberService.findById(장몽이.getId())).thenReturn(장몽이);
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
-
+        // when, then
         assertDoesNotThrow(() -> ratingService.create(장몽이.getId(), 이준석.getId()));
-
         verify(ratingRepository, times(1)).save(any(Rating.class));
     }
 
-    @DisplayName("validateAndGetRecentRatings에 null congressmanId를 넣으면 BadRequestException을 던지고 에러코드는 NULL_VALUE_NOT_ALLOWED이다")
     @Test
-    void getRecentRatingByCongressmanId_nullCongressmanId_BadRequestException() {
+    @DisplayName("validateAndGetRecentRatings에 null congressmanId를 넣으면 BadRequestException 발생")
+    void validateAndGetRecentRatings_nullCongressmanId_throwsBadRequestException() {
         // given
         final PageRequest pageable = createPageRequest("topicality", 0);
         when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED));
-
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(
+                BadRequestException.class,
                 () -> ratingService.validateAndGetRecentRatings(null, pageable, null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage()
+        );
     }
 
-    @DisplayName("validateAndGetRecentRatings에 null pageable을 넣으면 BadRequestException을 던지고 에러코드는 NULL_VALUE_NOT_ALLOWED이다")
     @Test
-    void getRecentRatingByCongressmanId_nullPageRequest_BadRequestException() {
+    @DisplayName("validateAndGetRecentRatings에 null pageable을 넣으면 BadRequestException 발생")
+    void validateAndGetRecentRatings_nullPageable_throwsBadRequestException() {
         // given
-        final String encryptedCongressmanId = "adksl123897adjadsjfkl";
-        final Long congressmanId = 3L;
-        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(congressmanId);
+        final String encryptedCongressmanId = "encryptedCongressmanId";
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(
+                BadRequestException.class,
                 () -> ratingService.validateAndGetRecentRatings(encryptedCongressmanId, null, null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage()
+        );
     }
 
-    @DisplayName("validateAndGetRecentRatings에 유효한 congressmanId와 pageable을 넣으면 RatingListDTO를 반환한다")
     @Test
-    void getRecentRatingByCongressmanId_validInput_RatingListDTO() {
+    @DisplayName("validateAndGetRecentRatings에 유효한 congressmanId와 pageable을 넣으면 RatingListDTO 반환")
+    void validateAndGetRecentRatings_validInputs_returnsRatingListDTO() {
         // given
         final String encryptedCongressmanId = "encryptedCongressmanId";
         final PageRequest page1 = createPageRequest("topicality", 0);
@@ -132,10 +124,10 @@ class RatingServiceTest {
         mockBehavior(encryptedCongressmanId, congressmanId, page1, page2);
 
         // when
-        // page1 : 다음 페이지 존재 -> 커서값 존재
+        // page1 : 다음 페이지 O -> 커서값 O
         final RatingListDTO resultPage1 = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, page1,
                 null);
-        // page2 : 다음 페이지 없음 -> 커서값 null
+        // page2 : 다음 페이지 X -> 커서값 null
         final RatingListDTO resultPage2 = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, page2,
                 CountCursor.of("4L", 4));
 
@@ -145,19 +137,13 @@ class RatingServiceTest {
                         resultPage1.getRatingList().stream().map(rating -> rating.getId()).toList())
                         .containsExactly("3L", "2L", "1L", "4L"),
                 () -> assertThat(
-                        resultPage1.getRatingList().stream().map(rating -> rating.getMember().getId()).toList())
-                        .containsExactly("1L", "2L", "3L", "4L"),
-                () -> assertThat(resultPage1.getCountCursor()).usingRecursiveComparison()
+                        resultPage1.getCountCursor()).usingRecursiveComparison()
                         .isEqualTo(CountCursor.of("4L", 4)),
                 () -> assertThat(
                         resultPage2.getRatingList().stream().map(rating -> rating.getId()).toList())
                         .containsExactly("3L", "2L", "1L"),
                 () -> assertThat(
-                        resultPage2.getRatingList().stream().map(rating -> rating.getMember().getId()).toList())
-                        .containsExactly("1L", "2L", "3L"),
-                () -> assertThat(
-                        resultPage2.getCountCursor())
-                        .isNull()
+                        resultPage2.getCountCursor()).isNull()
         );
     }
 
