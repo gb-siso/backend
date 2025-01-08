@@ -45,4 +45,10 @@ public class MemberFixture {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    public static Member fromId(Long id) {
+        return MemberFixture.builder()
+                .setId(id)
+                .build();
+    }
 }
