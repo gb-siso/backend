@@ -18,11 +18,14 @@ import org.springframework.data.domain.Sort;
 @Slf4j
 public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
 
+    public static final String SORT_LIKE = "like";
+    public static final String SORT_DISLIKE = "dislike";
+    public static final String SORT_TOPICALITY = "topicality";
+
     private final JPAQueryFactory jpaQueryFactory;
 
-
-    public List<Rating> getSortedRatingsByCongressmanId(Long congressmanId, Pageable pageable,
-                                                        DecryptedCountCursor countCursor) {
+    public List<Rating> getSortedRatingsByCongressmanId(final Long congressmanId, final Pageable pageable,
+                                                        final DecryptedCountCursor countCursor) {
         return jpaQueryFactory.select(rating)
                 .from(rating)
                 .where(rating.congressman.id.eq(congressmanId), getCursorCondition(pageable, countCursor))
@@ -31,47 +34,62 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
                 .fetch();
     }
 
-    private static OrderSpecifier<Integer> getOrderBy(Pageable pageable) {
+    private static OrderSpecifier<Integer> getOrderBy(final Pageable pageable) {
+        return pageable.getSort().stream()
+                .map(Sort.Order::getProperty)
+                .filter(sortProperty -> sortProperty != null)
+                .map(QuerydslRatingRepositoryImpl::getOrderSpecifier)
+                .findFirst()
+                .orElseGet(QuerydslRatingRepositoryImpl::getDefaultOrderSpecifier);
+    }
 
-        for (Sort.Order order : pageable.getSort()) {
-            String property = order.getProperty();
-            if ("like".equalsIgnoreCase(property)) {
-                return rating.ratingLikeList.size().desc();
-            }
-            if ("dislike".equalsIgnoreCase(property)) {
-                return rating.ratingDisLikeList.size().desc();
-            }
-        }
+    private static OrderSpecifier<Integer> getDefaultOrderSpecifier() {
         return rating.ratingLikeList.size().add(rating.ratingDisLikeList.size()).desc();
     }
 
-    private static BooleanExpression getCursorCondition(Pageable pageable, DecryptedCountCursor countCursor) {
+    private static OrderSpecifier<Integer> getOrderSpecifier(final String sortProperty) {
+        if (SORT_LIKE.equalsIgnoreCase(sortProperty)) {
+            return rating.ratingLikeList.size().desc();
+        }
+        if (SORT_DISLIKE.equalsIgnoreCase(sortProperty)) {
+            return rating.ratingDisLikeList.size().desc();
+        }
+        return getDefaultOrderSpecifier();
+    }
+
+    private static BooleanExpression getCursorCondition(final Pageable pageable,
+                                                        final DecryptedCountCursor countCursor) {
         if (countCursor == null || countCursor.isEmpty()) {
             return null;
         }
 
-        NumberExpression<Integer> likeCount = rating.ratingLikeList.size();
-        NumberExpression<Integer> disLikeCount = rating.ratingDisLikeList.size();
-        NumberExpression<Integer> topicality = likeCount.add(disLikeCount);
-        Integer countCursorValue = countCursor.getCountCursor();
-        Long idCursorValue = countCursor.getIdCursor();
+        return pageable.getSort().stream()
+                .map(Sort.Order::getProperty)
+                .filter(sortProperty -> sortProperty != null)
+                .map(sortProperty -> getCursorExpression(sortProperty, countCursor))
+                .findFirst()
+                .orElse(null);
+    }
 
-        for (Sort.Order order : pageable.getSort()) {
-            String property = order.getProperty();
+    private static BooleanExpression getCursorExpression(final String sortProperty,
+                                                         final DecryptedCountCursor countCursor) {
+        final NumberExpression<Integer> likeCount = rating.ratingLikeList.size();
+        final NumberExpression<Integer> disLikeCount = rating.ratingDisLikeList.size();
+        final NumberExpression<Integer> topicality = likeCount.add(disLikeCount);
+        final Integer countCursorValue = countCursor.getCountCursor();
+        final Long idCursorValue = countCursor.getIdCursor();
 
-            if ("like".equalsIgnoreCase(property)) {
-                return (likeCount.eq(countCursorValue).and(rating.id.loe(idCursorValue)))
-                        .or(likeCount.ne(countCursorValue).and(likeCount.loe(countCursorValue)));
-            }
-
-            if ("dislike".equalsIgnoreCase(property)) {
-                return (disLikeCount.eq(countCursorValue).and(rating.id.loe(idCursorValue)))
-                        .or(disLikeCount.ne(countCursorValue).and(disLikeCount.loe(countCursorValue)));
-            }
-            if ("topicality".equalsIgnoreCase(property)) {
-                return (topicality.eq(countCursorValue).and(rating.id.loe(idCursorValue)))
-                        .or(topicality.ne(countCursorValue).and(topicality.loe(countCursorValue)));
-            }
+        if (SORT_LIKE.equalsIgnoreCase(sortProperty)) {
+            return likeCount.eq(countCursorValue).and(rating.id.loe(idCursorValue))
+                    .or(likeCount.ne(countCursorValue).and(likeCount.loe(countCursorValue)));
+        }
+        if (SORT_DISLIKE.equalsIgnoreCase(sortProperty)) {
+            return disLikeCount.eq(countCursorValue).and(rating.id.loe(idCursorValue))
+                    .or(disLikeCount.ne(countCursorValue).and(disLikeCount.loe(countCursorValue)));
+        }
+        if (SORT_TOPICALITY.equalsIgnoreCase(sortProperty)) {
+            return topicality.eq(countCursorValue).and(rating.id.loe(idCursorValue))
+                    .or(topicality.ne(countCursorValue).and(topicality.loe(countCursorValue)));
         }
         return null;
     }
