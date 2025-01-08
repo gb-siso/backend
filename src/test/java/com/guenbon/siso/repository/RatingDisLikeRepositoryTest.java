@@ -6,9 +6,9 @@ import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
-import com.guenbon.siso.entity.dislike.RatingDisLike;
+import com.guenbon.siso.entity.dislike.RatingDislike;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
-import com.guenbon.siso.repository.dislike.RatingDisLikeRepository;
+import com.guenbon.siso.repository.dislike.RatingDislikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
@@ -33,7 +33,7 @@ public class RatingDisLikeRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
     @Autowired
-    RatingDisLikeRepository ratingDisLikeRepository;
+    RatingDislikeRepository ratingDisLikeRepository;
     @Autowired
     CongressmanRepository congressmanRepository;
 
@@ -53,8 +53,8 @@ public class RatingDisLikeRepositoryTest {
     }
 
     private void disLikeRateAndSave(Rating rating, final Member member) {
-        final RatingDisLike disLike = RatingDisLike.builder().member(member).build();
-        rating.addDisLike(disLike);
+        final RatingDislike disLike = RatingDislike.builder().member(member).build();
+        rating.addDislike(disLike);
         ratingDisLikeRepository.save(disLike);
     }
 }

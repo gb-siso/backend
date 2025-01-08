@@ -8,10 +8,10 @@ import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
-import com.guenbon.siso.entity.dislike.RatingDisLike;
+import com.guenbon.siso.entity.dislike.RatingDislike;
 import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
-import com.guenbon.siso.repository.dislike.RatingDisLikeRepository;
+import com.guenbon.siso.repository.dislike.RatingDislikeRepository;
 import com.guenbon.siso.repository.like.RatingLikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
@@ -47,7 +47,7 @@ public class RatingRepositoryTest {
     @Autowired
     RatingLikeRepository ratingLikeRepository;
     @Autowired
-    RatingDisLikeRepository ratingDisLikeRepository;
+    RatingDislikeRepository ratingDislikeRepository;
 
     @Test
     void ratingRepository_null_아님() {
@@ -137,7 +137,7 @@ public class RatingRepositoryTest {
         final Rating dislikeSortLastRatingPage0 = dislikeSortResultPage0.get(dislikeSortResultPage0.size() - 1);
         final List<Rating> dislikeSortResultPage1 = fetchSortedRatings(dislikeSortLastRatingPage0, "dislike",
                 DecryptedCountCursor.of(dislikeSortLastRatingPage0.getId(),
-                        dislikeSortLastRatingPage0.getDisLikeCount()));
+                        dislikeSortLastRatingPage0.getDislikeCount()));
 
         final List<Rating> topicalitySortResultPage0 = fetchSortedRatings(ratings[0], "topicality", null);
         final Rating topicalitySortLastRatingPage0 = topicalitySortResultPage0.get(
@@ -194,9 +194,9 @@ public class RatingRepositoryTest {
     }
 
     private void disLikeRateAndSave(final Rating rating, final Member member) {
-        final RatingDisLike disLike = RatingDisLike.builder().member(member).build();
-        rating.addDisLike(disLike);
-        ratingDisLikeRepository.save(disLike);
+        final RatingDislike dislike = RatingDislike.builder().member(member).build();
+        rating.addDislike(dislike);
+        ratingDislikeRepository.save(dislike);
     }
 
     private List<Rating> fetchSortedRatings(
