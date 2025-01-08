@@ -1,7 +1,7 @@
 package com.guenbon.siso.entity;
 
 import com.guenbon.siso.entity.common.DateEntity;
-import com.guenbon.siso.entity.dislike.RatingDisLike;
+import com.guenbon.siso.entity.dislike.RatingDislike; // Changed from RatingDisLike to RatingDislike
 import com.guenbon.siso.entity.like.RatingLike;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,18 +46,18 @@ public class Rating extends DateEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "rating")
-    private List<RatingDisLike> ratingDisLikeList = new ArrayList<>();
+    private List<RatingDislike> ratingDislikeList = new ArrayList<>();
 
     public Integer getLikeCount() {
         return ratingLikeList.size();
     }
 
-    public Integer getDisLikeCount() {
-        return ratingDisLikeList.size();
+    public Integer getDislikeCount() {
+        return ratingDislikeList.size();
     }
 
     public Integer getTopicality() {
-        return ratingLikeList.size() + ratingDisLikeList.size();
+        return ratingLikeList.size() + ratingDislikeList.size();
     }
 
     public void addLike(RatingLike ratingLike) {
@@ -65,9 +65,9 @@ public class Rating extends DateEntity {
         ratingLike.setRating(this);
     }
 
-    public void addDisLike(RatingDisLike ratingDisLike) {
-        ratingDisLikeList.add(ratingDisLike);
-        ratingDisLike.setRating(this);
+    public void addDislike(RatingDislike ratingDislike) {
+        ratingDislikeList.add(ratingDislike);
+        ratingDislike.setRating(this);
     }
 
     @Override

@@ -16,8 +16,11 @@ public class RatingDetailDTO {
     private MemberDTO member;
     private String content;
     private Double rate;
+    private Integer likeCount;
+    private Integer dislikeCount;
 
     public static RatingDetailDTO from(Rating rating, MemberDTO member, String encryptedId) {
-        return new RatingDetailDTO(encryptedId, member, rating.getContent(), rating.getRate());
+        return new RatingDetailDTO(encryptedId, member, rating.getContent(), rating.getRate(), rating.getLikeCount(),
+                rating.getDislikeCount());
     }
 }

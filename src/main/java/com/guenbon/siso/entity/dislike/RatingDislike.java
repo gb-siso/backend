@@ -2,23 +2,27 @@ package com.guenbon.siso.entity.dislike;
 
 import com.guenbon.siso.entity.Rating;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
 
 @Entity
-@SuperBuilder
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
-public class RatingDisLike extends DisLike {
+@AllArgsConstructor
+public class RatingDislike {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne
     @JoinColumn(name = "rating_id")
     private Rating rating;
-
-    public RatingDisLike setRating(Rating rating) {
-        this.rating = rating;
-        return this;
-    }
 }
