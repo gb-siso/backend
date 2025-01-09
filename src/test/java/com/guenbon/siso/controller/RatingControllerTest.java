@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,8 +19,12 @@ import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
+import com.guenbon.siso.exception.errorCode.CursorErrorCode;
+import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
+import com.guenbon.siso.exception.errorCode.PageableErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.CongressmanService;
@@ -28,9 +33,13 @@ import com.guenbon.siso.service.MemberService;
 import com.guenbon.siso.service.RatingService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -46,38 +55,34 @@ class RatingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     AESUtil aesUtil;
-
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
     @MockitoBean
     RatingService ratingService;
-
     @MockitoBean
     CongressmanService congressmanService;
-
     @MockitoBean
     MemberService memberService;
-
     @Value("${spring.siso.domain}")
     String domain;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void 빈_주입_화인() {
+    @DisplayName("빈 주입 확인 - MockMvc, AESUtil, JwtTokenProvider, ObjectMapper 빈 정상 주입")
+    void injectBeans_WhenApplicationStarts_AllBeansInjectedSuccessfully() {
         assertAll(
                 () -> assertThat(mockMvc).isNotNull(),
                 () -> assertThat(aesUtil).isNotNull(),
-                () -> assertThat(jwtTokenProvider).isNotNull()
+                () -> assertThat(jwtTokenProvider).isNotNull(),
+                () -> assertThat(objectMapper).isNotNull()
         );
     }
 
     @Test
-    @DisplayName("중복 Rating 작성 요청에 대해 에러 응답을 반환한다")
-    void create_duplicate_ErrorResponse() throws Exception {
-
+    @DisplayName("중복된 Rating 작성 요청 시 에러 응답 반환")
+    void createRating_WhenDuplicateRequest_ReturnsErrorResponse() throws Exception {
         final Long CONGRESSMAN_ID = 1L;
         final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(CONGRESSMAN_ID);
         final Long MEMBER_ID = 10L;
@@ -88,7 +93,6 @@ class RatingControllerTest {
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
 
         doThrow(new BadRequestException(RatingErrorCode.DUPLICATED)).when(ratingService)
@@ -106,8 +110,8 @@ class RatingControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 회원의 Rating 작성 요청에 대해 에러 응답을 반환한다")
-    void create_notExistMember_ErrorResponse() throws Exception {
+    @DisplayName("존재하지 않는 회원으로 Rating 작성 요청 시 에러 응답 반환")
+    void createRating_WhenMemberNotExists_ReturnsErrorResponse() throws Exception {
         final Long CONGRESSMAN_ID = 1L;
         final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(CONGRESSMAN_ID);
         final Long INVALID_MEMBER_ID = 10L;
@@ -118,7 +122,6 @@ class RatingControllerTest {
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
 
         doThrow(new BadRequestException(MemberErrorCode.NOT_EXISTS)).when(ratingService)
@@ -136,8 +139,8 @@ class RatingControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 국회의원의 Rating 작성 요청에 대해 에러 응답을 반환한다")
-    void create_notExistCongressman_ErrorResponse() throws Exception {
+    @DisplayName("존재하지 않는 국회의원으로 Rating 작성 요청 시 에러 응답 반환")
+    void createRating_WhenCongressmanNotExists_ReturnsErrorResponse() throws Exception {
         final Long INVALID_CONGRESSMAN_ID = 1L;
         final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(INVALID_CONGRESSMAN_ID);
         final Long MEMBER_ID = 10L;
@@ -148,7 +151,6 @@ class RatingControllerTest {
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(BAD_REQUEST);
 
         doThrow(new BadRequestException(CongressmanErrorCode.NOT_EXISTS)).when(ratingService)
@@ -166,9 +168,8 @@ class RatingControllerTest {
     }
 
     @Test
-    @DisplayName("정상 Rating 작성 요청에 대해 리다이렉션한다")
-    void create_normalInput_200() throws Exception {
-
+    @DisplayName("정상적인 Rating 작성 요청 시 리다이렉트 응답 반환")
+    void createRating_WhenValidRequest_PerformsRedirection() throws Exception {
         final Member member = MemberFixture.builder()
                 .setId(10L)
                 .setNickname("장몽이")
@@ -186,7 +187,6 @@ class RatingControllerTest {
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         final String json = objectMapper.writeValueAsString(REQUEST);
 
         doNothing().when(ratingService).create(member.getId(), congressman.getId());
@@ -201,5 +201,63 @@ class RatingControllerTest {
                 .andReturn();
 
         verify(ratingService, times(1)).create(member.getId(), congressman.getId());
+    }
+
+    @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 코드={2} 반환")
+    @MethodSource("provideInvalidCountCursorParameters")
+    @DisplayName("유효하지 않은 커서 값 요청 시 에러 응답 반환")
+    void validateCountCursorFields_WhenInvalidCursorValues_ReturnsValidationErrorResponse(
+            String idCursor,
+            String countCursor,
+            ErrorCode expectedErrorCode) throws Exception {
+        mockMvc.perform(get("/api/v1/ratings/{encryptedCongressmanId}", "encryptedCongressmanId")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("idCursor", idCursor)
+                        .param("countCursor", countCursor))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(expectedErrorCode.name()))
+                .andExpect(jsonPath("$.message").value(expectedErrorCode.getMessage()))
+                .andReturn();
+    }
+
+    private static Stream<Arguments> provideInvalidCountCursorParameters() {
+        return Stream.of(
+                Arguments.of("", "10", CursorErrorCode.NULL_OR_EMPTY_VALUE),
+                Arguments.of("abc123def456", "", CursorErrorCode.NULL_OR_EMPTY_VALUE),
+                Arguments.of("validIdCursor", "-1", CursorErrorCode.NEGATIVE_VALUE),
+                Arguments.of("abc123def456", "abcdef", CommonErrorCode.TYPE_MISMATCH)
+        );
+    }
+
+    @ParameterizedTest(name = "page={0}, size={1}, sort={2}일 때, 에러 코드={3} 반환")
+    @MethodSource("provideInvalidPageableParameters")
+    @DisplayName("유효하지 않은 Pageable 파라미터 요청 시 에러 응답 반환")
+    void validatePageableParameters_WhenInvalidPageableFields_ReturnsValidationErrorResponse(
+            String page,
+            String size,
+            String sort,
+            PageableErrorCode expectedErrorCode) throws Exception {
+        mockMvc.perform(get("/api/v1/ratings/{encryptedCongressmanId}", "encryptedCongressmanId")
+                        .param("page", page)
+                        .param("size", size)
+                        .param("sort", sort)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(expectedErrorCode.name()))
+                .andExpect(jsonPath("$.message").value(expectedErrorCode.getMessage()))
+                .andReturn();
+    }
+
+    private static Stream<Arguments> provideInvalidPageableParameters() {
+        return Stream.of(
+                Arguments.of("-1", "10", "topicality,DESC", PageableErrorCode.INVALID_PAGE),
+                Arguments.of("0", "-5", "topicality,DESC", PageableErrorCode.INVALID_SIZE),
+                Arguments.of("abc", "10", "topicality,DESC", PageableErrorCode.INVALID_FORMAT),
+                Arguments.of("0", "10", "invalidField,DESC", PageableErrorCode.UNSUPPORTED_SORT_PROPERTY),
+                Arguments.of("0", "10", "like,INVALID", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION),
+                Arguments.of("0", "10", "like,", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION)
+        );
     }
 }
