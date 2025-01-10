@@ -83,7 +83,6 @@ public class JwtTokenProvider {
         } catch (ExpiredJwtException e) {
             throw new UnAuthorizedException(AuthErrorCode.EXPIRED);
         } catch (UnsupportedJwtException e) {
-            log.info(e.getMessage());
             throw new UnAuthorizedException(AuthErrorCode.UNSUPPORTED);
         } catch (MalformedJwtException e) {
             throw new UnAuthorizedException(AuthErrorCode.MALFORMED);
