@@ -32,9 +32,11 @@ import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingDetailDTOFixture;
+import com.guenbon.siso.support.fixture.rating.RatingWriteDTOFixture;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -49,6 +51,7 @@ class RatingControllerTest extends ControllerTest {
     public static final Long CONGRESSMAN_ID = 1L;
     public static final Long MEMBER_ID = 10L;
     public static final String ACCESS_TOKEN = "accessToken";
+    public static final String BLANK_STRING = "";
 
     @Test
     @DisplayName("빈 주입 확인 - MockMvc, AESUtil, JwtTokenProvider, ObjectMapper 빈 정상 주입")
@@ -142,6 +145,64 @@ class RatingControllerTest extends ControllerTest {
                 .andReturn();
     }
 
+    @ParameterizedTest
+    @MethodSource("provideInvalidRatingWriteDTO")
+    @DisplayName("유효하지 않은 요청 바디 값으로 Rating 작성 요청 시 에러 응답 반환")
+    void ratingSave_invalidRequestBody_returnsErrorResponse(final RatingWriteDTO invalidRatingWriteDTO,
+                                                            String errorField, String errorMessage) throws Exception {
+        // given, when
+        final String json = objectMapper.writeValueAsString(invalidRatingWriteDTO);
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
+
+        // then
+        mockMvc.perform(post("/api/v1/ratings")
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andDo(print())
+                .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
+                .andExpect(jsonPath("$.message").value("유효하지 않은 입력 값입니다")) // 오류 메시지 검증
+                .andExpect(jsonPath("$.code").value("INVALID_INPUT_VALUE")) // 오류 코드 검증
+                .andExpect(jsonPath("$.errors[0].field").value(errorField)) // 에러 필드 검증
+                .andExpect(jsonPath("$.errors[0].message").value(errorMessage)); // 필드 관련 메시지 검증
+    }
+
+    static Stream<Arguments> provideInvalidRatingWriteDTO() {
+        return Stream.of(
+                Arguments.of(Named.named("blank congressmanId",
+                                RatingWriteDTOFixture.builder()
+                                        .setCongressmanId(BLANK_STRING).build()),
+                        "congressmanId", "congressmanId는 필수입니다."),
+                Arguments.of(Named.named("blank content",
+                                RatingWriteDTOFixture.builder()
+                                        .setContent(BLANK_STRING).build()),
+                        "content", "content는 필수입니다."),
+                Arguments.of(Named.named("100자 넘는 content",
+                                RatingWriteDTOFixture.builder()
+                                        .setContent(new StringBuilder()
+                                                .append("a".repeat(101)) // 101자 길이 문자열 생성
+                                                .toString()).build()),
+                        "content", "content는 100자 이하여야 합니다."),
+                Arguments.of(Named.named("null rating",
+                                RatingWriteDTOFixture.builder()
+                                        .setRating(null).build()),
+                        "rating", "rating는 필수입니다."),
+                Arguments.of(Named.named("rating below minimum",
+                                RatingWriteDTOFixture.builder()
+                                        .setRating(-1.0f).build()),
+                        "rating", "rating은 0.0 이상이어야 합니다."),
+                Arguments.of(Named.named("rating above maximum",
+                                RatingWriteDTOFixture.builder()
+                                        .setRating(6.0f).build()),
+                        "rating", "rating은 5.0 이하여야 합니다."),
+                Arguments.of(Named.named("rating with more than one decimal place",
+                                RatingWriteDTOFixture.builder()
+                                        .setRating(3.123f).build()),
+                        "rating", "rating은 소수점 1자리까지 입력 가능합니다.")
+        );
+    }
+
+
     @Test
     @DisplayName("정상적인 Rating 작성 요청 시 리다이렉트 응답 반환")
     void ratingSave_ratings_validRequest_performsRedirection() throws Exception {
@@ -175,7 +236,7 @@ class RatingControllerTest extends ControllerTest {
                         .content(json))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(domain + "/api/v1/congressionman/" + encryptedCongressmanId))
+                .andExpect(redirectedUrl(domain + "/api/v1/congressman/" + encryptedCongressmanId))
                 .andReturn();
 
         verify(ratingService, times(1)).create(member.getId(), congressman.getId());
@@ -201,8 +262,8 @@ class RatingControllerTest extends ControllerTest {
 
     private static Stream<Arguments> provideInvalidCountCursorParameters() {
         return Stream.of(
-                Arguments.of("", "10", CursorErrorCode.NULL_OR_EMPTY_VALUE),
-                Arguments.of("abc123def456", "", CursorErrorCode.NULL_OR_EMPTY_VALUE),
+                Arguments.of(BLANK_STRING, "10", CursorErrorCode.NULL_OR_EMPTY_VALUE),
+                Arguments.of("abc123def456", BLANK_STRING, CursorErrorCode.NULL_OR_EMPTY_VALUE),
                 Arguments.of("validIdCursor", "-1", CursorErrorCode.NEGATIVE_VALUE),
                 Arguments.of("abc123def456", "abcdef", CommonErrorCode.TYPE_MISMATCH)
         );
