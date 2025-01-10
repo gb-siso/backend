@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,17 +32,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
         e.printStackTrace();
         return handleExceptionInternal(new InternalServerException(InternalServerErrorCode.INTERNAL_SERVER_ERROR));
-    }
-
-    // MethodArgumentTypeMismatchException 예외 처리
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
-            MethodArgumentTypeMismatchException e) {
-        return handleExceptionInternal(e);
-    }
-
-    private ResponseEntity<ErrorResponse> handleExceptionInternal(MethodArgumentTypeMismatchException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(CommonErrorCode.TYPE_MISMATCH));
     }
 
     // 커스텀 예외 처리
@@ -77,5 +67,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage())
                 .errors(validationErrorList).build();
+    }
+
+
+    // MethodArgumentTypeMismatchException 예외 처리
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException e) {
+        return handleExceptionInternal(e);
+    }
+
+    private ResponseEntity<ErrorResponse> handleExceptionInternal(MethodArgumentTypeMismatchException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(CommonErrorCode.TYPE_MISMATCH));
+    }
+
+    // request body에 맞지 않는 JSON 형식으로 요청했을 때 발생하는 예외 처리 (또는 request body가 없을 때 발생하는 예외 처리) -- 추가한 부분
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return handleExceptionInternal(ex);
+    }
+
+    private ResponseEntity<Object> handleExceptionInternal(HttpMessageNotReadableException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT));
     }
 }
