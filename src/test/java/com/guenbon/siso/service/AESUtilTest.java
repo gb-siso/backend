@@ -16,36 +16,31 @@ class AESUtilTest {
     final AESUtil aesUtil = new AESUtil(KEY);
 
     @Test
-    @DisplayName("id를 encrypt하면 암호화된 문자열을 얻는다")
-    void encrypt_id_encryptedString() throws Exception {
+    @DisplayName("id를 암호화하고 복호화하면 원래 id를 얻는다")
+    void encryptAndDecrypt_id_encryptedAndDecrypted() throws Exception {
         // given
         final Long id = 1L;
+
         // when
-        final String encrypted = aesUtil.encrypt(id);
+        final String encrypted = aesUtil.encrypt(id); // 암호화 수행
+        final Long decrypted = aesUtil.decrypt(encrypted); // 복호화 수행
+
         // then
-        log.info("encrypted : {}", encrypted);
-        assertThat(encrypted).isNotEqualTo(id);
+        assertThat(encrypted).isNotEqualTo(id); // 암호화된 값이 원래 값과 다른지 확인
+        assertThat(decrypted).isEqualTo(id);   // 복호화된 값이 원래 값과 같은지 확인
     }
 
     @Test
-    @DisplayName("암호화된 문자열를 decrypt하면 id를 얻는다")
-    void decrypt_encryptedString_id() throws Exception {
-        // given
-        final Long id = 1L;
-        final String encrypted = aesUtil.encrypt(id);
-        // when
-        final Long decrypted = aesUtil.decrypt(encrypted);
-        // then
-        log.info("decrypted : {}", decrypted);
-        assertThat(decrypted).isEqualTo(id);
-    }
-
-    @Test
-    @DisplayName("encrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
-    void encrypt_null_BadRequestException() {
-        assertThrows(BadRequestException.class, () -> aesUtil.encrypt(null),
+    @DisplayName("encrypt와 decrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
+    void encryptAndDecrypt_null_BadRequestException() {
+        // encrypt null 값 예외 확인
+        assertThrows(BadRequestException.class,
+                () -> aesUtil.encrypt(null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
-        assertThrows(BadRequestException.class, () -> aesUtil.decrypt(null),
+
+        // decrypt null 값 예외 확인
+        assertThrows(BadRequestException.class,
+                () -> aesUtil.decrypt(null),
                 CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
     }
 }
