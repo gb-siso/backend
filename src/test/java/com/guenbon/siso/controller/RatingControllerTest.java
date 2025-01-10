@@ -268,5 +268,8 @@ class RatingControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.ratingList[2].id").value("3"))
                 .andExpect(jsonPath("$.countCursor.idCursor").value("3"))
                 .andExpect(jsonPath("$.countCursor.countCursor").value(12));
+
+        verify(ratingService, times(1)).validateAndGetRecentRatings(ENCRYPTED_CONGRESSMAN_ID,
+                PageRequest.of(0, 2, Sort.by("topicality").descending()), null);
     }
 }
