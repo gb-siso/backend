@@ -202,6 +202,45 @@ class RatingControllerTest extends ControllerTest {
         );
     }
 
+    @Test
+    @DisplayName("값이 없는 요청 바디로 Rating 작성 요청 시 에러 응답 반환")
+    void ratingSave_emptyRequestBody_returnsErrorResponse() throws Exception {
+        // given, when
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
+
+        // then
+        mockMvc.perform(post("/api/v1/ratings")
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
+                .andExpect(jsonPath("$.message").value("요청 본문이 올바르지 않습니다")) // 오류 메시지 검증
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY_FORMAT")); // 오류 코드 검증
+    }
+
+    @Test
+    @DisplayName("필드 자료형 불일치 요청 바디로 Rating 작성 요청 시 에러 응답 반환")
+    void ratingSave_invalidFieldTypeRequestBody_returnsErrorResponse() throws Exception {
+        // given, when
+        final String invalidFieldTypeRequestBody = """
+        {
+            "congressmanId": "validId",
+            "content": "validContent",
+            "rating": "invalidType"  
+        }
+    """;
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
+
+        // then
+        mockMvc.perform(post("/api/v1/ratings")
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidFieldTypeRequestBody))
+                .andDo(print())
+                .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
+                .andExpect(jsonPath("$.message").value("요청 본문이 올바르지 않습니다")) // 오류 메시지 검증
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY_FORMAT")); // 오류 코드 검증
+    }
 
     @Test
     @DisplayName("정상적인 Rating 작성 요청 시 리다이렉트 응답 반환")
