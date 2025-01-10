@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/ratings")
 @RequiredArgsConstructor
+@Slf4j
 public class RatingController implements RatingControllerDocs {
     private final RatingService ratingService;
     private final AESUtil aesUtil;
@@ -45,15 +47,11 @@ public class RatingController implements RatingControllerDocs {
     @GetMapping("/{encryptedCongressmanId}")
     public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
-            @PageableDefault(
-                    page = 0,
-                    size = 20,
-                    sort = {"topicality"}, direction = Direction.DESC) Pageable pageable,
+            @PageableDefault(page = 0, size = 20, sort = {"topicality"}, direction = Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String idCursor,
             @RequestParam(required = false) Integer countCursor) {
-        CountCursor.of(idCursor, countCursor);
         SortValidator.validateSortProperties(pageable.getSort(), List.of("like", "dislike", "topicality"));
-        // 비즈니스 로직 (임시 반환값)
-        return ResponseEntity.ok(new RatingListDTO());
+        final CountCursor cursor = CountCursor.of(idCursor, countCursor);
+        return ResponseEntity.ok(ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageable, cursor));
     }
 }
