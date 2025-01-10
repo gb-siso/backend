@@ -7,45 +7,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
-import com.guenbon.siso.service.AESUtil;
-import com.guenbon.siso.service.CongressmanService;
-import com.guenbon.siso.service.JwtTokenProvider;
-import com.guenbon.siso.service.MemberService;
-import com.guenbon.siso.service.RatingService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanDTOFixture;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest
 @Slf4j
-class CongressmanControllerTest {
-
-    @Autowired
-    MockMvc mockMvc;
-    @MockitoBean
-    AESUtil aesUtil;
-    @MockitoBean
-    CongressmanService congressmanService;
-    @MockitoBean
-    JwtTokenProvider jwtTokenProvider;
-    @MockitoBean
-    RatingService ratingService;
-    @MockitoBean
-    MemberService memberService;
-
-    ObjectMapper objectMapper = new ObjectMapper();
+class CongressmanControllerTest extends ControllerTest {
 
     @DisplayName("GET:/api/v1/congressman 성공적으로 Congressman 목록을 반환한다")
     @Test
