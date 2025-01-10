@@ -26,7 +26,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // 컨트롤러 @RequestParam 타입 불일치 예외 처리
+    // 모든 예외 처리
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
+        e.printStackTrace();
+        return handleExceptionInternal(new InternalServerException(InternalServerErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
+    // MethodArgumentTypeMismatchException 예외 처리
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
             MethodArgumentTypeMismatchException e) {
@@ -37,12 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(CommonErrorCode.TYPE_MISMATCH));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
-        e.printStackTrace();
-        return handleExceptionInternal(new InternalServerException(InternalServerErrorCode.INTERNAL_SERVER_ERROR));
-    }
-
+    // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
         return handleExceptionInternal(e);
@@ -56,7 +58,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage()).build();
     }
 
-    // 이하 valid 예외 처리
+    // MethodArgumentNotValidException 예외 처리 (DTO Validation)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status,
