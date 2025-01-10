@@ -35,7 +35,7 @@ public class RatingController implements RatingControllerDocs {
 
     @Override
     @PostMapping
-    public void create(@LoginId Long loginId, RatingWriteDTO ratingWriteDTO, HttpServletResponse response)
+    public void ratingSave(@LoginId Long loginId, RatingWriteDTO ratingWriteDTO, HttpServletResponse response)
             throws IOException {
         final String encryptedCongressmanId = ratingWriteDTO.getCongressmanId();
         ratingService.create(loginId, aesUtil.decrypt(encryptedCongressmanId));
@@ -43,7 +43,7 @@ public class RatingController implements RatingControllerDocs {
     }
 
     @GetMapping("/{encryptedCongressmanId}")
-    public ResponseEntity<RatingListDTO> getRatingListByCongressmanId(
+    public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
             @PageableDefault(
                     page = 0,

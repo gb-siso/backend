@@ -49,7 +49,7 @@ class CongressmanControllerTest {
 
     @DisplayName("GET:/api/v1/congressman 성공적으로 Congressman 목록을 반환한다")
     @Test
-    void GET_api_v1_congressman_200_ReturnsCongressmanList() throws Exception {
+    void congressmanList_validRequest_ReturnsCongressmanList() throws Exception {
         // given
         final String idCursor = "addafjl6102lkjdak123";
         final Double rateCursor = 2.5;
@@ -90,7 +90,7 @@ class CongressmanControllerTest {
 
     @DisplayName("GET:/api/v1/congressman 마지막 페이지 정보를 포함하여 Congressman 목록을 반환한다")
     @Test
-    void GET_api_v1_congressman_200_ReturnsCongressmanListWithLastPageInfo() throws Exception {
+    void congressmanList_validRequest_ReturnsCongressmanListWithLastPageInfo() throws Exception {
         // given
         final List<CongressmanDTO> congressmanDTOList = List.of(
                 CongressmanDTOFixture.builder()

@@ -21,5 +21,6 @@ public interface RatingControllerDocs {
                     description = "국회의원 평가 작성 후 국회의원 상세보기로 리다이렉트",
                     content = @Content())
     })
-    void create(@LoginId Long loginId, @RequestBody RatingWriteDTO ratingWriteDTO, HttpServletResponse response) throws IOException;
+    void ratingSave(@LoginId Long loginId, @RequestBody RatingWriteDTO ratingWriteDTO, HttpServletResponse response)
+            throws IOException;
 }

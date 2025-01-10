@@ -30,7 +30,7 @@ public interface CongressmanControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "국회의원 목록 (홈페이지)", content = @Content(schema = @Schema(implementation = CongressmanListDTO.class)))
     })
-    ResponseEntity<CongressmanListDTO> list(
+    ResponseEntity<CongressmanListDTO> congressmanList(
             @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
             @RequestParam String cursorId,
             @RequestParam(required = false) Double cursorRate,
@@ -47,7 +47,7 @@ public interface CongressmanControllerDocs {
             @ApiResponse(
                     responseCode = "200", description = "국회의원 상세보기", content = @Content(schema = @Schema(implementation = CongressmanDetailDTO.class)))
     })
-    ResponseEntity<CongressmanDetailDTO> detail(
+    ResponseEntity<CongressmanDetailDTO> congressmanDetail(
             @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
             @RequestParam(required = false) Long cursor,
             @PathVariable(name = "id") String congressmanId,

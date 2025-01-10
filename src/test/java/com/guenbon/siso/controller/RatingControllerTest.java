@@ -82,7 +82,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("중복된 Rating 작성 요청 시 에러 응답 반환")
-    void POST_api_v1_ratings_duplicateRequest_returnsErrorResponse() throws Exception {
+    void ratingSave_ratings_duplicateRequest_returnsErrorResponse() throws Exception {
         final Long congressmanId = 1L;
         final String encryptedCongressmanId = aesUtil.encrypt(congressmanId);
         final Long memberId = 10L;
@@ -111,7 +111,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 회원으로 Rating 작성 요청 시 에러 응답 반환")
-    void POST_api_v1_ratings_memberNotExists_returnsErrorResponse() throws Exception {
+    void ratingSave_ratings_memberNotExists_returnsErrorResponse() throws Exception {
         final Long congressmanId = 1L;
         final String encryptedCongressmanId = aesUtil.encrypt(congressmanId);
         final Long invalidMemberId = 10L;
@@ -140,7 +140,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 국회의원으로 Rating 작성 요청 시 에러 응답 반환")
-    void POST_api_v1_ratings_congressmanNotExists_returnsErrorResponse() throws Exception {
+    void ratingSave_ratings_congressmanNotExists_returnsErrorResponse() throws Exception {
         final Long invalidCongressmanId = 1L;
         final String encryptedCongressmanId = aesUtil.encrypt(invalidCongressmanId);
         final Long memberId = 10L;
@@ -169,7 +169,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("정상적인 Rating 작성 요청 시 리다이렉트 응답 반환")
-    void POST_api_v1_ratings_validRequest_performsRedirection() throws Exception {
+    void ratingSave_ratings_validRequest_performsRedirection() throws Exception {
         final Member member = MemberFixture.builder()
                 .setId(10L)
                 .setNickname("장몽이")
@@ -205,8 +205,8 @@ class RatingControllerTest {
 
     @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 코드={2} 반환")
     @MethodSource("provideInvalidCountCursorParameters")
-    @DisplayName("유효하지 않은 커서 값 요청 시 에러 응답 반환")
-    void GET_api_v1_ratings_invalidCursorValues_returnsValidationErrorResponse(
+    @DisplayName("국회의원 평가 목록 api에 유효하지 않은 커서 값 요청 시 에러 응답 반환")
+    void ratingList_invalidCursorValues_returnsValidationErrorResponse(
             String idCursor,
             String countCursor,
             ErrorCode expectedErrorCode) throws Exception {
@@ -232,8 +232,8 @@ class RatingControllerTest {
 
     @ParameterizedTest(name = "page={0}, size={1}, sort={2}일 때, 에러 코드={3} 반환")
     @MethodSource("provideInvalidPageableParameters")
-    @DisplayName("유효하지 않은 Pageable 파라미터 요청 시 에러 응답 반환")
-    void GET_api_v1_ratings_invalidPageableFields_returnsValidationErrorResponse(
+    @DisplayName("국회의원 평가 목록 api에 유효하지 않은 Pageable 파라미터 요청 시 에러 응답 반환")
+    void ratingList_invalidPageableFields_returnsValidationErrorResponse(
             String page,
             String size,
             String sort,

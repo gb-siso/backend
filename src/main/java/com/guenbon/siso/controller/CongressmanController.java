@@ -28,7 +28,7 @@ public class CongressmanController implements CongressmanControllerDocs {
 
     @Override
     @GetMapping
-    public ResponseEntity<CongressmanListDTO> list(
+    public ResponseEntity<CongressmanListDTO> congressmanList(
             @PageableDefault(page = 0, size = 20, sort = {"rate"}, direction = Direction.DESC) Pageable pageable,
             @RequestParam(defaultValue = "") String cursorId,
             @RequestParam(required = false) Double cursorRate,
@@ -45,7 +45,7 @@ public class CongressmanController implements CongressmanControllerDocs {
 
     @Override
     @GetMapping("/{id}")
-    public ResponseEntity<CongressmanDetailDTO> detail(Pageable pageable, Long cursor,
+    public ResponseEntity<CongressmanDetailDTO> congressmanDetail(Pageable pageable, Long cursor,
                                                        @PathVariable(name = "id") String congressmanId, Long loginId) {
         return null;
     }

@@ -31,7 +31,7 @@ public interface MemberControllerDocs {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = SignUpFormDTO.class)))
     })
-    ResponseEntity<SignUpFormDTO> signUpForm(@RequestParam String kakaoId);
+    ResponseEntity<SignUpFormDTO> memberAddForm(@RequestParam String kakaoId);
 
     @Operation(summary = "회원가입", description = "카카오 식별 id, imageUrl, nickname 포함 회원가입 요청")
     @Parameters(value = {
@@ -45,7 +45,7 @@ public interface MemberControllerDocs {
                     },
                     responseCode = "200", description = "siso 회원가입", content = @Content(schema = @Schema(implementation = LoginDTO.class)))
     })
-    ResponseEntity<LoginDTO> signUp(@RequestBody SignUpDTO signUpDTO);
+    ResponseEntity<LoginDTO> memberAdd(@RequestBody SignUpDTO signUpDTO);
 
     @Operation(summary = "회원 정보 수정 폼 요청", description = "로그인 한 사용자가 회원 수정 정보 폼 요청")
     @ApiResponses(value = {
@@ -55,7 +55,7 @@ public interface MemberControllerDocs {
                     content = @Content(schema = @Schema(implementation = MemberUpdateFormDTO.class))
             )
     })
-    ResponseEntity<MemberUpdateFormDTO> updateForm(@LoginId Long loginId);
+    ResponseEntity<MemberUpdateFormDTO> memberModifyForm(@LoginId Long loginId);
 
     @Operation(summary = "회원 정보 수정 요청", description = "로그인 사용자가 회원 정보 수정 폼 작성해서 수정 요청")
     @Parameters(value = {
@@ -68,8 +68,8 @@ public interface MemberControllerDocs {
                     content = @Content(schema = @Schema(implementation = MemberUpdateDTO.class))
             )
     })
-    ResponseEntity<MemberUpdateDTO> update(@LoginId Long loginid,
-                                           @RequestBody MemberUpdateDTO memberUpdateRequest);
+    ResponseEntity<MemberUpdateDTO> memberModify(@LoginId Long loginid,
+                                                 @RequestBody MemberUpdateDTO memberUpdateRequest);
 
     @Operation(summary = "회원탈퇴 요청", description = "로그인 한 사용자가 회원 탈퇴 요청 (refresh 토큰도 확인)")
     @ApiResponses(value = {
@@ -78,7 +78,7 @@ public interface MemberControllerDocs {
                     description = "siso 회원탈퇴",
                     content = @Content())
     })
-    ResponseEntity<Void> withDrawl(@LoginId Long loginId);
+    ResponseEntity<Void> memberRemove(@LoginId Long loginId);
 
     @Operation(summary = "회원정보 요청", description = "회원 정보 요청 (로그인정보=요청 정보일시 본인 정보, 아닐 경우 타인 정보)")
     @Parameters(value = {
@@ -90,5 +90,5 @@ public interface MemberControllerDocs {
                     description = "회원 정보보기 페이지(마이페이지 or 타인 페이지)",
                     content = @Content(schema = @Schema(implementation = MemberDetailDTO.class)))
     })
-    ResponseEntity<MemberDetailDTO> info(@LoginId Long loginId, @PathVariable String memberId);
+    ResponseEntity<MemberDetailDTO> memberDetail(@LoginId Long loginId, @PathVariable String memberId);
 }
