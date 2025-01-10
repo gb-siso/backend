@@ -28,8 +28,6 @@ public class CustomPageableArgumentResolver extends PageableHandlerMethodArgumen
         final String sort = webRequest.getParameter("sort");
         final String page = webRequest.getParameter("page");
         final String size = webRequest.getParameter("size");
-        // 위 변수 3개에 대해 로그찍기
-        log.info("sort : {}, page : {}, size : {}", sort, page, size);
 
         // Pageable 관련 파라미터가 있는 경우만 검증 수행
         if (sort != null || page != null || size != null) {
@@ -41,8 +39,6 @@ public class CustomPageableArgumentResolver extends PageableHandlerMethodArgumen
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(PageableErrorCode.UNSUPPORTED_SORT_DIRECTION);
             }
-        } else {
-            log.info("No Pageable parameters found. Skipping validation.");
         }
 
         // 기본 동작 수행
