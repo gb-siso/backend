@@ -26,9 +26,8 @@ public class TestController {
         return jwtTokenProvider.createAccessToken(memberId);
     }
 
-    @GetMapping("/congressman/{congressmanId}")
-    public String congressman(@PathVariable Long congressmanId) {
-        congressmanService.findById(congressmanId);
-        return aesUtil.encrypt(congressmanId);
+    @GetMapping("/encrypt/{value}")
+    public String encrypt(@PathVariable Long value) {
+        return aesUtil.encrypt(value);
     }
 }
