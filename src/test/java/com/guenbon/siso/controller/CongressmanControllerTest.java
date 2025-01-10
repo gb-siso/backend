@@ -47,9 +47,9 @@ class CongressmanControllerTest {
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    @DisplayName("GET /api/v1/congressman 요청 시 마지막 스크롤이 아닐 경우 정상 응답")
+    @DisplayName("GET:/api/v1/congressman 성공적으로 Congressman 목록을 반환한다")
     @Test
-    void list_notLastScroll_CongressmanListDTO() throws Exception {
+    void GET_api_v1_congressman_200_ReturnsCongressmanList() throws Exception {
         // given
         final String idCursor = "addafjl6102lkjdak123";
         final Double rateCursor = 2.5;
@@ -88,9 +88,9 @@ class CongressmanControllerTest {
                 .andExpect(jsonPath("$.lastPage").value(false));
     }
 
-    @DisplayName("GET /api/v1/congressman 요청 시 마지막 스크롤일 경우 정상 응답")
+    @DisplayName("GET:/api/v1/congressman 마지막 페이지 정보를 포함하여 Congressman 목록을 반환한다")
     @Test
-    void list_lastScroll_CongressmanListDTO() throws Exception {
+    void GET_api_v1_congressman_200_ReturnsCongressmanListWithLastPageInfo() throws Exception {
         // given
         final List<CongressmanDTO> congressmanDTOList = List.of(
                 CongressmanDTOFixture.builder()

@@ -71,7 +71,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("빈 주입 확인 - MockMvc, AESUtil, JwtTokenProvider, ObjectMapper 빈 정상 주입")
-    void injectBeans_WhenApplicationStarts_AllBeansInjectedSuccessfully() {
+    void allBeansInjectedSuccessfully() {
         assertAll(
                 () -> assertThat(mockMvc).isNotNull(),
                 () -> assertThat(aesUtil).isNotNull(),
@@ -82,21 +82,21 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("중복된 Rating 작성 요청 시 에러 응답 반환")
-    void createRating_WhenDuplicateRequest_ReturnsErrorResponse() throws Exception {
-        final Long CONGRESSMAN_ID = 1L;
-        final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(CONGRESSMAN_ID);
-        final Long MEMBER_ID = 10L;
-        final String accessToken = jwtTokenProvider.createAccessToken(MEMBER_ID);
+    void POST_api_v1_ratings_duplicateRequest_returnsErrorResponse() throws Exception {
+        final Long congressmanId = 1L;
+        final String encryptedCongressmanId = aesUtil.encrypt(congressmanId);
+        final Long memberId = 10L;
+        final String accessToken = jwtTokenProvider.createAccessToken(memberId);
 
-        final RatingWriteDTO BAD_REQUEST = RatingWriteDTO.builder()
-                .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
+        final RatingWriteDTO badRequest = RatingWriteDTO.builder()
+                .congressmanId(encryptedCongressmanId)
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        final String json = objectMapper.writeValueAsString(BAD_REQUEST);
+        final String json = objectMapper.writeValueAsString(badRequest);
 
         doThrow(new BadRequestException(RatingErrorCode.DUPLICATED)).when(ratingService)
-                .create(MEMBER_ID, CONGRESSMAN_ID);
+                .create(memberId, congressmanId);
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
@@ -111,21 +111,21 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 회원으로 Rating 작성 요청 시 에러 응답 반환")
-    void createRating_WhenMemberNotExists_ReturnsErrorResponse() throws Exception {
-        final Long CONGRESSMAN_ID = 1L;
-        final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(CONGRESSMAN_ID);
-        final Long INVALID_MEMBER_ID = 10L;
-        final String accessToken = jwtTokenProvider.createAccessToken(INVALID_MEMBER_ID);
+    void POST_api_v1_ratings_memberNotExists_returnsErrorResponse() throws Exception {
+        final Long congressmanId = 1L;
+        final String encryptedCongressmanId = aesUtil.encrypt(congressmanId);
+        final Long invalidMemberId = 10L;
+        final String accessToken = jwtTokenProvider.createAccessToken(invalidMemberId);
 
-        final RatingWriteDTO BAD_REQUEST = RatingWriteDTO.builder()
-                .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
+        final RatingWriteDTO badRequest = RatingWriteDTO.builder()
+                .congressmanId(encryptedCongressmanId)
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        final String json = objectMapper.writeValueAsString(BAD_REQUEST);
+        final String json = objectMapper.writeValueAsString(badRequest);
 
         doThrow(new BadRequestException(MemberErrorCode.NOT_EXISTS)).when(ratingService)
-                .create(INVALID_MEMBER_ID, CONGRESSMAN_ID);
+                .create(invalidMemberId, congressmanId);
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
@@ -140,21 +140,21 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 국회의원으로 Rating 작성 요청 시 에러 응답 반환")
-    void createRating_WhenCongressmanNotExists_ReturnsErrorResponse() throws Exception {
-        final Long INVALID_CONGRESSMAN_ID = 1L;
-        final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(INVALID_CONGRESSMAN_ID);
-        final Long MEMBER_ID = 10L;
-        final String accessToken = jwtTokenProvider.createAccessToken(MEMBER_ID);
+    void POST_api_v1_ratings_congressmanNotExists_returnsErrorResponse() throws Exception {
+        final Long invalidCongressmanId = 1L;
+        final String encryptedCongressmanId = aesUtil.encrypt(invalidCongressmanId);
+        final Long memberId = 10L;
+        final String accessToken = jwtTokenProvider.createAccessToken(memberId);
 
-        final RatingWriteDTO BAD_REQUEST = RatingWriteDTO.builder()
-                .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
+        final RatingWriteDTO badRequest = RatingWriteDTO.builder()
+                .congressmanId(encryptedCongressmanId)
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        final String json = objectMapper.writeValueAsString(BAD_REQUEST);
+        final String json = objectMapper.writeValueAsString(badRequest);
 
         doThrow(new BadRequestException(CongressmanErrorCode.NOT_EXISTS)).when(ratingService)
-                .create(MEMBER_ID, INVALID_CONGRESSMAN_ID);
+                .create(memberId, invalidCongressmanId);
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
@@ -169,7 +169,7 @@ class RatingControllerTest {
 
     @Test
     @DisplayName("정상적인 Rating 작성 요청 시 리다이렉트 응답 반환")
-    void createRating_WhenValidRequest_PerformsRedirection() throws Exception {
+    void POST_api_v1_ratings_validRequest_performsRedirection() throws Exception {
         final Member member = MemberFixture.builder()
                 .setId(10L)
                 .setNickname("장몽이")
@@ -179,15 +179,15 @@ class RatingControllerTest {
                 .setName("이준석")
                 .build();
 
-        final String ENCRYPTED_CONGRESSMAN_ID = aesUtil.encrypt(congressman.getId());
+        final String encryptedCongressmanId = aesUtil.encrypt(congressman.getId());
         final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
 
-        final RatingWriteDTO REQUEST = RatingWriteDTO.builder()
-                .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
+        final RatingWriteDTO request = RatingWriteDTO.builder()
+                .congressmanId(encryptedCongressmanId)
                 .content("평범한 국회의원")
                 .rating(3.0F).build();
 
-        final String json = objectMapper.writeValueAsString(REQUEST);
+        final String json = objectMapper.writeValueAsString(request);
 
         doNothing().when(ratingService).create(member.getId(), congressman.getId());
 
@@ -197,7 +197,7 @@ class RatingControllerTest {
                         .content(json))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(domain + "/api/v1/congressionman/" + ENCRYPTED_CONGRESSMAN_ID))
+                .andExpect(redirectedUrl(domain + "/api/v1/congressionman/" + encryptedCongressmanId))
                 .andReturn();
 
         verify(ratingService, times(1)).create(member.getId(), congressman.getId());
@@ -206,7 +206,7 @@ class RatingControllerTest {
     @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 코드={2} 반환")
     @MethodSource("provideInvalidCountCursorParameters")
     @DisplayName("유효하지 않은 커서 값 요청 시 에러 응답 반환")
-    void validateCountCursorFields_WhenInvalidCursorValues_ReturnsValidationErrorResponse(
+    void GET_api_v1_ratings_invalidCursorValues_returnsValidationErrorResponse(
             String idCursor,
             String countCursor,
             ErrorCode expectedErrorCode) throws Exception {
@@ -233,7 +233,7 @@ class RatingControllerTest {
     @ParameterizedTest(name = "page={0}, size={1}, sort={2}일 때, 에러 코드={3} 반환")
     @MethodSource("provideInvalidPageableParameters")
     @DisplayName("유효하지 않은 Pageable 파라미터 요청 시 에러 응답 반환")
-    void validatePageableParameters_WhenInvalidPageableFields_ReturnsValidationErrorResponse(
+    void GET_api_v1_ratings_invalidPageableFields_returnsValidationErrorResponse(
             String page,
             String size,
             String sort,
