@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -34,8 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class RatingController implements RatingControllerDocs {
     private final RatingService ratingService;
     private final AESUtil aesUtil;
-    @Value("${spring.siso.domain}")
-    private String domain;
 
     @Override
     @PostMapping
@@ -44,7 +41,7 @@ public class RatingController implements RatingControllerDocs {
             throws IOException {
         final String encryptedCongressmanId = ratingWriteDTO.getCongressmanId();
         ratingService.create(loginId, aesUtil.decrypt(encryptedCongressmanId));
-        response.sendRedirect(domain + "/api/v1/congressman/" + encryptedCongressmanId);
+        response.sendRedirect("/api/v1/congressman/" + encryptedCongressmanId);
     }
 
     @GetMapping("/{encryptedCongressmanId}")
