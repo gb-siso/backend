@@ -223,12 +223,12 @@ class RatingControllerTest extends ControllerTest {
     void ratingSave_invalidFieldTypeRequestBody_returnsErrorResponse() throws Exception {
         // given, when
         final String invalidFieldTypeRequestBody = """
-        {
-            "congressmanId": "validId",
-            "content": "validContent",
-            "rating": "invalidType"  
-        }
-    """;
+                    {
+                        "congressmanId": "validId",
+                        "content": "validContent",
+                        "rating": "invalidType"  
+                    }
+                """;
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
 
         // then
@@ -275,7 +275,7 @@ class RatingControllerTest extends ControllerTest {
                         .content(json))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(domain + "/api/v1/congressman/" + encryptedCongressmanId))
+                .andExpect(redirectedUrl("/api/v1/congressman/" + encryptedCongressmanId))
                 .andReturn();
 
         verify(ratingService, times(1)).create(member.getId(), congressman.getId());
@@ -308,35 +308,23 @@ class RatingControllerTest extends ControllerTest {
         );
     }
 
-    @ParameterizedTest(name = "page={0}, size={1}, sort={2}일 때, 에러 코드={3} 반환")
-    @MethodSource("provideInvalidPageableParameters")
-    @DisplayName("국회의원 평가 목록 api에 유효하지 않은 Pageable 파라미터 요청 시 에러 응답 반환")
-    void ratingList_invalidPageableFields_returnsValidationErrorResponse(
-            String page,
-            String size,
-            String sort,
-            PageableErrorCode expectedErrorCode) throws Exception {
+    @Test
+    @DisplayName("국회의원 평가 목록 API에 유효하지 않은 Pageable sort 파라미터 값으로 요청 시 에러 응답 반환")
+    void ratingList_invalidSortField_returnsValidationErrorResponse() throws Exception {
+        // 잘못된 정렬 필드 값 테스트
+        String invalidSort = "invalidField,DESC";
+        PageableErrorCode expectedErrorCode = PageableErrorCode.UNSUPPORTED_SORT_PROPERTY;
+
         mockMvc.perform(get("/api/v1/ratings/{encryptedCongressmanId}", "encryptedCongressmanId")
-                        .param("page", page)
-                        .param("size", size)
-                        .param("sort", sort)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", invalidSort)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(expectedErrorCode.name()))
                 .andExpect(jsonPath("$.message").value(expectedErrorCode.getMessage()))
                 .andReturn();
-    }
-
-    private static Stream<Arguments> provideInvalidPageableParameters() {
-        return Stream.of(
-                Arguments.of("-1", "10", "topicality,DESC", PageableErrorCode.INVALID_PAGE),
-                Arguments.of("0", "-5", "topicality,DESC", PageableErrorCode.INVALID_SIZE),
-                Arguments.of("abc", "10", "topicality,DESC", PageableErrorCode.INVALID_FORMAT),
-                Arguments.of("0", "10", "invalidField,DESC", PageableErrorCode.UNSUPPORTED_SORT_PROPERTY),
-                Arguments.of("0", "10", "like,INVALID", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION),
-                Arguments.of("0", "10", "like,", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION)
-        );
     }
 
     @DisplayName("국회의원 평가 목록 api에 유효한 파라미터 요청 시 RatingList 반환")

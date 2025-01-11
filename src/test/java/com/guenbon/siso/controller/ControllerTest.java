@@ -8,7 +8,6 @@ import com.guenbon.siso.service.MemberService;
 import com.guenbon.siso.service.RatingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,18 +17,16 @@ import org.springframework.test.web.servlet.MockMvc;
 public class ControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    protected MockMvc mockMvc;
     @MockitoBean
-    AESUtil aesUtil;
+    protected AESUtil aesUtil;
     @MockitoBean
-    CongressmanService congressmanService;
+    protected CongressmanService congressmanService;
     @MockitoBean
-    JwtTokenProvider jwtTokenProvider;
+    protected JwtTokenProvider jwtTokenProvider;
     @MockitoBean
-    RatingService ratingService;
+    protected RatingService ratingService;
     @MockitoBean
-    MemberService memberService;
-    @Value("${spring.siso.domain}")
-    String domain;
+    protected MemberService memberService;
     protected final ObjectMapper objectMapper = new ObjectMapper();
 }
