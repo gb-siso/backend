@@ -31,7 +31,9 @@ public class AESUtil {
             Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
             byte[] inputBytes = target.getBytes();
             byte[] resultBytes = cipher.doFinal(inputBytes);
-            return Base64.getEncoder().encodeToString(resultBytes); // 암호화 후 Base64로 인코딩
+
+            // Base64 URL-safe로 인코딩
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(resultBytes); // URL-safe 인코딩
         } catch (IllegalArgumentException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
@@ -44,7 +46,9 @@ public class AESUtil {
     public Long decrypt(String encryptedText) {
         try {
             Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
-            byte[] inputBytes = Base64.getDecoder().decode(encryptedText); // Base64로 디코딩
+
+            // Base64 URL-safe로 디코딩
+            byte[] inputBytes = Base64.getUrlDecoder().decode(encryptedText); // URL-safe 디코딩
             byte[] resultBytes = cipher.doFinal(inputBytes);
             String resultString = new String(resultBytes); // 복호화된 결과를 String으로 변환
             return Long.valueOf(resultString); // String을 Long으로 변환
@@ -57,7 +61,8 @@ public class AESUtil {
         }
     }
 
-    private Cipher getCipher(int mode) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+    private Cipher getCipher(int mode)
+            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), ALGORITHM);
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(mode, secretKeySpec);
