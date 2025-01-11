@@ -98,4 +98,16 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.rateCursor").isEmpty())
                 .andExpect(jsonPath("$.lastPage").value(true));
     }
+
+    @DisplayName("GET:/api/v1/congressman 유효하지 않은 sort 파라미터로 요청 시 예외를 응답한다")
+    @Test
+    void congressmanList_invalidSortParameter_ReturnsBadRequest() throws Exception {
+        // when then
+        mockMvc.perform(get("/api/v1/congressman?size=2&sort=invalid,DESC")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("지원하지 않는 정렬 필드입니다."))
+                .andExpect(jsonPath("$.code").value("UNSUPPORTED_SORT_PROPERTY"));
+    }
 }
