@@ -47,7 +47,7 @@ public interface CongressmanControllerDocs {
             @ApiResponse(
                     responseCode = "200", description = "국회의원 상세보기", content = @Content(schema = @Schema(implementation = CongressmanDetailDTO.class)))
     })
-    ResponseEntity<CongressmanDetailDTO> congressmanDetail(
+    ResponseEntity<String> congressmanDetail(
             @PageableDefault(page = 0, size = 20, sort = "topicality") Pageable pageable,
             @RequestParam(required = false) Long cursor,
             @PathVariable(name = "id") String congressmanId,
