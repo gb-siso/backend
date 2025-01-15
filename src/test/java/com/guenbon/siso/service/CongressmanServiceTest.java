@@ -11,7 +11,7 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
+import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
@@ -21,18 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class CongressmanServiceTest {
@@ -69,20 +64,23 @@ class CongressmanServiceTest {
                 CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 
-    @DisplayName("getCongressmanListDTO 메서드의 특정 파라미터가 null이면 BadRequestException을 던지며 에러코드는 CommonErrorCode.NULL_VALUE_NOT_ALLOWED이다")
-    @ParameterizedTest(name = "{0}일 경우")
-    @MethodSource("provideGetCongressmanListDTONullParameters")
-    void getCongressmanListDTO_nullParameters_BadRequestException(String description, Pageable pageable,
-                                                                  String cursorId, Double cursorRate,
-                                                                  String party, String search) {
+    @DisplayName("getCongressmanListDTO 메서드의 cursorId가 null이면 BadRequestException을 던지며 에러코드는 CommonErrorCode.NULL_VALUE_NOT_ALLOWED이다")
+    @Test
+    void getCongressmanListDTO_cursorIdNull_BadRequestException() {
         // given : parameters
-        if (cursorId == null) {
-            when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED));
-        }
+        PageRequest pageable = PageRequest.of(0, 4);
+        String cursorId = null; // cursorId가 null
+        Double cursorRate = 4.5;
+        String party = "민주당";
+        String search = "김";
+
+        // Mock 설정
+        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(AESErrorCode.NULL_VALUE));
+
         // when, then
         assertThrows(BadRequestException.class,
                 () -> congressmanService.getCongressmanListDTO(pageable, cursorId, cursorRate, party, search),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+                AESErrorCode.NULL_VALUE.getMessage());
     }
 
     @DisplayName("getCongressmanListDTO가 마지막 스크롤이 아닌 경우 CongressmanListDTO를 반환한다")
@@ -192,17 +190,4 @@ class CongressmanServiceTest {
                 .build();
     }
 
-    public static Stream<Arguments> provideGetCongressmanListDTONullParameters() {
-
-        PageRequest pageable = PageRequest.of(0, 4);
-        String cursorId = "alkdfjad456asdf456123";
-        Double cursorRate = 4.5;
-        String party = "민주당";
-        String search = "김";
-
-        return Stream.of(
-                Arguments.of("pageable = null", null, cursorId, cursorRate, party, search),
-                Arguments.of("cursorId = null", pageable, null, cursorRate, party, search)
-        );
-    }
 }

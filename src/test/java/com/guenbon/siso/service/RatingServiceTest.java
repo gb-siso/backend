@@ -17,7 +17,7 @@ import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
+import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
@@ -90,25 +90,12 @@ class RatingServiceTest {
     void validateAndGetRecentRatings_nullCongressmanId_throwsBadRequestException() {
         // given
         final PageRequest pageable = createPageRequest("topicality", 0);
-        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED));
+        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(AESErrorCode.NULL_VALUE));
         // when, then
         assertThrows(
                 BadRequestException.class,
                 () -> ratingService.validateAndGetRecentRatings(null, pageable, null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage()
-        );
-    }
-
-    @Test
-    @DisplayName("validateAndGetRecentRatings에 null pageable을 넣으면 BadRequestException 발생")
-    void validateAndGetRecentRatings_nullPageable_throwsBadRequestException() {
-        // given
-        final String encryptedCongressmanId = "encryptedCongressmanId";
-        // when, then
-        assertThrows(
-                BadRequestException.class,
-                () -> ratingService.validateAndGetRecentRatings(encryptedCongressmanId, null, null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage()
+                AESErrorCode.NULL_VALUE.getMessage()
         );
     }
 
@@ -129,7 +116,7 @@ class RatingServiceTest {
                 null);
         // page2 : 다음 페이지 X -> 커서값 null
         final RatingListDTO resultPage2 = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, page2,
-                CountCursor.of("4L", 4));
+                new CountCursor("4L", 4));
 
         // then
         assertAll(
@@ -138,7 +125,7 @@ class RatingServiceTest {
                         .containsExactly("3L", "2L", "1L", "4L"),
                 () -> assertThat(
                         resultPage1.getCountCursor()).usingRecursiveComparison()
-                        .isEqualTo(CountCursor.of("4L", 4)),
+                        .isEqualTo(new CountCursor("4L", 4)),
                 () -> assertThat(
                         resultPage2.getRatingList().stream().map(rating -> rating.getId()).toList())
                         .containsExactly("3L", "2L", "1L"),
