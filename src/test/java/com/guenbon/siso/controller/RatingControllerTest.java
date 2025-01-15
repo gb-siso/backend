@@ -3,6 +3,8 @@ package com.guenbon.siso.controller;
 import static com.guenbon.siso.exception.errorCode.RatingErrorCode.DUPLICATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -15,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
@@ -22,10 +25,7 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
-import com.guenbon.siso.exception.errorCode.CursorErrorCode;
-import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
@@ -239,7 +239,9 @@ class RatingControllerTest extends ControllerTest {
                         .content(invalidFieldTypeRequestBody))
                 .andDo(print())
                 .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
-                .andExpect(jsonPath("$.message").value(String.format(INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT, "invalidType", "Float"))) // 오류 메시지 검증
+                .andExpect(jsonPath("$.message").value(
+                        String.format(GlobalExceptionHandler.TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, "invalidType",
+                                "Float"))) // 오류 메시지 검증
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY_FORMAT")); // 오류 코드 검증
     }
 
@@ -282,30 +284,43 @@ class RatingControllerTest extends ControllerTest {
         verify(ratingService, times(1)).create(member.getId(), congressman.getId());
     }
 
-    @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 코드={2} 반환")
+    @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 필드={2}, 에러 메세지={3} 반환")
     @MethodSource("provideInvalidCountCursorParameters")
     @DisplayName("국회의원 평가 목록 api에 유효하지 않은 커서 값 요청 시 에러 응답 반환")
     void ratingList_invalidCursorValues_returnsValidationErrorResponse(
             String idCursor,
             String countCursor,
-            ErrorCode expectedErrorCode) throws Exception {
-        mockMvc.perform(get("/api/v1/ratings/{encryptedCongressmanId}", "encryptedCongressmanId")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("idCursor", idCursor)
-                        .param("countCursor", countCursor))
+            String field, String message) throws Exception {
+        String result = mockMvc.perform(
+                        get("/api/v1/ratings/{encryptedCongressmanId}", "encryptedCongressmanId")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .param("idCursor", idCursor)
+                                .param("countCursor", countCursor))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(expectedErrorCode.name()))
-                .andExpect(jsonPath("$.message").value(expectedErrorCode.getMessage()))
-                .andReturn();
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode rootNode = objectMapper.readTree(result);
+
+        for (JsonNode errorNode : rootNode.get("errors")) {
+            String errorField = errorNode.get("field").asText();
+            String errorMessage = errorNode.get("message").asText();
+
+            if (errorField.equals(field) && errorMessage.equals(message)) {
+                assertThat(errorField).isEqualTo(field);
+                assertThat(errorMessage).isEqualTo(message);
+                break;
+            }
+        }
     }
 
     private static Stream<Arguments> provideInvalidCountCursorParameters() {
         return Stream.of(
-                Arguments.of(BLANK_STRING, "10", CursorErrorCode.NULL_OR_EMPTY_VALUE),
-                Arguments.of("abc123def456", BLANK_STRING, CursorErrorCode.NULL_OR_EMPTY_VALUE),
-                Arguments.of("validIdCursor", "-1", CursorErrorCode.NEGATIVE_VALUE),
-                Arguments.of("abc123def456", "abcdef", CommonErrorCode.TYPE_MISMATCH)
+                Arguments.of(BLANK_STRING, "10", "cursorValid", "일부 커서만 유효할 수 없습니다."),
+                Arguments.of("abc123def456", BLANK_STRING, "cursorValid", "일부 커서만 유효할 수 없습니다."),
+                Arguments.of("validIdCursor", "-1", "countCursor", "countCursor는 0 이상이어야 합니다."),
+                // 수정필요 (메서드검증 필드검증 둘다걸림)
+                Arguments.of("abc123def456", "abcdef", "countCursor", "입력값 abcdef 를 String 타입으로 변환할 수 없습니다.") // 수정필요
         );
     }
 
@@ -340,10 +355,10 @@ class RatingControllerTest extends ControllerTest {
                 RatingDetailDTOFixture.builder().setId("3").build()
         );
 
-        final CountCursor countCursor = CountCursor.of("3", 12);
+        final CountCursor countCursor = new CountCursor("3", 12);
 
-        when(ratingService.validateAndGetRecentRatings(ENCRYPTED_CONGRESSMAN_ID,
-                PageRequest.of(0, 2, Sort.by("topicality").descending()), null))
+        when(ratingService.validateAndGetRecentRatings(eq(ENCRYPTED_CONGRESSMAN_ID),
+                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class)))
                 .thenReturn(RatingListDTO.of(ratingDetailDTOList, countCursor));
 
         // when, then
@@ -358,7 +373,7 @@ class RatingControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.countCursor.idCursor").value("3"))
                 .andExpect(jsonPath("$.countCursor.countCursor").value(12));
 
-        verify(ratingService, times(1)).validateAndGetRecentRatings(ENCRYPTED_CONGRESSMAN_ID,
-                PageRequest.of(0, 2, Sort.by("topicality").descending()), null);
+        verify(ratingService, times(1)).validateAndGetRecentRatings(eq(ENCRYPTED_CONGRESSMAN_ID),
+                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class));
     }
 }

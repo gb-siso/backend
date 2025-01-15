@@ -32,5 +32,12 @@ public class ErrorResponse {
                     .message(fieldError.getDefaultMessage())
                     .build();
         }
+
+        public static ValidationError of(final FieldError fieldError, String message) {
+            return ValidationError.builder()
+                    .field(fieldError.getField())
+                    .message(message)
+                    .build();
+        }
     }
 }

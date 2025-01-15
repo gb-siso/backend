@@ -27,8 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
-    public static final String INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT = "값 %s를 %s 타입으로 변환할 수 없습니다.";
+    public static final String TYPE_MISMATCH_ERROR_MESSAGE_FORMAT = "입력값 %s 를 %s 타입으로 변환할 수 없습니다.";
 
     // 모든 예외 처리
     @ExceptionHandler(Exception.class)
@@ -40,6 +39,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        e.printStackTrace();
         return handleExceptionInternal(e);
     }
 
@@ -51,7 +51,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage()).build();
     }
 
-    // MethodArgumentNotValidException 예외 처리 (DTO Validation)
+    // @Vaild 필드 검증 실패 처리
+    // @ModelAttribute 자료형 불일치로 바인딩 실패 처리 (isBindingFailure = true)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status,
@@ -66,14 +67,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {
         List<ValidationError> validationErrorList = e.getBindingResult().getFieldErrors().stream()
-                .map(ErrorResponse.ValidationError::from).collect(Collectors.toList());
+                .map(fieldError -> {
+                    if (fieldError.isBindingFailure()) {
+                        // 바인딩 실패
+                        return ValidationError.of(
+                                fieldError, String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT,
+                                        fieldError.getRejectedValue(),
+                                        fieldError.getField().getClass().getSimpleName())
+                        );
+                    } else {
+                        // Validation 실패
+                        return ValidationError.from(fieldError);
+                    }
+                })
+                .collect(Collectors.toList());
 
         return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage())
                 .errors(validationErrorList).build();
     }
 
-
-    // MethodArgumentTypeMismatchException 예외 처리
+    // @PathVariable, @RequestParam 자료형 불일치로 바인딩 실패 처리
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
             MethodArgumentTypeMismatchException e) {
@@ -81,10 +94,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> handleExceptionInternal(MethodArgumentTypeMismatchException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(CommonErrorCode.TYPE_MISMATCH));
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(CommonErrorCode.TYPE_MISMATCH.name())
+                .message(String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, e.getValue(),
+                        e.getRequiredType().getSimpleName()))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    // @RequestBody HttpMessageNotReadableException 예외 처리
+    // @RequestBody json 형식 예외 처리
+    // @ReqeustBdoy 자료형 불일치로 바인딩 실패 처리
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -99,12 +119,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT));
     }
 
+    // @RequestBody 바인딩 에러 (타입 불일치)
     private ResponseEntity<Object> handleInvalidFormatException(HttpMessageNotReadableException e) {
         InvalidFormatException cause = (InvalidFormatException) e.getCause();
         // 상세 메시지 생성
-        String targetType = cause.getTargetType().getSimpleName();
-        String invalidValue = cause.getValue().toString();
-        String customMessage = String.format(INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT, invalidValue, targetType);
+        String customMessage = String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT,
+                cause.getValue().toString(), cause.getTargetType().getSimpleName());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT, customMessage));
     }
