@@ -1,5 +1,6 @@
 package com.guenbon.siso.controller;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse.ValidationError;
 import com.guenbon.siso.exception.CustomException;
@@ -26,6 +27,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    public static final String INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT = "값 %s를 %s 타입으로 변환할 수 없습니다.";
 
     // 모든 예외 처리
     @ExceptionHandler(Exception.class)
@@ -81,7 +84,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(CommonErrorCode.TYPE_MISMATCH));
     }
 
-    // request body에 맞지 않는 JSON 형식으로 요청했을 때 발생하는 예외 처리 (또는 request body가 없을 때 발생하는 예외 처리) -- 추가한 부분
+    // @RequestBody HttpMessageNotReadableException 예외 처리
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -89,7 +92,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> handleExceptionInternal(HttpMessageNotReadableException e) {
+        if (e.getCause() instanceof InvalidFormatException) {
+            return handleInvalidFormatException(e);
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT));
+    }
+
+    private ResponseEntity<Object> handleInvalidFormatException(HttpMessageNotReadableException e) {
+        InvalidFormatException cause = (InvalidFormatException) e.getCause();
+        // 상세 메시지 생성
+        String targetType = cause.getTargetType().getSimpleName();
+        String invalidValue = cause.getValue().toString();
+        String customMessage = String.format(INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT, invalidValue, targetType);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT, customMessage));
+    }
+
+    private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
+        return ErrorResponse.builder().code(errorCode.name()).message(message).build();
     }
 }

@@ -229,6 +229,7 @@ class RatingControllerTest extends ControllerTest {
                         "rating": "invalidType"  
                     }
                 """;
+        final String INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT = "값 %s를 %s 타입으로 변환할 수 없습니다.";
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
 
         // then
@@ -238,7 +239,7 @@ class RatingControllerTest extends ControllerTest {
                         .content(invalidFieldTypeRequestBody))
                 .andDo(print())
                 .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
-                .andExpect(jsonPath("$.message").value("요청 본문이 올바르지 않습니다")) // 오류 메시지 검증
+                .andExpect(jsonPath("$.message").value(String.format(INVALID_FORMAT_EXCEPTION_MESSAGE_FORMAT, "invalidType", "Float"))) // 오류 메시지 검증
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY_FORMAT")); // 오류 코드 검증
     }
 
