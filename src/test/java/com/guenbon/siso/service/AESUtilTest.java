@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
+import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,12 +35,10 @@ class AESUtilTest {
     void encryptAndDecrypt_null_BadRequestException() {
         // encrypt null 값 예외 확인
         assertThrows(BadRequestException.class,
-                () -> aesUtil.encrypt(null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+                () -> aesUtil.encrypt(null), AESErrorCode.NULL_VALUE.getMessage());
 
         // decrypt null 값 예외 확인
         assertThrows(BadRequestException.class,
-                () -> aesUtil.decrypt(null),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
+                () -> aesUtil.decrypt(null), AESErrorCode.NULL_VALUE.getMessage());
     }
 }

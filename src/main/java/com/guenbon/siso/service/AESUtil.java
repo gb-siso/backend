@@ -3,7 +3,6 @@ package com.guenbon.siso.service;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -37,7 +36,7 @@ public class AESUtil {
         } catch (IllegalArgumentException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
-            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+            throw new BadRequestException(AESErrorCode.NULL_VALUE);
         } catch (Exception e) {
             throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
         }
@@ -55,7 +54,7 @@ public class AESUtil {
         } catch (IllegalArgumentException | ClassCastException e) {
             throw new BadRequestException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
-            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
+            throw new BadRequestException(AESErrorCode.NULL_VALUE);
         } catch (Exception e) {
             throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
         }
