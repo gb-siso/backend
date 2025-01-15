@@ -19,11 +19,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,10 +48,10 @@ public class RatingController implements RatingControllerDocs {
     public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
             @PageableDefault(page = 0, size = 20, sort = {"topicality"}, direction = Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) String idCursor,
-            @RequestParam(required = false) Integer countCursor) {
+            @Validated @ModelAttribute CountCursor cursor) {
+        log.info("cursor: {}", cursor);
+        log.info("pageable: {}", pageable);
         SortValidator.validateSortProperties(pageable.getSort(), List.of("like", "dislike", "topicality"));
-        final CountCursor cursor = CountCursor.of(idCursor, countCursor);
         return ResponseEntity.ok(ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageable, cursor));
     }
 }

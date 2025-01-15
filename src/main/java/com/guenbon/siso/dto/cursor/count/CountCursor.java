@@ -1,40 +1,56 @@
 package com.guenbon.siso.dto.cursor.count;
 
-import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.errorCode.CursorErrorCode;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Slf4j
+@AllArgsConstructor
+@EqualsAndHashCode
 public class CountCursor {
 
     private String idCursor;
+    @Min(value = 0, message = "countCursor는 0 이상이어야 합니다.")
     private Integer countCursor;
 
-    public static CountCursor of(String idCursor, Integer countCursor) {
-        if (isAllFieldNull(idCursor, countCursor)) {
-            return null;
+    @AssertTrue(message = "일부 커서만 유효할 수 없습니다.")
+    public boolean isCursorValid() {
+        if (isAllFieldInvalid()) { // 모든 필드 inValid
+            return true;
         }
-        validateCursor(idCursor, countCursor);
-        return new CountCursor(idCursor, countCursor);
+        if (isSomeFieldInvalid()) { // 일부 필드만 inValid
+            return false;
+        }
+        return true; // 모든 필드 valid
     }
 
-    private static boolean isAllFieldNull(String idCursor, Integer countCursor) {
-        return idCursor == null && countCursor == null;
+    private boolean isSomeFieldInvalid() {
+        return !isCountCursorValid() || !isIdCursorValid();
     }
 
-    private static void validateCursor(String idCursor, Integer countCursor) {
-        if ((idCursor == null || idCursor.isEmpty()) || countCursor == null) {
-            throw new BadRequestException(CursorErrorCode.NULL_OR_EMPTY_VALUE);
+    public boolean isAllFieldInvalid() {
+        return !isCountCursorValid() && !isIdCursorValid();
+    }
+
+
+    public boolean isIdCursorValid() {
+        if (idCursor == null || idCursor.isBlank() || idCursor.equals("null")) {
+            return false;
         }
-        if (countCursor < 0) {
-            throw new BadRequestException(CursorErrorCode.NEGATIVE_VALUE);
+        return true;
+    }
+
+    public boolean isCountCursorValid() {
+        if (countCursor == null || countCursor < 0) {
+            return false;
         }
+        return true;
     }
 
     @Override
