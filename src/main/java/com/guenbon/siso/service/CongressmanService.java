@@ -6,7 +6,6 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanD
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.InternalServerException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import java.util.List;
@@ -32,9 +31,6 @@ public class CongressmanService {
     private List<CongressmanGetListDTO> getCongressmanGetListDTOList(Pageable pageable, Long cursorId,
                                                                      Double cursorRating, String party,
                                                                      String search) {
-        if (pageable == null || cursorId == null) {
-            throw new BadRequestException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
-        }
         return congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
     }
 
@@ -83,9 +79,6 @@ public class CongressmanService {
 
 
     private void ensureIdExists(final Long id) {
-        if (id == null) {
-            throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
-        }
         if (!congressmanRepository.existsById(id)) {
             throw new InternalServerException(CongressmanErrorCode.NOT_EXISTS);
         }

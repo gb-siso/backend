@@ -1,38 +1,17 @@
 package com.guenbon.siso.dto.congressman.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
-import com.guenbon.siso.exception.InternalServerException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class CongressmanDTOTest {
-
-    @DisplayName("of 메서드에 유효하지 않은 null 형태 파라미터에 대해 InternalServerException을 던지며 에러코드는 CommonErrorCode이다")
-    @ParameterizedTest
-    @MethodSource("provideOfNullParameters")
-    void of_nullParameters_InternalServerException(
-            final String congressmanId,
-            final CongressmanGetListDTO congressmanGetListDTO,
-            final List<String> memberImages) {
-        // given : parameters
-        // when, then
-        assertThrows(InternalServerException.class,
-                () -> CongressmanDTO.of(congressmanId, congressmanGetListDTO, memberImages),
-                CommonErrorCode.NULL_VALUE_NOT_ALLOWED.getMessage());
-    }
-
     @Test
     void of_validParameters_CongressmanDTO() {
         // given

@@ -1,8 +1,6 @@
 package com.guenbon.siso.dto.congressman.response;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
-import com.guenbon.siso.exception.InternalServerException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Collections;
 import java.util.List;
@@ -54,9 +52,6 @@ public class CongressmanListDTO {
 
         public static CongressmanDTO of(String encryptedCongressmanId, CongressmanGetListDTO congressmanGetListDTO,
                                         List<String> memberImages) {
-            if (encryptedCongressmanId == null || congressmanGetListDTO == null) {
-                throw new InternalServerException(CommonErrorCode.NULL_VALUE_NOT_ALLOWED);
-            }
             return CongressmanDTO.builder()
                     .id(encryptedCongressmanId)
                     .name(congressmanGetListDTO.getName())
