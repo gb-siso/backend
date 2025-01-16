@@ -1,4 +1,4 @@
-package com.guenbon.siso.dto.page;
+package com.guenbon.siso.support.constants;
 
 public enum SortProperty {
     ID("id"),
