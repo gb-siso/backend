@@ -13,6 +13,7 @@ import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
+import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.congressman.CongressmanGetListDTOFixture;
@@ -21,9 +22,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -188,6 +194,25 @@ class CongressmanServiceTest {
                 .timesElected(congressmanGetListDTO.getTimesElected())
                 .ratedMemberImages(ratedMemberImages)
                 .build();
+    }
+
+    @DisplayName("findNewsList 메서드의 congressmanId가 유효하지 않으면 BadRequestException을 던진다")
+    @ParameterizedTest(name = "congressmanId 값 : {0} 일 경우 에러코드가 {1} 인 BadRequestException을 던진다")
+    @MethodSource("provideInvalidCongressmanId")
+    void findNewsList_invalidCongressmanId_BadRequestException(final String encryptedCongressmanId,
+                                                               final ErrorCode errorCode) {
+        // given : parameters
+        // when, then
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
+                errorCode.getMessage());
+    }
+
+    private static Stream<Arguments> provideInvalidCongressmanId() {
+        return Stream.of(
+                Arguments.of(Named.named("AES 복호화에 실패하는 값", "invalid"), AESErrorCode.INVALID_INPUT),
+                Arguments.of(Named.named("존재하지 않는 국회의원 id 값", "notExist"), CongressmanErrorCode.NOT_EXISTS)
+        );
     }
 
 }
