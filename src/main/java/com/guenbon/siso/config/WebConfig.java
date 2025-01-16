@@ -1,7 +1,7 @@
 package com.guenbon.siso.config;
 
+import com.guenbon.siso.argumentresolver.CustomPageableResolver;
 import com.guenbon.siso.argumentresolver.LoginIdArgumentResolver;
-import com.guenbon.siso.argumentresolver.PageParamResolver;
 import com.guenbon.siso.interceptor.AuthInterceptor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
     private final LoginIdArgumentResolver loginIdArgumentResolver;
-    private final PageParamResolver pageParamResolver;
+    private final CustomPageableResolver customPageableResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(loginIdArgumentResolver);
-        resolvers.add(pageParamResolver);
+        resolvers.add(customPageableResolver);
     }
 
     @Override

@@ -1,9 +1,8 @@
 package com.guenbon.siso.controller;
 
-import static com.guenbon.siso.dto.page.SortProperty.RATE;
+import static com.guenbon.siso.support.constants.SortProperty.RATE;
 
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
-import com.guenbon.siso.dto.page.PageParam;
 import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.support.annotation.page.PageConfig;
@@ -28,13 +27,13 @@ public class CongressmanController {
 
     @GetMapping
     public ResponseEntity<CongressmanListDTO> congressmanList(
-            @PageConfig(allowedSorts = {RATE}, defaultSort = "rate, DESC") PageParam pageParam,
+            @PageConfig(allowedSorts = {RATE}, defaultSort = "rate, DESC") Pageable pageable,
             @RequestParam(defaultValue = "") String cursorId,
             @RequestParam(required = false) Double cursorRate,
             @RequestParam(required = false) String party,
             @RequestParam(required = false) String search) {
         return ResponseEntity.ok(
-                congressmanService.getCongressmanListDTO(pageParam.toPageable(), setCursorIdIfEmpty(cursorId),
+                congressmanService.getCongressmanListDTO(pageable, setCursorIdIfEmpty(cursorId),
                         cursorRate, party,
                         search));
     }

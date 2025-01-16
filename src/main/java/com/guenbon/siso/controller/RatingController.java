@@ -1,11 +1,10 @@
 package com.guenbon.siso.controller;
 
-import static com.guenbon.siso.dto.page.SortProperty.DISLIKE;
-import static com.guenbon.siso.dto.page.SortProperty.LIKE;
-import static com.guenbon.siso.dto.page.SortProperty.TOPICALITY;
+import static com.guenbon.siso.support.constants.SortProperty.DISLIKE;
+import static com.guenbon.siso.support.constants.SortProperty.LIKE;
+import static com.guenbon.siso.support.constants.SortProperty.TOPICALITY;
 
 import com.guenbon.siso.dto.cursor.count.CountCursor;
-import com.guenbon.siso.dto.page.PageParam;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.service.AESUtil;
@@ -16,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,10 +47,10 @@ public class RatingController {
     public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
             @PageConfig(allowedSorts = {LIKE, DISLIKE, TOPICALITY},
-                    defaultSort = "topicality, DESC", defaultPage = 0, defaultSize = 20) PageParam pageParam,
+                    defaultSort = "topicality, DESC", defaultPage = 0, defaultSize = 20) Pageable pageable,
             @Validated @ModelAttribute CountCursor cursor) {
         return ResponseEntity.ok(
-                ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageParam.toPageable(), cursor)
+                ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageable, cursor)
         );
     }
 }

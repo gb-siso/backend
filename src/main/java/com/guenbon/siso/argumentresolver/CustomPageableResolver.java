@@ -1,12 +1,14 @@
 package com.guenbon.siso.argumentresolver;
 
-import com.guenbon.siso.dto.page.PageParam;
-import com.guenbon.siso.dto.page.SortProperty;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
 import com.guenbon.siso.support.annotation.page.PageConfig;
+import com.guenbon.siso.support.constants.SortProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -15,7 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
 @Slf4j
-public class PageParamResolver implements HandlerMethodArgumentResolver {
+public class CustomPageableResolver implements HandlerMethodArgumentResolver {
 
     private static final String PAGE_PARAM = "page";
     private static final String SIZE_PARAM = "size";
@@ -23,7 +25,7 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public boolean supportsParameter(final MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(PageConfig.class) && PageParam.class.isAssignableFrom(
+        return parameter.hasParameterAnnotation(PageConfig.class) && Pageable.class.isAssignableFrom(
                 parameter.getParameterType());
     }
 
@@ -38,7 +40,12 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
 
         validatePageAndSize(page, size);
 
-        return PageParam.of(page, size, sort);
+        final String[] sortParts = sort.split(",");
+        final String property = sortParts[0].trim();
+        final boolean isDescending = sortParts.length == 2 && "DESC".equalsIgnoreCase(sortParts[1].trim());
+
+        return PageRequest.of(page, size,
+                isDescending ? Sort.by(property).descending() : Sort.by(property).ascending());
     }
 
     private int getIntParam(final NativeWebRequest request, final String name, final int defaultValue) {

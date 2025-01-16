@@ -1,6 +1,6 @@
 package com.guenbon.siso.support.annotation.page;
 
-import com.guenbon.siso.dto.page.SortProperty;
+import com.guenbon.siso.support.constants.SortProperty;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
