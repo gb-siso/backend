@@ -22,14 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -196,23 +191,33 @@ class CongressmanServiceTest {
                 .build();
     }
 
-    @DisplayName("findNewsList 메서드의 congressmanId가 유효하지 않으면 BadRequestException을 던진다")
-    @ParameterizedTest(name = "congressmanId 값 : {0} 일 경우 에러코드가 {1} 인 BadRequestException을 던진다")
-    @MethodSource("provideInvalidCongressmanId")
-    void findNewsList_invalidCongressmanId_BadRequestException(final String encryptedCongressmanId,
-                                                               final ErrorCode errorCode) {
-        // given : parameters
+    @DisplayName("findNewsList 메서드의 congressmanId가 AES 복호화에 실패하면 BadRequestException을 던진다")
+    @Test
+    void findNewsList_invalidCongressmanId_AESFailure_BadRequestException() {
+        // given : invalid congressmanId
+        final String encryptedCongressmanId = "invalid";
+        final ErrorCode errorCode = AESErrorCode.INVALID_INPUT;
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new BadRequestException(errorCode));
         // when, then
         assertThrows(BadRequestException.class,
                 () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
     }
 
-    private static Stream<Arguments> provideInvalidCongressmanId() {
-        return Stream.of(
-                Arguments.of(Named.named("AES 복호화에 실패하는 값", "invalid"), AESErrorCode.INVALID_INPUT),
-                Arguments.of(Named.named("존재하지 않는 국회의원 id 값", "notExist"), CongressmanErrorCode.NOT_EXISTS)
-        );
-    }
+    @DisplayName("findNewsList 메서드의 congressmanId가 존재하지 않는 값이면 BadRequestException을 던진다")
+    @Test
+    void findNewsList_invalidCongressmanId_NotExist_BadRequestException() {
+        // given : not existing congressmanId
+        final String encryptedCongressmanId = "notExist";
+        final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
 
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
+        when(congressmanRepository.findById(1L)).thenThrow(new BadRequestException(errorCode));
+
+        // when, then
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
+                errorCode.getMessage());
+    }
 }
