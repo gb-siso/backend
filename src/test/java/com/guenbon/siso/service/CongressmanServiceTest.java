@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
+import com.guenbon.siso.dto.news.NewsDTO;
+import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
@@ -219,5 +221,40 @@ class CongressmanServiceTest {
         assertThrows(BadRequestException.class,
                 () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
+    }
+
+    @DisplayName("findNewsList 메서드의 congressmanId가 존재하는 값이면 NewsListDTO를 반환한다")
+    @Test
+    void findNewList_validParameters_NewsList() {
+        // given
+        final String encryptedCongressmanId = "encryptedCongressmanId";
+        final Long decryptedCongressmanId = 1L;
+        final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
+        final PageRequest pageable = PageRequest.of(0, 2);
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
+        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
+
+        // when
+        final NewsListDTO newsListDTO = congressmanService.findNewsList(encryptedCongressmanId, pageable);
+        final List<NewsDTO> newsDTOList = newsListDTO.getNewsList();
+
+        // then
+        // 검색어 이름 포함 검증
+        final String congressmanName = congressman.getName();
+        assertThat(newsDTOList).allSatisfy(newsDTO ->
+                assertThat(newsDTO.getTitle()).contains(congressmanName)
+        );
+        // regdate desc 정렬 검증
+        for (int i = 0; i < newsDTOList.size() - 1; i++) {
+            assertThat(newsDTOList.get(i).getRegDate())
+                    .isAfterOrEqualTo(newsDTOList.get(i + 1).getRegDate());
+        }
+        // 마지막 페이지 검증
+        if (newsDTOList.size() == pageable.getPageSize()) {
+            assertThat(newsListDTO.getLastPage()).isGreaterThan(pageable.getPageNumber());
+        } else {
+            assertThat(newsListDTO.getLastPage()).isEqualTo(pageable.getPageNumber());
+        }
     }
 }
