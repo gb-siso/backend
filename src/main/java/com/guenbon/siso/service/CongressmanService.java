@@ -83,4 +83,9 @@ public class CongressmanService {
             throw new InternalServerException(CongressmanErrorCode.NOT_EXISTS);
         }
     }
+
+    public void findNewsList(String encryptedCongressmanId, Pageable pageable) {
+        final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
+        final Congressman congressman = findById(congressmanId);
+    }
 }
