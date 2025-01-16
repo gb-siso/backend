@@ -1,5 +1,9 @@
 package com.guenbon.siso.controller;
 
+import static com.guenbon.siso.dto.page.SortProperty.DISLIKE;
+import static com.guenbon.siso.dto.page.SortProperty.LIKE;
+import static com.guenbon.siso.dto.page.SortProperty.TOPICALITY;
+
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.page.PageParam;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
@@ -42,7 +46,7 @@ public class RatingController {
     @GetMapping("/{encryptedCongressmanId}")
     public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
-            @PageConfig(allowedSorts = {"like", "dislike", "topicality"},
+            @PageConfig(allowedSorts = {LIKE, DISLIKE, TOPICALITY},
                     defaultSort = "topicality, DESC", defaultPage = 0, defaultSize = 20) PageParam pageParam,
             @Validated @ModelAttribute CountCursor cursor) {
         return ResponseEntity.ok(

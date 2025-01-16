@@ -1,6 +1,7 @@
 package com.guenbon.siso.argumentresolver;
 
 import com.guenbon.siso.dto.page.PageParam;
+import com.guenbon.siso.dto.page.SortProperty;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
 import com.guenbon.siso.support.annotation.page.PageConfig;
@@ -39,19 +40,14 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
             throw new BadRequestException(PageableErrorCode.INVALID_SIZE);
         }
 
-        log.info("Initial sort value: {}", sort);
-
         if (sort == null || !isValidSort(sort, pageConfig.allowedSorts())) {
             sort = pageConfig.defaultSort();
-            log.info("Sort set to default: {}", sort);
         }
 
         PageParam param = new PageParam();
         param.setPage(page);
         param.setSize(size);
         param.setSort(sort);
-
-        log.info("Final PageParam: {}", param);
 
         return param;
     }
@@ -65,7 +61,7 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
         }
     }
 
-    private boolean isValidSort(String sort, String[] allowedSorts) {
+    private boolean isValidSort(String sort, SortProperty[] allowedSorts) {
         if (sort == null || sort.trim().isEmpty()) {
             return true; // sort가 없으면 통과
         }
@@ -91,9 +87,9 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
         }
     }
 
-    private boolean isAllowedSort(String property, String[] allowedSorts) {
-        for (String allowedSort : allowedSorts) {
-            if (allowedSort.equals(property)) {
+    private boolean isAllowedSort(String property, SortProperty[] allowedSorts) {
+        for (SortProperty allowedSort : allowedSorts) {
+            if (allowedSort.getValue().equals(property)) {
                 return true;
             }
         }
