@@ -17,43 +17,32 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Slf4j
 public class PageParamResolver implements HandlerMethodArgumentResolver {
 
+    private static final String PAGE_PARAM = "page";
+    private static final String SIZE_PARAM = "size";
+    private static final String SORT_PARAM = "sort";
+
     @Override
-    public boolean supportsParameter(MethodParameter parameter) {
+    public boolean supportsParameter(final MethodParameter parameter) {
         return parameter.hasParameterAnnotation(PageConfig.class) && PageParam.class.isAssignableFrom(
                 parameter.getParameterType());
     }
 
     @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        PageConfig pageConfig = parameter.getParameterAnnotation(PageConfig.class);
+    public Object resolveArgument(final MethodParameter parameter, final ModelAndViewContainer mavContainer,
+                                  final NativeWebRequest webRequest, final WebDataBinderFactory binderFactory) {
+        final PageConfig pageConfig = parameter.getParameterAnnotation(PageConfig.class);
 
-        int page = getIntParam(webRequest, "page", pageConfig.defaultPage());
-        int size = getIntParam(webRequest, "size", pageConfig.defaultSize());
-        String sort = webRequest.getParameter("sort");
+        final int page = getIntParam(webRequest, PAGE_PARAM, pageConfig.defaultPage());
+        final int size = getIntParam(webRequest, SIZE_PARAM, pageConfig.defaultSize());
+        final String sort = resolveSort(webRequest.getParameter(SORT_PARAM), pageConfig);
 
-        // Validate page and size constraints
-        if (page < 0) {
-            throw new BadRequestException(PageableErrorCode.INVALID_PAGE);
-        }
-        if (size < 1) {
-            throw new BadRequestException(PageableErrorCode.INVALID_SIZE);
-        }
+        validatePageAndSize(page, size);
 
-        if (sort == null || !isValidSort(sort, pageConfig.allowedSorts())) {
-            sort = pageConfig.defaultSort();
-        }
-
-        PageParam param = new PageParam();
-        param.setPage(page);
-        param.setSize(size);
-        param.setSort(sort);
-
-        return param;
+        return PageParam.of(page, size, sort);
     }
 
-    private int getIntParam(NativeWebRequest request, String name, int defaultValue) {
-        String value = request.getParameter(name);
+    private int getIntParam(final NativeWebRequest request, final String name, final int defaultValue) {
+        final String value = request.getParameter(name);
         try {
             return value != null ? Integer.parseInt(value) : defaultValue;
         } catch (NumberFormatException e) {
@@ -61,34 +50,49 @@ public class PageParamResolver implements HandlerMethodArgumentResolver {
         }
     }
 
-    private boolean isValidSort(String sort, SortProperty[] allowedSorts) {
+    private String resolveSort(final String sort, final PageConfig pageConfig) {
+        if (sort == null || !isValidSort(sort, pageConfig.allowedSorts())) {
+            return pageConfig.defaultSort();
+        }
+        return sort;
+    }
+
+    private void validatePageAndSize(final int page, final int size) {
+        if (page < 0) {
+            throw new BadRequestException(PageableErrorCode.INVALID_PAGE);
+        }
+        if (size < 1) {
+            throw new BadRequestException(PageableErrorCode.INVALID_SIZE);
+        }
+    }
+
+    private boolean isValidSort(final String sort, final SortProperty[] allowedSorts) {
         if (sort == null || sort.trim().isEmpty()) {
             return true; // sort가 없으면 통과
         }
 
-        String[] parts = sort.split(",");
+        final String[] parts = sort.split(",");
         if (parts.length == 1) {
             return isAllowedSort(parts[0].trim(), allowedSorts); // 정렬 속성만 있어도 통과
         }
 
         if (parts.length == 2) {
-            String property = parts[0].trim();
-            String direction = parts[1].trim().toUpperCase();
+            final String property = parts[0].trim();
+            final String direction = parts[1].trim().toUpperCase();
             return isAllowedSort(property, allowedSorts) && isAllowedDirection(direction);
         }
         return false;
     }
 
-    private static boolean isAllowedDirection(String direction) {
+    private static boolean isAllowedDirection(final String direction) {
         if ("ASC".equals(direction) || "DESC".equals(direction)) {
             return true;
-        } else {
-            throw new BadRequestException(PageableErrorCode.UNSUPPORTED_SORT_DIRECTION);
         }
+        throw new BadRequestException(PageableErrorCode.UNSUPPORTED_SORT_DIRECTION);
     }
 
-    private boolean isAllowedSort(String property, SortProperty[] allowedSorts) {
-        for (SortProperty allowedSort : allowedSorts) {
+    private boolean isAllowedSort(final String property, final SortProperty[] allowedSorts) {
+        for (final SortProperty allowedSort : allowedSorts) {
             if (allowedSort.getValue().equals(property)) {
                 return true;
             }

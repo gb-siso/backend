@@ -55,6 +55,10 @@ public class PageParam {
                 Sort.by(property).ascending());
     }
 
+    public static PageParam of(int page, int size, String sort) {
+        return new PageParam(page, size, sort);
+    }
+
     @Override
     public String toString() {
         return "PageParam{" +
