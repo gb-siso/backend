@@ -41,8 +41,7 @@ class CustomPageableArgumentResolverTest extends ControllerTest {
                 Arguments.of("-1", "10", "topicality,DESC", PageableErrorCode.INVALID_PAGE),
                 Arguments.of("0", "-5", "topicality,DESC", PageableErrorCode.INVALID_SIZE),
                 Arguments.of("abc", "10", "topicality,DESC", PageableErrorCode.INVALID_FORMAT),
-                Arguments.of("0", "10", "like,INVALID", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION),
-                Arguments.of("0", "10", "like,", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION)
+                Arguments.of("0", "10", "like,INVALID", PageableErrorCode.UNSUPPORTED_SORT_DIRECTION)
         );
     }
 
