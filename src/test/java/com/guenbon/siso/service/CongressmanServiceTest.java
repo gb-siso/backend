@@ -1,6 +1,7 @@
 package com.guenbon.siso.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,8 +13,10 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanD
 import com.guenbon.siso.dto.news.NewsDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import com.guenbon.siso.exception.errorCode.ApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
@@ -24,13 +27,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class CongressmanServiceTest {
@@ -223,7 +232,7 @@ class CongressmanServiceTest {
                 errorCode.getMessage());
     }
 
-    @DisplayName("findNewsList 메서드의 congressmanId가 존재하는 값이면 NewsListDTO를 반환한다")
+    @DisplayName("findNewsList 메서드에 유효한 파라미터를 전달하면 NewsListDTO를 반환한다")
     @Test
     void findNewList_validParameters_NewsList() {
         // given
@@ -242,19 +251,42 @@ class CongressmanServiceTest {
         // then
         // 검색어 이름 포함 검증
         final String congressmanName = congressman.getName();
-        assertThat(newsDTOList).allSatisfy(newsDTO ->
-                assertThat(newsDTO.getTitle()).contains(congressmanName)
-        );
+        assertThat(newsDTOList).as("모든 뉴스 제목에 의원 이름이 포함되어야 합니다.")
+                .allSatisfy(newsDTO -> assertThat(newsDTO.getTitle()).contains(congressmanName));
+
         // regdate desc 정렬 검증
-        for (int i = 0; i < newsDTOList.size() - 1; i++) {
+        final int newsCount = newsDTOList.size(); // 중복 제거
+        for (int i = 0; i < newsCount - 1; i++) {
             assertThat(newsDTOList.get(i).getRegDate())
+                    .as("뉴스는 regDate 기준 내림차순으로 정렬되어야 합니다.")
                     .isAfterOrEqualTo(newsDTOList.get(i + 1).getRegDate());
         }
-        // 마지막 페이지 검증
-        if (newsDTOList.size() == pageable.getPageSize()) {
-            assertThat(newsListDTO.getLastPage()).isGreaterThan(pageable.getPageNumber());
-        } else {
-            assertThat(newsListDTO.getLastPage()).isEqualTo(pageable.getPageNumber());
-        }
+    }
+
+    @DisplayName("findNewsList에 마지막 페이지를 초과하는 파라미터를 전달하면 ApiException을 던진다.")
+    @ParameterizedTest
+    @MethodSource("provideApiExceptionParameters")
+    void findNewsList_noDataParameters_ApiException(Pageable pageable, ApiErrorCode apiErrorCode) {
+        // given
+        final String encryptedCongressmanId = "encryptedCongressmanId";
+        final Long decryptedCongressmanId = 1L;
+        final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
+        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
+
+        assertThatThrownBy(() -> congressmanService.findNewsList(encryptedCongressmanId, pageable))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining(apiErrorCode.getMessage());
+    }
+
+    // TODO : 데이터가 없는 경우에 대해서는 빈 리스트로 반환해야 하는게 아닌지?
+    public static Stream<Arguments> provideApiExceptionParameters() {
+        return Stream.of(
+                Arguments.of(Named.named("1000을 넘는 pagesize", PageRequest.of(0, 10000)),
+                        ApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED),
+                Arguments.of(Named.named("마지막 페이지를 넘는 pagenumber", PageRequest.of(9999999, 2)),
+                        ApiErrorCode.NO_DATA_FOUND)
+        );
     }
 }
