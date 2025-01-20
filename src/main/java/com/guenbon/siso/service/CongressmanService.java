@@ -1,5 +1,6 @@
 package com.guenbon.siso.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
@@ -8,8 +9,10 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanD
 import com.guenbon.siso.dto.news.NewsDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.BadRequestException;
 import com.guenbon.siso.exception.InternalServerException;
+import com.guenbon.siso.exception.errorCode.ApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,6 +34,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 @RequiredArgsConstructor
 public class CongressmanService {
+
+    public static final String API_NEWS_URL = "https://open.assembly.go.kr/portal/openapi/nauvppbxargkmyovh";
+    public static final String NEWS_API_PATH = "nauvppbxargkmyovh";
+    private static final String RESULT = "RESULT";
+    private static final String CODE = "CODE";
+
+    @Value("${api.news.key}")
+    private String key;
 
     private final AESUtil aesUtil;
 
@@ -101,25 +113,13 @@ public class CongressmanService {
     public NewsListDTO findNewsList(String encryptedCongressmanId, Pageable pageable) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final Congressman congressman = findById(congressmanId);
-        log.info("congressman name : {}", congressman.getName());
+        final String response = getApiResponse(buildUrlString(pageable, congressman));
+        return parseResponse(response, pageable.getPageSize());
+    }
 
-        // 외부 API 요청 URL 생성
-        String apiUrl = "https://open.assembly.go.kr/portal/openapi/nauvppbxargkmyovh";
-        String apiKey = "a7472423eb5c49d58f8c7eeae292b0db";
-
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(apiUrl)
-                .queryParam("Key", apiKey)
-                .queryParam("Type", "json")
-                .queryParam("pIndex", pageable.getPageNumber() + 1)
-                .queryParam("pSize", pageable.getPageSize())
-                .queryParam("COMP_MAIN_TITLE", congressman.getName());
-
-        String uriString = uriBuilder.build(false).toUriString(); // 인코딩 비활성화
-
-        log.info("reqeust uri : {}", uriString);
-
-        String response = WebClient.builder()
-                .baseUrl(apiUrl)
+    private static String getApiResponse(String uriString) {
+        return WebClient.builder()
+                .baseUrl(API_NEWS_URL)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0")
                 .build()
@@ -128,47 +128,74 @@ public class CongressmanService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
-        log.info("응답 : {}", response);
-
-        NewsListDTO newsListDTO = parseResponse(response, pageable.getPageSize());
-
-        return newsListDTO;
     }
 
-    public NewsListDTO parseResponse(String response, int pageSize) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(response);
+    private String buildUrlString(Pageable pageable, Congressman congressman) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(API_NEWS_URL)
+                .queryParam("Key", key)
+                .queryParam("Type", "json")
+                .queryParam("pIndex", pageable.getPageNumber() + 1)
+                .queryParam("pSize", pageable.getPageSize())
+                .queryParam("COMP_MAIN_TITLE", congressman.getName());
+        return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
+    }
 
-            // 전체 기사 수
-            int totalCount = rootNode.path("nauvppbxargkmyovh").get(0)
-                    .path("head").get(0).path("list_total_count").asInt();
-            System.out.println("전체 기사 수: " + totalCount);
+    public NewsListDTO parseResponse(final String response, final int pageSize) {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final JsonNode rootNode = parseJson(objectMapper, response);
 
-            // 기사 리스트
-            List<NewsDTO> newsDTOList = new ArrayList<>();
-            int totalPage = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1;
-
-            JsonNode articles = rootNode.path("nauvppbxargkmyovh").get(1).path("row");
-            for (JsonNode article : articles) {
-                String rawTitle = article.path("COMP_MAIN_TITLE").asText();
-                String title = StringEscapeUtils.unescapeHtml4(rawTitle); // HTML 엔티티 디코딩
-                String link = article.path("LINK_URL").asText();
-                String regDate = article.path("REG_DATE").asText(); // 등록 날짜 가져오기
-
-                System.out.println("기사 제목: " + title);
-                System.out.println("URL: " + link);
-                System.out.println("날짜 : " + regDate);
-
-                NewsDTO newsDTO = NewsDTO.of(title, link, regDate);
-                newsDTOList.add(newsDTO);
-                log.info("이 dto 추가 : {}", newsDTO);
-            }
-            return NewsListDTO.of(newsDTOList, totalPage);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (isApiResponseError(rootNode)) {
+            handleApiError(rootNode);
         }
-        return null;
+
+        final int totalCount = extractTotalCount(rootNode);
+        final int totalPage = calculateTotalPages(totalCount, pageSize);
+        final List<NewsDTO> newsDTOList = extractArticles(rootNode);
+
+        return NewsListDTO.of(newsDTOList, totalPage);
+    }
+
+    private JsonNode parseJson(final ObjectMapper objectMapper, final String response) {
+        try {
+            return objectMapper.readTree(response);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("뉴스 목록 api 요청 응답 파싱 예외 발생", e);
+        }
+    }
+
+    private boolean isApiResponseError(final JsonNode rootNode) {
+        return rootNode.has(RESULT) && rootNode.path(RESULT).path(CODE).asText().contains("-");
+    }
+
+    private void handleApiError(final JsonNode rootNode) {
+        final String errorCode = rootNode.path(RESULT).path(CODE).asText().split("-")[1];
+        final ApiErrorCode apiErrorCode = ApiErrorCode.from(errorCode);
+        throw new ApiException(apiErrorCode);
+    }
+
+    private int extractTotalCount(final JsonNode rootNode) {
+        return rootNode.path(NEWS_API_PATH).get(0)
+                .path("head").get(0).path("list_total_count").asInt();
+    }
+
+    private int calculateTotalPages(final int totalCount, final int pageSize) {
+        return (totalCount + pageSize - 1) / pageSize; // 올림 계산
+    }
+
+    private List<NewsDTO> extractArticles(final JsonNode rootNode) {
+        final List<NewsDTO> newsDTOList = new ArrayList<>();
+        final JsonNode articles = rootNode.path(NEWS_API_PATH).get(1).path("row");
+
+        for (final JsonNode article : articles) {
+            final String rawTitle = article.path("COMP_MAIN_TITLE").asText();
+            final String title = StringEscapeUtils.unescapeHtml4(rawTitle);
+            final String link = article.path("LINK_URL").asText();
+            final String regDate = article.path("REG_DATE").asText();
+
+            final NewsDTO newsDTO = NewsDTO.of(title, link, regDate);
+            newsDTOList.add(newsDTO);
+        }
+
+        return newsDTOList;
     }
 }
