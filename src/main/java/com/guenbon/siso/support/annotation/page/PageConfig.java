@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PageConfig {
-    SortProperty[] allowedSorts(); // 허용된 sort 값
+    SortProperty[] allowedSorts() default SortProperty.ID; // 허용된 sort 값
 
     String defaultSort() default "id, DESC"; // 기본 sort
 
