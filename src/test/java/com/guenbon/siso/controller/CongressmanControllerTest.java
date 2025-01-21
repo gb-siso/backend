@@ -9,11 +9,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
+import com.guenbon.siso.dto.news.NewsDTO;
+import com.guenbon.siso.dto.news.NewsListDTO;
+import com.guenbon.siso.exception.ApiException;
+import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import com.guenbon.siso.exception.errorCode.ApiErrorCode;
+import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.support.fixture.congressman.CongressmanDTOFixture;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -109,5 +118,84 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("지원하지 않는 정렬 필드입니다."))
                 .andExpect(jsonPath("$.code").value("UNSUPPORTED_SORT_PROPERTY"));
+    }
+
+    @DisplayName("GET:/api/v1/news/{congressmanId} 에 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
+    @Test
+    void newsList_invalidCongressmanId_ReturnsBadRequest() throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+        when(congressmanService.findNewsList(decryptedCongressmanId,
+                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("regDate"))))).thenThrow(
+                new BadRequestException(AESErrorCode.INVALID_INPUT));
+        // when, then
+        mockMvc.perform(
+                        get("/api/v1/congressman/news/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(AESErrorCode.INVALID_INPUT.getMessage()))
+                .andExpect(jsonPath("$.code").value(AESErrorCode.INVALID_INPUT.name()));
+    }
+
+    @DisplayName("GET:/api/v1/news/{congressmanId} 에 존재하지 않는 congressmanId 요청 시 예외를 응답한다")
+    @Test
+    void newsList_notExistCongressmanId_ReturnsBadRequest() throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+        when(congressmanService.findNewsList(decryptedCongressmanId,
+                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("regDate"))))).thenThrow(
+                new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
+
+        // when, then
+        mockMvc.perform(
+                        get("/api/v1/congressman/news/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(CongressmanErrorCode.NOT_EXISTS.getMessage()))
+                .andExpect(jsonPath("$.code").value(CongressmanErrorCode.NOT_EXISTS.name()));
+    }
+
+    @DisplayName("GET:/api/v1/news/{congressmanId} 에서 ApiErrorCode에 따른 API 예외를 응답한다")
+    @ParameterizedTest
+    @EnumSource(ApiErrorCode.class)
+    void newsList_ApiErrorCode_ReturnsApiErrorResponse(ApiErrorCode apiErrorCode) throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+        when(congressmanService.findNewsList(decryptedCongressmanId,
+                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("regDate"))))).thenThrow(
+                new ApiException(apiErrorCode));
+
+        // when, then
+        mockMvc.perform(
+                        get("/api/v1/congressman/news/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(apiErrorCode.getMessage()))
+                .andExpect(jsonPath("$.code").value(apiErrorCode.name()));
+    }
+
+    @DisplayName("GET:/api/v1/news/{congressmanId} 에 유효한 congressmanId 요청 시 뉴스 목록을 응답한다")
+    @Test
+    void newsList_validCongressmanId_ReturnsNewsList() throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+
+        final NewsDTO news1 = NewsDTO.of("기사제목1", "link1", "2025-01-21 09:00");
+        final NewsDTO news2 = NewsDTO.of("기사제목2", "link2", "2025-01-15 08:00");
+
+        when(congressmanService.findNewsList(decryptedCongressmanId,
+                PageRequest.of(0, 2, Sort.by(Sort.Order.desc("regDate"))))).thenReturn(
+                NewsListDTO.of(List.of(news1, news2), 10)
+        );
+        // when, then
+        // when, then
+        mockMvc.perform(
+                        get("/api/v1/congressman/news/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON)
+                                .param("size", "2"))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.lastPage").value(10))
+                .andExpect(jsonPath("$.newsList[0].title").value("기사제목1"))
+                .andExpect(jsonPath("$.newsList[1].title").value("기사제목2"));
     }
 }
