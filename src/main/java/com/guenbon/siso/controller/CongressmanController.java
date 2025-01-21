@@ -1,8 +1,10 @@
 package com.guenbon.siso.controller;
 
 import static com.guenbon.siso.support.constants.SortProperty.RATE;
+import static com.guenbon.siso.support.constants.SortProperty.REG_DATE;
 
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
+import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.service.AESUtil;
 import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.support.annotation.page.PageConfig;
@@ -46,5 +48,11 @@ public class CongressmanController {
     public ResponseEntity<String> congressmanDetail(Pageable pageable, Long cursor,
                                                     @PathVariable(name = "id") String congressmanId, Long loginId) {
         return ResponseEntity.ok("평가 작성 성공 후 리다이렉트됨");
+    }
+
+    @GetMapping("/news/{congressmanId}")
+    public ResponseEntity<NewsListDTO> newsList(@PathVariable String congressmanId,
+                                                @PageConfig(allowedSorts = REG_DATE, defaultSort = "regDate, DESC") Pageable pageable) {
+        return ResponseEntity.ok(congressmanService.findNewsList(congressmanId, pageable));
     }
 }

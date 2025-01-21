@@ -3,6 +3,7 @@ package com.guenbon.siso.controller;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse.ValidationError;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
@@ -131,5 +132,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
         return ErrorResponse.builder().code(errorCode.name()).message(message).build();
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(
+            ApiException e) {
+        return handleExceptionInternal(e);
+    }
+
+    private ResponseEntity<ErrorResponse> handleExceptionInternal(ApiException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(makeErrorResponse(e.getErrorCode()));
     }
 }
