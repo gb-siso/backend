@@ -36,12 +36,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CongressmanService {
 
     public static final String API_NEWS_URL = "https://open.assembly.go.kr/portal/openapi/nauvppbxargkmyovh";
+    public static final String BILL_NEWS_URL = "https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn";
     public static final String NEWS_API_PATH = "nauvppbxargkmyovh";
     private static final String RESULT = "RESULT";
     private static final String CODE = "CODE";
 
     @Value("${api.news.key}")
-    private String key;
+    private String newsApikey;
+    @Value("${api.bill.key}")
+    private String billApikey;
 
     private final AESUtil aesUtil;
 
@@ -113,13 +116,12 @@ public class CongressmanService {
     public NewsListDTO findNewsList(String encryptedCongressmanId, Pageable pageable) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final Congressman congressman = findById(congressmanId);
-        final String response = getApiResponse(buildUrlString(pageable, congressman));
+        final String response = getApiResponse(buildUrlStringForNews(pageable, congressman));
         return parseResponse(response, pageable.getPageSize());
     }
 
     private static String getApiResponse(String uriString) {
         return WebClient.builder()
-                .baseUrl(API_NEWS_URL)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0")
                 .build()
@@ -130,13 +132,24 @@ public class CongressmanService {
                 .block();
     }
 
-    private String buildUrlString(Pageable pageable, Congressman congressman) {
+    private String buildUrlStringForNews(Pageable pageable, Congressman congressman) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(API_NEWS_URL)
-                .queryParam("Key", key)
+                .queryParam("Key", newsApikey)
                 .queryParam("Type", "json")
                 .queryParam("pIndex", pageable.getPageNumber() + 1)
                 .queryParam("pSize", pageable.getPageSize())
                 .queryParam("COMP_MAIN_TITLE", congressman.getName());
+        return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
+    }
+
+    private String buildUrlStringForBill(Pageable pageable, Congressman congressman) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(BILL_NEWS_URL)
+                .queryParam("Key", billApikey)
+                .queryParam("Type", "json")
+                .queryParam("pIndex", pageable.getPageNumber() + 1)
+                .queryParam("pSize", pageable.getPageSize())
+                .queryParam("AGE", 22)
+                .queryParam("PROPOSER", congressman.getName() + "의원");
         return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
     }
 
@@ -202,5 +215,7 @@ public class CongressmanService {
     public void findBillList(String encryptedCongressmanId, Pageable pageable) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final Congressman congressman = findById(congressmanId);
+        final String response = getApiResponse(buildUrlStringForBill(pageable, congressman));
+        parseResponse(response, pageable.getPageSize());
     }
 }
