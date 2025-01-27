@@ -264,7 +264,7 @@ class CongressmanServiceTest {
         }
     }
 
-    @DisplayName("findNewsList에 마지막 페이지를 초과하는 파라미터를 전달하면 ApiException을 던진다.")
+    @DisplayName("findNewsList에 유효하지 않은 페이지 파라미터를 전달하면 ApiException을 던진다.")
     @ParameterizedTest
     @MethodSource("provideApiExceptionParameters")
     void findNewsList_noDataParameters_ApiException(Pageable pageable, ApiErrorCode apiErrorCode) {
@@ -320,5 +320,22 @@ class CongressmanServiceTest {
                 () -> congressmanService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
         verify(congressmanRepository).findById(1L);
+    }
+
+    @DisplayName("findBillList에 유효하지 않은 페이지 파라미터를 전달하면 ApiException을 던진다.")
+    @ParameterizedTest
+    @MethodSource("provideApiExceptionParameters")
+    void findBillList_noDataParameters_ApiException(Pageable pageable, ApiErrorCode apiErrorCode) {
+        // given
+        final String encryptedCongressmanId = "encryptedCongressmanId";
+        final Long decryptedCongressmanId = 1L;
+        final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
+        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
+
+        assertThatThrownBy(() -> congressmanService.findBillList(encryptedCongressmanId, pageable))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining(apiErrorCode.getMessage());
     }
 }
