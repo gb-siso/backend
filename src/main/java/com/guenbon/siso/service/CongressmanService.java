@@ -198,4 +198,9 @@ public class CongressmanService {
 
         return newsDTOList;
     }
+
+    public void findBillList(String encryptedCongressmanId, Pageable pageable) {
+        final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
+        final Congressman congressman = findById(congressmanId);
+    }
 }
