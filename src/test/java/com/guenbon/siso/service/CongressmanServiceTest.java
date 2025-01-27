@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
@@ -288,5 +289,36 @@ class CongressmanServiceTest {
                 Arguments.of(Named.named("마지막 페이지를 넘는 pagenumber", PageRequest.of(9999999, 2)),
                         ApiErrorCode.NO_DATA_FOUND)
         );
+    }
+
+    @DisplayName("findBillList 메서드의 congressmanId가 AES 복호화에 실패하면 BadRequestException을 던진다")
+    @Test
+    void findBillList_invalidCongressmanId_AESFailure_BadRequestException() {
+        // given : invalid congressmanId
+        final String encryptedCongressmanId = "invalid";
+        final ErrorCode errorCode = AESErrorCode.INVALID_INPUT;
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new BadRequestException(errorCode));
+        // when, then
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
+                errorCode.getMessage());
+    }
+
+    @DisplayName("findBillList 메서드의 congressmanId가 존재하지 않는 값이면 BadRequestException을 던진다")
+    @Test
+    void findBillList_invalidCongressmanId_NotExist_BadRequestException() {
+        // given : not existing congressmanId
+        final String encryptedCongressmanId = "notExist";
+        final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
+        when(congressmanRepository.findById(1L)).thenThrow(new BadRequestException(errorCode));
+
+        // when, then
+        assertThrows(BadRequestException.class,
+                () -> congressmanService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
+                errorCode.getMessage());
+        verify(congressmanRepository).findById(1L);
     }
 }
