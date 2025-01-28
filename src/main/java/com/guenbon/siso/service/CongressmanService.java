@@ -3,6 +3,8 @@ package com.guenbon.siso.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guenbon.siso.dto.bill.BillDTO;
+import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -38,6 +40,7 @@ public class CongressmanService {
     public static final String API_NEWS_URL = "https://open.assembly.go.kr/portal/openapi/nauvppbxargkmyovh";
     public static final String BILL_NEWS_URL = "https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn";
     public static final String NEWS_API_PATH = "nauvppbxargkmyovh";
+    public static final String BILL_API_PATH = "nzmimeepazxkubdpn";
     private static final String RESULT = "RESULT";
     private static final String CODE = "CODE";
 
@@ -117,7 +120,7 @@ public class CongressmanService {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final Congressman congressman = findById(congressmanId);
         final String response = getApiResponse(buildUrlStringForNews(pageable, congressman));
-        return parseResponse(response, pageable.getPageSize());
+        return parseNewsResponse(response, pageable.getPageSize());
     }
 
     private static String getApiResponse(String uriString) {
@@ -153,7 +156,7 @@ public class CongressmanService {
         return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
     }
 
-    public NewsListDTO parseResponse(final String response, final int pageSize) {
+    public NewsListDTO parseNewsResponse(final String response, final int pageSize) {
         final ObjectMapper objectMapper = new ObjectMapper();
         final JsonNode rootNode = parseJson(objectMapper, response);
 
@@ -163,7 +166,7 @@ public class CongressmanService {
 
         final int totalCount = extractTotalCount(rootNode);
         final int totalPage = calculateTotalPages(totalCount, pageSize);
-        final List<NewsDTO> newsDTOList = extractArticles(rootNode);
+        final List<NewsDTO> newsDTOList = extractNews(rootNode);
 
         return NewsListDTO.of(newsDTOList, totalPage);
     }
@@ -187,7 +190,7 @@ public class CongressmanService {
     }
 
     private int extractTotalCount(final JsonNode rootNode) {
-        return rootNode.path(NEWS_API_PATH).get(0)
+        return rootNode.path(BILL_API_PATH).get(0)
                 .path("head").get(0).path("list_total_count").asInt();
     }
 
@@ -195,7 +198,7 @@ public class CongressmanService {
         return (totalCount + pageSize - 1) / pageSize; // 올림 계산
     }
 
-    private List<NewsDTO> extractArticles(final JsonNode rootNode) {
+    private List<NewsDTO> extractNews(final JsonNode rootNode) {
         final List<NewsDTO> newsDTOList = new ArrayList<>();
         final JsonNode articles = rootNode.path(NEWS_API_PATH).get(1).path("row");
 
@@ -212,10 +215,45 @@ public class CongressmanService {
         return newsDTOList;
     }
 
-    public void findBillList(String encryptedCongressmanId, Pageable pageable) {
+    public BillListDTO parseBillResponse(final String response, final int pageSize) {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final JsonNode rootNode = parseJson(objectMapper, response);
+
+        if (isApiResponseError(rootNode)) {
+            handleApiError(rootNode);
+        }
+
+        final int totalCount = extractTotalCount(rootNode);
+        final int totalPage = calculateTotalPages(totalCount, pageSize);
+        final List<BillDTO> billDTOList = extractBills(rootNode);
+
+        return BillListDTO.of(billDTOList, totalPage);
+    }
+
+    private List<BillDTO> extractBills(final JsonNode rootNode) {
+        final List<BillDTO> billDTOList = new ArrayList<>();
+        final JsonNode bills = rootNode.path(BILL_API_PATH).get(1).path("row");
+
+        for (final JsonNode bill : bills) {
+            final String rawTitle = bill.path("BILL_NAME").asText();
+            final String title = StringEscapeUtils.unescapeHtml4(rawTitle);
+            final String link = bill.path("DETAIL_LINK").asText();
+            final String proposeDate = bill.path("PROPOSE_DT").asText();
+            final String proposer = bill.path("PROPOSER").asText();
+            final String publProposer = bill.path("PUBL_PROPOSER").asText();
+            final String rstProposer = bill.path("RST_PROPOSER").asText();
+
+            final BillDTO billDTO = BillDTO.of(title, proposer, publProposer, rstProposer, link, proposeDate);
+            billDTOList.add(billDTO);
+        }
+
+        return billDTOList;
+    }
+
+    public BillListDTO findBillList(String encryptedCongressmanId, Pageable pageable) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final Congressman congressman = findById(congressmanId);
         final String response = getApiResponse(buildUrlStringForBill(pageable, congressman));
-        parseResponse(response, pageable.getPageSize());
+        return parseBillResponse(response, pageable.getPageSize());
     }
 }
