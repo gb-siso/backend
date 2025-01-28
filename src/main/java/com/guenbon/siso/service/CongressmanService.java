@@ -164,7 +164,7 @@ public class CongressmanService {
             handleApiError(rootNode);
         }
 
-        final int totalCount = extractTotalCount(rootNode);
+        final int totalCount = extractTotalCount(rootNode, NEWS_API_PATH);
         final int totalPage = calculateTotalPages(totalCount, pageSize);
         final List<NewsDTO> newsDTOList = extractNews(rootNode);
 
@@ -189,8 +189,8 @@ public class CongressmanService {
         throw new ApiException(apiErrorCode);
     }
 
-    private int extractTotalCount(final JsonNode rootNode) {
-        return rootNode.path(BILL_API_PATH).get(0)
+    private int extractTotalCount(final JsonNode rootNode, String apiPath) {
+        return rootNode.path(apiPath).get(0)
                 .path("head").get(0).path("list_total_count").asInt();
     }
 
@@ -223,7 +223,7 @@ public class CongressmanService {
             handleApiError(rootNode);
         }
 
-        final int totalCount = extractTotalCount(rootNode);
+        final int totalCount = extractTotalCount(rootNode, BILL_API_PATH);
         final int totalPage = calculateTotalPages(totalCount, pageSize);
         final List<BillDTO> billDTOList = extractBills(rootNode);
 
