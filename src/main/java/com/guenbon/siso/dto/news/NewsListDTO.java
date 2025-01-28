@@ -1,20 +1,44 @@
 package com.guenbon.siso.dto.news;
 
+import static com.guenbon.siso.support.constants.ApiConstants.COMP_MAN_TITLE;
+import static com.guenbon.siso.support.constants.ApiConstants.LINK_URL;
+import static com.guenbon.siso.support.constants.ApiConstants.REG_DATE;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
 public class NewsListDTO {
+
     private List<NewsDTO> newsList;
     private int lastPage;
 
     public static NewsListDTO of(List<NewsDTO> newsList, int lastPage) {
         return new NewsListDTO(newsList, lastPage);
     }
+
+    public static NewsListDTO of(JsonNode articles, int lastPage) {
+        final List<NewsDTO> newsDTOList = new ArrayList<>();
+
+        for (final JsonNode article : articles) {
+            final String rawTitle = article.path(COMP_MAN_TITLE).asText();
+            final String title = StringEscapeUtils.unescapeHtml4(rawTitle);
+            final String link = article.path(LINK_URL).asText();
+            final String regDate = article.path(REG_DATE).asText();
+
+            final NewsDTO newsDTO = NewsDTO.of(title, link, regDate);
+            newsDTOList.add(newsDTO);
+        }
+        return NewsListDTO.of(newsDTOList, lastPage);
+    }
 }
+
