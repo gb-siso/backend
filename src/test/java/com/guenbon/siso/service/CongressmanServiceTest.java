@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.guenbon.siso.dto.bill.BillDTO;
+import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -235,7 +237,7 @@ class CongressmanServiceTest {
 
     @DisplayName("findNewsList 메서드에 유효한 파라미터를 전달하면 NewsListDTO를 반환한다")
     @Test
-    void findNewList_validParameters_NewsList() {
+    void findNewsList_validParameters_NewsList() {
         // given
         final String encryptedCongressmanId = "encryptedCongressmanId";
         final Long decryptedCongressmanId = 1L;
@@ -337,5 +339,42 @@ class CongressmanServiceTest {
         assertThatThrownBy(() -> congressmanService.findBillList(encryptedCongressmanId, pageable))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining(apiErrorCode.getMessage());
+    }
+
+    @DisplayName("findBillList 메서드에 유효한 파라미터를 전달하면 BillListDTO를 반환한다")
+    @Test
+    void findBillList_validParameters_BillList() {
+        // given
+        final String encryptedCongressmanId = "encryptedCongressmanId";
+        final Long decryptedCongressmanId = 1L;
+        final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
+        final PageRequest pageable = PageRequest.of(0, 2);
+
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
+        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
+
+        // when
+        final BillListDTO BillListDTO = congressmanService.findBillList(encryptedCongressmanId, pageable);
+        final List<BillDTO> BillDTOList = BillListDTO.getBillList();
+
+        // then
+        // 검색어 이름 포함 검증
+        final String congressmanName = congressman.getName();
+        assertThat(BillDTOList).as("모든 발의안 제목에 의원 이름이 포함되어야 합니다.")
+                .allSatisfy(BillDTO -> assertThat(
+                        List.of(
+                                BillDTO.getProposer(),
+                                BillDTO.getPublProposer(),
+                                BillDTO.getRstProposer()
+                        )
+                ).anyMatch(field -> field != null && (field.contains(congressmanName))));
+
+        // regdate desc 정렬 검증
+        final int BillCount = BillDTOList.size(); // 중복 제거
+        for (int i = 0; i < BillCount - 1; i++) {
+            assertThat(BillDTOList.get(i).getProposeDate())
+                    .as("발의안은 proposeDate 기준 내림차순으로 정렬되어야 합니다.")
+                    .isAfterOrEqualTo(BillDTOList.get(i + 1).getProposeDate());
+        }
     }
 }
