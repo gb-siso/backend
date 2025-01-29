@@ -47,6 +47,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest
 class CongressmanServiceTest {
 
+    public static final String ENCRYPTED_LONG_MAX = "encryptedLongMax";
     @Autowired
     CongressmanService congressmanService;
     @MockitoBean
@@ -58,7 +59,7 @@ class CongressmanServiceTest {
     @DisplayName("findById가 존재하는 국회의원을 반환한다")
     void findById_exist_Congressman() {
         // given
-        final Congressman 이준석 = CongressmanFixture.builder().setId(1L).setName("이준석").build();
+        final Congressman 이준석 = CongressmanFixture.builder().setId(1L).build();
         when(congressmanRepository.findById(이준석.getId())).thenReturn(Optional.of(이준석));
 
         // when
@@ -102,7 +103,7 @@ class CongressmanServiceTest {
     @Test
     void getCongressmanListDTO_notLastScroll_CongressmanListDTO() {
         final PageRequest pageable = PageRequest.of(0, 2);
-        final String encryptedLongMax = "adjfla123123adjklf";
+        final String encryptedLongMax = ENCRYPTED_LONG_MAX;
 
         final List<CongressmanGetListDTO> congressmanGetListDTOList = List.of(
                 CongressmanGetListDTOFixture.builder().setId(3L).setRate(3.0).build(),
@@ -147,26 +148,24 @@ class CongressmanServiceTest {
         );
     }
 
-    @DisplayName("getCongressmanListDTO가 마지막 스크롤인 경우 CongressmanListDTO를 반환한다")
+    @DisplayName("getCongressmanListDTO가 마지막 스크롤인 경우 lastPage값이 true인 CongressmanListDTO를 반환한다")
     @Test
     void getCongressmanListDTO_lastScroll_CongressmanListDTO() {
 
         final PageRequest pageable = PageRequest.of(0, 2);
-        final String encryptedLongMax = "adjfla123123adjklf";
+        final String encryptedLongMax = ENCRYPTED_LONG_MAX;
 
         final List<CongressmanGetListDTO> congressmanGetListDTOList = List.of(
                 CongressmanGetListDTOFixture.builder().setId(3L).setRate(3.0).build(),
                 CongressmanGetListDTOFixture.builder().setId(2L).setRate(2.0).build());
-        final int size = congressmanGetListDTOList.size();
 
-        final List<String> encryptedIdList = List.of("dklq18dla03jak", "dkladokdmsl123jak", "dklqkdmsl123jak");
-        final List<List<String>> recentRatedImagesList = List.of(
-                List.of("image5", "image6"), Collections.emptyList());
+        final List<String> encryptedIdList = List.of("encrypted1", "encrypted2", "encrypted3");
+        final int size = congressmanGetListDTOList.size();
+        final List<List<String>> recentRatedImagesList = List.of(List.of("image1", "image2"), Collections.emptyList());
 
         List<CongressmanDTO> congressmanDTOListExpected = IntStream.range(0, size).mapToObj(
                 i -> getCongressmanDTO(encryptedIdList.get(i), congressmanGetListDTOList.get(i),
-                        recentRatedImagesList.get(i))).collect(
-                Collectors.toList());
+                        recentRatedImagesList.get(i))).collect(Collectors.toList());
 
         when(congressmanRepository.existsById(any(Long.class))).thenReturn(true);
         when(aesUtil.decrypt(encryptedLongMax)).thenReturn(Long.MAX_VALUE);
@@ -205,7 +204,7 @@ class CongressmanServiceTest {
                 .build();
     }
 
-    @DisplayName("findNewsList 메서드의 congressmanId가 AES 복호화에 실패하면 BadRequestException을 던진다")
+    @DisplayName("findNewsList에 복호화에 실패하는 congressmanId를 전달하면 AESErrorCode.INVALID_INPUT 에러코드인 BadRequestException을 던진다")
     @Test
     void findNewsList_invalidCongressmanId_AESFailure_BadRequestException() {
         // given : invalid congressmanId
@@ -219,7 +218,7 @@ class CongressmanServiceTest {
                 errorCode.getMessage());
     }
 
-    @DisplayName("findNewsList 메서드의 congressmanId가 존재하지 않는 값이면 BadRequestException을 던진다")
+    @DisplayName("findNewsList에 존재하지 않는 congressmanId를 전달하면 CongressmanErrorCode.NOT_EXISTS 에러코드인 BadRequestException을 던진다")
     @Test
     void findNewsList_invalidCongressmanId_NotExist_BadRequestException() {
         // given : not existing congressmanId
@@ -235,7 +234,7 @@ class CongressmanServiceTest {
                 errorCode.getMessage());
     }
 
-    @DisplayName("findNewsList 메서드에 유효한 파라미터를 전달하면 NewsListDTO를 반환한다")
+    @DisplayName("findNewsList 메서드에 유효한 파라미터를 전달하면 congressmanName이 제목에 포함된 NewsDTO가 작성날짜 내림차순으로 구성된 NewsListDTO를 반환한다")
     @Test
     void findNewsList_validParameters_NewsList() {
         // given
@@ -283,7 +282,6 @@ class CongressmanServiceTest {
                 .hasMessageContaining(apiErrorCode.getMessage());
     }
 
-    // TODO : 데이터가 없는 경우에 대해서는 빈 리스트로 반환해야 하는게 아닌지?
     public static Stream<Arguments> provideApiExceptionParameters() {
         return Stream.of(
                 Arguments.of(Named.named("1000을 넘는 pagesize", PageRequest.of(0, 10000)),
@@ -293,7 +291,7 @@ class CongressmanServiceTest {
         );
     }
 
-    @DisplayName("findBillList 메서드의 congressmanId가 AES 복호화에 실패하면 BadRequestException을 던진다")
+    @DisplayName("findBillList에 복호화에 실패하는 congressmanId를 전달하면 AESErrorCode.INVALID_INPUT 에러코드인 BadRequestException을 던진다")
     @Test
     void findBillList_invalidCongressmanId_AESFailure_BadRequestException() {
         // given : invalid congressmanId
@@ -307,7 +305,7 @@ class CongressmanServiceTest {
                 errorCode.getMessage());
     }
 
-    @DisplayName("findBillList 메서드의 congressmanId가 존재하지 않는 값이면 BadRequestException을 던진다")
+    @DisplayName("findBillList에 존재하지 않는 congressmanId를 전달하면 CongressmanErrorCode.NOT_EXISTS 에러코드인 BadRequestException을 던진다")
     @Test
     void findBillList_invalidCongressmanId_NotExist_BadRequestException() {
         // given : not existing congressmanId
@@ -341,7 +339,7 @@ class CongressmanServiceTest {
                 .hasMessageContaining(apiErrorCode.getMessage());
     }
 
-    @DisplayName("findBillList 메서드에 유효한 파라미터를 전달하면 BillListDTO를 반환한다")
+    @DisplayName("findBillList 메서드에 유효한 파라미터를 전달하면 congressmanName이 발의자에 포함된 BillDTO가 제안날짜 내림차순으로 구성된 BillListDTO를 반환한다")
     @Test
     void findBillList_validParameters_BillList() {
         // given
