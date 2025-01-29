@@ -1,8 +1,10 @@
 package com.guenbon.siso.controller;
 
+import static com.guenbon.siso.support.constants.SortProperty.PROPOSE_DATE;
 import static com.guenbon.siso.support.constants.SortProperty.RATE;
 import static com.guenbon.siso.support.constants.SortProperty.REG_DATE;
 
+import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.service.AESUtil;
@@ -54,5 +56,11 @@ public class CongressmanController {
     public ResponseEntity<NewsListDTO> newsList(@PathVariable String congressmanId,
                                                 @PageConfig(allowedSorts = REG_DATE, defaultSort = "regDate, DESC") Pageable pageable) {
         return ResponseEntity.ok(congressmanService.findNewsList(congressmanId, pageable));
+    }
+
+    @GetMapping("/bills/{congressmanId}")
+    public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
+                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC") Pageable pageable) {
+        return ResponseEntity.ok(congressmanService.findBillList(congressmanId, pageable));
     }
 }

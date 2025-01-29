@@ -6,7 +6,8 @@ public enum SortProperty {
     LIKE("like"),
     DISLIKE("dislike"),
     TOPICALITY("topicality"),
-    REG_DATE("regdate"),
+    REG_DATE("regDate"),
+    PROPOSE_DATE("proposeDate"),
     ;
 
     private final String value;
