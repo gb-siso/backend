@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.guenbon.siso.dto.bill.BillDTO;
+import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -129,9 +131,9 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.code").value("UNSUPPORTED_SORT_PROPERTY"));
     }
 
-    @DisplayName("GET:/api/v1/news/{congressmanId} 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
+    @DisplayName("GET:" + BASE_URL + "/news/{congressmanId} 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
     @ParameterizedTest(name = "congressmanId : {0} 요청 시 {1} 에러코드 응답 반환")
-    @MethodSource("provideInvalidCongressmanIdScenarios")
+    @MethodSource("provideInvalidCongressmanId")
     void newsList_invalidCongressmanId_ReturnsBadRequest(String decryptedCongressmanId, ErrorCode expectedCode)
             throws Exception {
         // given
@@ -148,14 +150,14 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.code").value(expectedCode.name()));
     }
 
-    private static Stream<Arguments> provideInvalidCongressmanIdScenarios() {
+    private static Stream<Arguments> provideInvalidCongressmanId() {
         return Stream.of(
                 Arguments.of("invalidCongressmanId", AESErrorCode.INVALID_INPUT),
                 Arguments.of("notExistCongressmanId", CongressmanErrorCode.NOT_EXISTS)
         );
     }
 
-    @DisplayName("GET:/api/v1/news/{congressmanId} 에서 ApiErrorCode에 따른 API 예외를 응답한다")
+    @DisplayName("GET:" + BASE_URL + "/news/{congressmanId} 에서 ApiErrorCode에 따른 API 예외를 응답한다")
     @ParameterizedTest
     @EnumSource(ApiErrorCode.class)
     void newsList_ApiErrorCode_ReturnsApiErrorResponse(ApiErrorCode apiErrorCode) throws Exception {
@@ -174,7 +176,7 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.code").value(apiErrorCode.name()));
     }
 
-    @DisplayName("GET:/api/v1/news/{congressmanId} 에 유효한 congressmanId 요청 시 뉴스 목록을 응답한다")
+    @DisplayName("GET:" + BASE_URL + "/news/{congressmanId} 에 유효한 congressmanId 요청 시 뉴스 목록을 응답한다")
     @Test
     void newsList_validCongressmanId_ReturnsNewsList() throws Exception {
         // given
@@ -196,9 +198,76 @@ class CongressmanControllerTest extends ControllerTest {
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.lastPage").value(10))
-                .andExpect(jsonPath("$.newsList[0].title").value("기사제목1"))
-                .andExpect(jsonPath("$.newsList[1].title").value("기사제목2"));
+                .andExpect(jsonPath("$.newsList[0].title").value(news1.getTitle()))
+                .andExpect(jsonPath("$.newsList[1].title").value(news2.getTitle()));
 
         verify(congressmanService, times(1)).findNewsList(decryptedCongressmanId, pageRequest);
+    }
+
+    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
+    @ParameterizedTest(name = "congressmanId : {0} 요청 시 {1} 에러코드 응답 반환")
+    @MethodSource("provideInvalidCongressmanId")
+    void billList_invalidCongressmanId_ReturnsBadRequest(String decryptedCongressmanId, ErrorCode expectedCode)
+            throws Exception {
+        // given
+        when(congressmanService.findBillList(decryptedCongressmanId,
+                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
+                new BadRequestException(expectedCode));
+
+        // when, then
+        mockMvc.perform(
+                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(expectedCode.getMessage()))
+                .andExpect(jsonPath("$.code").value(expectedCode.name()));
+    }
+
+    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 에서 ApiErrorCode에 따른 API 예외를 응답한다")
+    @ParameterizedTest
+    @EnumSource(ApiErrorCode.class)
+    void billList_ApiErrorCode_ReturnsApiErrorResponse(ApiErrorCode apiErrorCode) throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+        when(congressmanService.findBillList(decryptedCongressmanId,
+                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
+                new ApiException(apiErrorCode));
+
+        // when, then
+        mockMvc.perform(
+                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(apiErrorCode.getMessage()))
+                .andExpect(jsonPath("$.code").value(apiErrorCode.name()));
+    }
+
+    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 에 유효한 congressmanId 요청 시 발의안 목록을 응답한다")
+    @Test
+    void billList_validCongressmanId_ReturnsNewsList() throws Exception {
+        // given
+        final String decryptedCongressmanId = "decryptedCongressmanId";
+
+        final BillDTO bill1 = BillDTO.of("발의안제목1", "이준석의원", "의준석의원 외 10명", "의준석의원", "http://bill1.com", "2025-01-21");
+        final BillDTO bill2 = BillDTO.of("발의안제목2", "이준석의원", "의준석의원 외 10명", "의준석의원", "http://bill2.com", "2025-01-15");
+
+        final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by(Order.desc("proposeDate")));
+
+        when(congressmanService.findBillList(decryptedCongressmanId,
+                pageRequest)).thenReturn(
+                BillListDTO.of(List.of(bill1, bill2), 10)
+        );
+        // when, then
+        // when, then
+        mockMvc.perform(
+                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON)
+                                .param("size", "2"))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.lastPage").value(10))
+                .andExpect(jsonPath("$.billList[0].title").value(bill1.getTitle()))
+                .andExpect(jsonPath("$.billList[1].title").value(bill2.getTitle()));
+
+        verify(congressmanService, times(1)).findBillList(decryptedCongressmanId, pageRequest);
     }
 }
