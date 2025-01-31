@@ -2,6 +2,7 @@ package com.guenbon.siso.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.service.AESUtil;
+import com.guenbon.siso.service.AuthService;
 import com.guenbon.siso.service.CongressmanService;
 import com.guenbon.siso.service.JwtTokenProvider;
 import com.guenbon.siso.service.MemberService;
@@ -28,5 +29,7 @@ public class ControllerTest {
     protected RatingService ratingService;
     @MockitoBean
     protected MemberService memberService;
+    @MockitoBean
+    protected AuthService authService;
     protected final ObjectMapper objectMapper = new ObjectMapper();
 }

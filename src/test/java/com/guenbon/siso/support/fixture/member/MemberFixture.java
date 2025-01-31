@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberFixture {
     private Long id;
+    private Long kakaoId;
     private String nickname = "장몽이";
     private String imageUrl = "myProfileImage";
     private String refreshToken = null;
@@ -37,9 +38,15 @@ public class MemberFixture {
         return this;
     }
 
+    public MemberFixture setKakaoId(Long kakaoId) {
+        this.kakaoId = kakaoId;
+        return this;
+    }
+
     public Member build() {
         return Member.builder()
                 .id(id)
+                .kakaoId(kakaoId)
                 .nickname(nickname)
                 .imageUrl(imageUrl)
                 .refreshToken(refreshToken)
