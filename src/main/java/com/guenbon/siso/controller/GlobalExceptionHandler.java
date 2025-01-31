@@ -1,14 +1,14 @@
 package com.guenbon.siso.controller;
 
+import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
+
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse.ValidationError;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
-import com.guenbon.siso.exception.InternalServerException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
-import com.guenbon.siso.exception.errorCode.InternalServerErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
         e.printStackTrace();
-        return handleExceptionInternal(new InternalServerException(InternalServerErrorCode.INTERNAL_SERVER_ERROR));
+        return handleExceptionInternal(e);
+    }
+
+    private ResponseEntity<ErrorResponse> handleExceptionInternal(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(makeErrorResponse(e));
     }
 
     // 커스텀 예외 처리
@@ -51,6 +55,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ErrorResponse makeErrorResponse(ErrorCode errorCode) {
         return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage()).build();
     }
+
+    private ErrorResponse makeErrorResponse(Exception exception) {
+        return ErrorResponse.builder().code(INTERNAL_SERVER_ERROR.name()).message(exception.getMessage()).build();
+    }
+
 
     // @Vaild 필드 검증 실패 처리
     // @ModelAttribute 자료형 불일치로 바인딩 실패 처리 (isBindingFailure = true)
