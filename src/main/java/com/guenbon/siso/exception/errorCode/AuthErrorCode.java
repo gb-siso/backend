@@ -2,18 +2,21 @@ package com.guenbon.siso.exception.errorCode;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
 @Getter
 public enum AuthErrorCode implements ErrorCode {
-    EXPIRED("token이 만료되었습니다"),
-    UNSUPPORTED("지원하지 않는 token입니다"),
-    MALFORMED("잘못된 구조의 token입니다"),
-    SIGNATURE("데이터가 변조된 token입니다"),
-    NOT_EXISTS_IN_DATABASE("DB에 존재하지 않는 refresh token입니다"),
-    NOT_SEAL_CREATOR("씰을 만든 회원이 아닙니다"),
-    NULL_OR_BLANK_TOKEN("토큰 값이 null 또는 blank입니다"),
+    EXPIRED(HttpStatus.UNAUTHORIZED, "ATH001", "토큰이 만료됨"),
+    UNSUPPORTED(HttpStatus.BAD_REQUEST, "ATH002", "지원되지 않는 토큰"),
+    MALFORMED(HttpStatus.BAD_REQUEST, "ATH003", "토큰 구조가 올바르지 않음"),
+    SIGNATURE(HttpStatus.UNAUTHORIZED, "ATH004", "변조된 토큰"),
+    NOT_EXISTS_IN_DATABASE(HttpStatus.NOT_FOUND, "ATH005", "데이터베이스에 존재하지 않는 리프레시 토큰"),
+    NULL_OR_BLANK_TOKEN(HttpStatus.BAD_REQUEST, "ATH007", "토큰 값이 비어있거나 null"),
     ;
 
+    private final HttpStatus httpStatus;
+    private final String code;
     private final String message;
 }
+

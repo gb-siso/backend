@@ -2,12 +2,15 @@ package com.guenbon.siso.exception.errorCode;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
 @Getter
 public enum RatingErrorCode implements ErrorCode {
-    DUPLICATED("중복되는 Rating 입니다"),
+    DUPLICATED(HttpStatus.CONFLICT, "RTG001", "중복된 Rating"),
     ;
 
+    private final HttpStatus httpStatus;
+    private final String code;
     private final String message;
 }
