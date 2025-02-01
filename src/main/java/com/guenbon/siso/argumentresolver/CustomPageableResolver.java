@@ -1,6 +1,6 @@
 package com.guenbon.siso.argumentresolver;
 
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
 import com.guenbon.siso.support.annotation.page.PageConfig;
 import com.guenbon.siso.support.constants.SortProperty;
@@ -53,7 +53,7 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
         try {
             return value != null ? Integer.parseInt(value) : defaultValue;
         } catch (NumberFormatException e) {
-            throw new BadRequestException(PageableErrorCode.INVALID_FORMAT);
+            throw new CustomException(PageableErrorCode.INVALID_FORMAT);
         }
     }
 
@@ -66,10 +66,10 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
 
     private void validatePageAndSize(final int page, final int size) {
         if (page < 0) {
-            throw new BadRequestException(PageableErrorCode.INVALID_PAGE);
+            throw new CustomException(PageableErrorCode.INVALID_PAGE);
         }
         if (size < 1) {
-            throw new BadRequestException(PageableErrorCode.INVALID_SIZE);
+            throw new CustomException(PageableErrorCode.INVALID_SIZE);
         }
     }
 
@@ -95,7 +95,7 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
         if ("ASC".equals(direction) || "DESC".equals(direction)) {
             return true;
         }
-        throw new BadRequestException(PageableErrorCode.UNSUPPORTED_SORT_DIRECTION);
+        throw new CustomException(PageableErrorCode.UNSUPPORTED_SORT_DIRECTION);
     }
 
     private boolean isAllowedSort(final String property, final SortProperty[] allowedSorts) {
@@ -104,6 +104,6 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
                 return true;
             }
         }
-        throw new BadRequestException(PageableErrorCode.UNSUPPORTED_SORT_PROPERTY);
+        throw new CustomException(PageableErrorCode.UNSUPPORTED_SORT_PROPERTY);
     }
 }

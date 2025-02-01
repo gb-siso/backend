@@ -8,7 +8,7 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import java.util.List;
@@ -44,7 +44,7 @@ public class RatingService {
 
     private void validateDuplicated(final Member member, final Congressman congressman) {
         if (ratingRepository.existsByMemberAndCongressman(member, congressman)) {
-            throw new BadRequestException(RatingErrorCode.DUPLICATED);
+            throw new CustomException(RatingErrorCode.DUPLICATED);
         }
     }
 

@@ -16,10 +16,9 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanD
 import com.guenbon.siso.dto.news.NewsDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
-import com.guenbon.siso.exception.ApiException;
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
-import com.guenbon.siso.exception.errorCode.ApiErrorCode;
+import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
@@ -76,7 +75,7 @@ class CongressmanServiceTest {
         final Long 존재하지_않는_ID = 1L;
         when(congressmanRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
         // when then
-        assertThrows(BadRequestException.class, () -> congressmanService.findById(존재하지_않는_ID),
+        assertThrows(CustomException.class, () -> congressmanService.findById(존재하지_않는_ID),
                 CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 
@@ -91,10 +90,10 @@ class CongressmanServiceTest {
         String search = "김";
 
         // Mock 설정
-        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(AESErrorCode.NULL_VALUE));
+        when(aesUtil.decrypt(null)).thenThrow(new CustomException(AESErrorCode.NULL_VALUE));
 
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> congressmanService.getCongressmanListDTO(pageable, cursorId, cursorRate, party, search),
                 AESErrorCode.NULL_VALUE.getMessage());
     }
@@ -211,9 +210,9 @@ class CongressmanServiceTest {
         final String encryptedCongressmanId = "invalid";
         final ErrorCode errorCode = AESErrorCode.INVALID_INPUT;
 
-        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new BadRequestException(errorCode));
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
     }
@@ -226,10 +225,10 @@ class CongressmanServiceTest {
         final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
 
         when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
-        when(congressmanRepository.findById(1L)).thenThrow(new BadRequestException(errorCode));
+        when(congressmanRepository.findById(1L)).thenThrow(new CustomException(errorCode));
 
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> congressmanService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
     }
@@ -268,7 +267,7 @@ class CongressmanServiceTest {
     @DisplayName("findNewsList에 유효하지 않은 페이지 파라미터를 전달하면 ApiException을 던진다.")
     @ParameterizedTest
     @MethodSource("provideApiExceptionParameters")
-    void findNewsList_noDataParameters_ApiException(Pageable pageable, ApiErrorCode apiErrorCode) {
+    void findNewsList_noDataParameters_ApiException(Pageable pageable, CongressApiErrorCode congressApiErrorCode) {
         // given
         final String encryptedCongressmanId = "encryptedCongressmanId";
         final Long decryptedCongressmanId = 1L;
@@ -278,16 +277,16 @@ class CongressmanServiceTest {
         when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
 
         assertThatThrownBy(() -> congressmanService.findNewsList(encryptedCongressmanId, pageable))
-                .isInstanceOf(ApiException.class)
-                .hasMessageContaining(apiErrorCode.getMessage());
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(congressApiErrorCode.getMessage());
     }
 
     public static Stream<Arguments> provideApiExceptionParameters() {
         return Stream.of(
                 Arguments.of(Named.named("1000을 넘는 pagesize", PageRequest.of(0, 10000)),
-                        ApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED),
+                        CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED),
                 Arguments.of(Named.named("마지막 페이지를 넘는 pagenumber", PageRequest.of(9999999, 2)),
-                        ApiErrorCode.NO_DATA_FOUND)
+                        CongressApiErrorCode.NO_DATA_FOUND)
         );
     }
 
@@ -298,9 +297,9 @@ class CongressmanServiceTest {
         final String encryptedCongressmanId = "invalid";
         final ErrorCode errorCode = AESErrorCode.INVALID_INPUT;
 
-        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new BadRequestException(errorCode));
+        when(aesUtil.decrypt(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> congressmanService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
     }
@@ -313,10 +312,10 @@ class CongressmanServiceTest {
         final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
 
         when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
-        when(congressmanRepository.findById(1L)).thenThrow(new BadRequestException(errorCode));
+        when(congressmanRepository.findById(1L)).thenThrow(new CustomException(errorCode));
 
         // when, then
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> congressmanService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
                 errorCode.getMessage());
         verify(congressmanRepository).findById(1L);
@@ -325,7 +324,7 @@ class CongressmanServiceTest {
     @DisplayName("findBillList에 유효하지 않은 페이지 파라미터를 전달하면 ApiException을 던진다.")
     @ParameterizedTest
     @MethodSource("provideApiExceptionParameters")
-    void findBillList_noDataParameters_ApiException(Pageable pageable, ApiErrorCode apiErrorCode) {
+    void findBillList_noDataParameters_ApiException(Pageable pageable, CongressApiErrorCode congressApiErrorCode) {
         // given
         final String encryptedCongressmanId = "encryptedCongressmanId";
         final Long decryptedCongressmanId = 1L;
@@ -335,8 +334,8 @@ class CongressmanServiceTest {
         when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
 
         assertThatThrownBy(() -> congressmanService.findBillList(encryptedCongressmanId, pageable))
-                .isInstanceOf(ApiException.class)
-                .hasMessageContaining(apiErrorCode.getMessage());
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(congressApiErrorCode.getMessage());
     }
 
     @DisplayName("findBillList 메서드에 유효한 파라미터를 전달하면 congressmanName이 발의자에 포함된 BillDTO가 제안날짜 내림차순으로 구성된 BillListDTO를 반환한다")

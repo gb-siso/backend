@@ -1,7 +1,6 @@
 package com.guenbon.siso.service;
 
-import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.InternalServerException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +23,7 @@ public class AESUtil {
     public String encrypt(Long plainLong) {
         try {
             if (plainLong == null) {
-                throw new IllegalArgumentException();
+                throw new CustomException(AESErrorCode.NULL_VALUE);
             }
             String target = String.valueOf(plainLong); // Long을 String으로 변환
             Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
@@ -34,11 +33,11 @@ public class AESUtil {
             // Base64 URL-safe로 인코딩
             return Base64.getUrlEncoder().withoutPadding().encodeToString(resultBytes); // URL-safe 인코딩
         } catch (IllegalArgumentException | ClassCastException e) {
-            throw new BadRequestException(AESErrorCode.INVALID_INPUT);
+            throw new CustomException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
-            throw new BadRequestException(AESErrorCode.NULL_VALUE);
+            throw new CustomException(AESErrorCode.NULL_VALUE);
         } catch (Exception e) {
-            throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
+            throw new CustomException(AESErrorCode.INTERNAL_SERVER);
         }
     }
 
@@ -52,11 +51,11 @@ public class AESUtil {
             String resultString = new String(resultBytes); // 복호화된 결과를 String으로 변환
             return Long.valueOf(resultString); // String을 Long으로 변환
         } catch (IllegalArgumentException | ClassCastException e) {
-            throw new BadRequestException(AESErrorCode.INVALID_INPUT);
+            throw new CustomException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
-            throw new BadRequestException(AESErrorCode.NULL_VALUE);
+            throw new CustomException(AESErrorCode.NULL_VALUE);
         } catch (Exception e) {
-            throw new InternalServerException(AESErrorCode.INTERNAL_SEVER);
+            throw new CustomException(AESErrorCode.INTERNAL_SERVER);
         }
     }
 

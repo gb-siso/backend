@@ -1,6 +1,6 @@
 package com.guenbon.siso.service;
 
-import com.guenbon.siso.exception.UnAuthorizedException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -74,20 +74,20 @@ public class JwtTokenProvider {
     public Jws<Claims> verifySignature(String token) {
 
         if (token == null || token.isBlank()) {
-            throw new UnAuthorizedException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
         }
 
         try {
             return Jwts.parser().setSigningKey(encodedKey).requireIssuer(ISSUER)
                     .parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
-            throw new UnAuthorizedException(AuthErrorCode.EXPIRED);
+            throw new CustomException(AuthErrorCode.EXPIRED);
         } catch (UnsupportedJwtException e) {
-            throw new UnAuthorizedException(AuthErrorCode.UNSUPPORTED);
+            throw new CustomException(AuthErrorCode.UNSUPPORTED);
         } catch (MalformedJwtException e) {
-            throw new UnAuthorizedException(AuthErrorCode.MALFORMED);
+            throw new CustomException(AuthErrorCode.MALFORMED);
         } catch (SignatureException e) {
-            throw new UnAuthorizedException(AuthErrorCode.SIGNATURE);
+            throw new CustomException(AuthErrorCode.SIGNATURE);
         }
     }
 

@@ -1,9 +1,9 @@
 package com.guenbon.siso.service;
 
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.JSON_PARSE_ERROR;
 import static com.guenbon.siso.support.constants.ApiConstants.AGE;
 import static com.guenbon.siso.support.constants.ApiConstants.API_BILL_URL;
 import static com.guenbon.siso.support.constants.ApiConstants.API_NEWS_URL;
-import static com.guenbon.siso.support.constants.ApiConstants.API_PARSE_ERROR_MESSAGE;
 import static com.guenbon.siso.support.constants.ApiConstants.BILL_API_PATH;
 import static com.guenbon.siso.support.constants.ApiConstants.CODE;
 import static com.guenbon.siso.support.constants.ApiConstants.COMP_MAIN_TITLE;
@@ -26,10 +26,8 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
-import com.guenbon.siso.exception.ApiException;
-import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.InternalServerException;
-import com.guenbon.siso.exception.errorCode.ApiErrorCode;
+import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import java.util.HashMap;
@@ -62,7 +60,7 @@ public class CongressmanService {
 
     public Congressman findById(final Long id) {
         return congressmanRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(CongressmanErrorCode.NOT_EXISTS));
+                .orElseThrow(() -> new CustomException(CongressmanErrorCode.NOT_EXISTS));
     }
 
     public CongressmanListDTO getCongressmanListDTO(final Pageable pageable, final String cursorId,
@@ -159,7 +157,7 @@ public class CongressmanService {
 
     private void ensureIdExists(final Long id) {
         if (!congressmanRepository.existsById(id)) {
-            throw new InternalServerException(CongressmanErrorCode.NOT_EXISTS);
+            throw new CustomException(CongressmanErrorCode.NOT_EXISTS);
         }
     }
 
@@ -189,7 +187,7 @@ public class CongressmanService {
         try {
             return objectMapper.readTree(response);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(API_PARSE_ERROR_MESSAGE, e);
+            throw new CustomException(JSON_PARSE_ERROR);
         }
     }
 
@@ -199,8 +197,8 @@ public class CongressmanService {
 
     private void handleApiError(final JsonNode rootNode) {
         final String errorCode = rootNode.path(RESULT).path(CODE).asText().split("-")[1];
-        final ApiErrorCode apiErrorCode = ApiErrorCode.from(errorCode);
-        throw new ApiException(apiErrorCode);
+        final CongressApiErrorCode congressApiErrorCode = CongressApiErrorCode.from(errorCode);
+        throw new CustomException(congressApiErrorCode);
     }
 
     private int extractTotalCount(final JsonNode rootNode, String apiPath) {

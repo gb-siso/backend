@@ -2,8 +2,7 @@ package com.guenbon.siso.service;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.entity.Member;
-import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.InternalServerException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.support.util.RandomNicknameGenerator;
@@ -28,7 +27,7 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public Member findById(final Long id) {
-        return memberRepository.findById(id).orElseThrow(() -> new BadRequestException(MemberErrorCode.NOT_EXISTS));
+        return memberRepository.findById(id).orElseThrow(() -> new CustomException(MemberErrorCode.NOT_EXISTS));
     }
 
     /**
@@ -62,7 +61,7 @@ public class MemberService {
                 return memberRepository.save(Member.from(kakaoId, randomNickname, DEFAULT_IMAGE));
             }
         }
-        throw new InternalServerException(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED);
+        throw new CustomException(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED);
     }
 
     private ResponseCookie buildRefreshTokenCookie(String refreshToken) {

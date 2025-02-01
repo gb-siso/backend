@@ -1,11 +1,12 @@
 package com.guenbon.siso.controller;
 
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_REQUEST_BODY_FORMAT;
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.TYPE_MISMATCH;
 import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse.ValidationError;
-import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
@@ -30,7 +31,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public static final String TYPE_MISMATCH_ERROR_MESSAGE_FORMAT = "입력값 %s 를 %s 타입으로 변환할 수 없습니다.";
 
-    // 모든 예외 처리
+    // 놓친 예외 INTERNAL_SERVER_ERROR 로 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
         e.printStackTrace();
@@ -41,6 +42,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(makeErrorResponse(e));
     }
 
+    private ErrorResponse makeErrorResponse(Exception exception) {
+        return ErrorResponse.builder().code(INTERNAL_SERVER_ERROR.name()).message(exception.getMessage()).build();
+    }
+
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
@@ -49,17 +54,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> handleExceptionInternal(CustomException e) {
-        return ResponseEntity.status(e.getHttpStatus()).body(makeErrorResponse(e.getErrorCode()));
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(makeErrorResponse(e.getErrorCode()));
     }
 
     private ErrorResponse makeErrorResponse(ErrorCode errorCode) {
-        return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage()).build();
+        return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage()).build();
     }
-
-    private ErrorResponse makeErrorResponse(Exception exception) {
-        return ErrorResponse.builder().code(INTERNAL_SERVER_ERROR.name()).message(exception.getMessage()).build();
-    }
-
 
     // @Vaild 필드 검증 실패 처리
     // @ModelAttribute 자료형 불일치로 바인딩 실패 처리 (isBindingFailure = true)
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> handleExceptionInternal(BindException e, ErrorCode errorCode) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(makeErrorResponse(e, errorCode));
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(makeErrorResponse(e, errorCode));
     }
 
     private ErrorResponse makeErrorResponse(BindException e, ErrorCode errorCode) {
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 })
                 .collect(Collectors.toList());
 
-        return ErrorResponse.builder().code(errorCode.name()).message(errorCode.getMessage())
+        return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage())
                 .errors(validationErrorList).build();
     }
 
@@ -105,12 +105,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<ErrorResponse> handleExceptionInternal(MethodArgumentTypeMismatchException e) {
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .code(CommonErrorCode.TYPE_MISMATCH.name())
+                .code(TYPE_MISMATCH.getCode())
                 .message(String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, e.getValue(),
                         e.getRequiredType().getSimpleName()))
                 .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(TYPE_MISMATCH.getHttpStatus()).body(errorResponse);
     }
 
     // @RequestBody json 형식 예외 처리
@@ -125,32 +124,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (e.getCause() instanceof InvalidFormatException) {
             return handleInvalidFormatException(e);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT));
+        return ResponseEntity.status(INVALID_REQUEST_BODY_FORMAT.getHttpStatus())
+                .body(makeErrorResponse(INVALID_REQUEST_BODY_FORMAT));
     }
 
     // @RequestBody 바인딩 에러 (타입 불일치)
     private ResponseEntity<Object> handleInvalidFormatException(HttpMessageNotReadableException e) {
         InvalidFormatException cause = (InvalidFormatException) e.getCause();
         // 상세 메시지 생성
-        String customMessage = String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT,
-                cause.getValue().toString(), cause.getTargetType().getSimpleName());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(makeErrorResponse(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT, customMessage));
+        String customMessage = String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, cause.getValue().toString(),
+                cause.getTargetType().getSimpleName());
+        return ResponseEntity.status(INVALID_REQUEST_BODY_FORMAT.getHttpStatus())
+                .body(makeErrorResponse(INVALID_REQUEST_BODY_FORMAT, customMessage));
     }
 
     private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
-        return ErrorResponse.builder().code(errorCode.name()).message(message).build();
-    }
-
-    @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(
-            ApiException e) {
-        return handleExceptionInternal(e);
-    }
-
-    private ResponseEntity<ErrorResponse> handleExceptionInternal(ApiException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(makeErrorResponse(e.getErrorCode()));
+        return ErrorResponse.builder().code(errorCode.getCode()).message(message).build();
     }
 }

@@ -8,8 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.entity.Member;
-import com.guenbon.siso.exception.BadRequestException;
-import com.guenbon.siso.exception.InternalServerException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
@@ -57,7 +56,7 @@ class MemberServiceTest {
         final Long 존재하지_않는_ID = 1L;
         when(memberRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
         // when then
-        assertThrows(BadRequestException.class, () -> memberService.findById(존재하지_않는_ID),
+        assertThrows(CustomException.class, () -> memberService.findById(존재하지_않는_ID),
                 MemberErrorCode.NOT_EXISTS.getMessage());
     }
 
@@ -71,7 +70,7 @@ class MemberServiceTest {
         when(memberRepository.existsByNickname(any(String.class))).thenReturn(true);
 
         // when, then
-        assertThrows(InternalServerException.class, () -> memberService.issueToken(kakaoId),
+        assertThrows(CustomException.class, () -> memberService.issueToken(kakaoId),
                 MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
     }
 

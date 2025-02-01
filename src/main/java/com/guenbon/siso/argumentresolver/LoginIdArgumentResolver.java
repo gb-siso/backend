@@ -1,6 +1,6 @@
 package com.guenbon.siso.argumentresolver;
 
-import com.guenbon.siso.exception.UnAuthorizedException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
 import com.guenbon.siso.service.JwtTokenProvider;
 import com.guenbon.siso.support.annotation.LoginId;
@@ -32,7 +32,7 @@ public class LoginIdArgumentResolver implements HandlerMethodArgumentResolver {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
         String accessToken = request.getHeader(ACCESS_TOKEN);
         if (accessToken == null || accessToken.isBlank()) {
-            throw new UnAuthorizedException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
         }
         return jwtTokenProvider.getMemberId(accessToken);
     }

@@ -20,7 +20,7 @@ public final class ApiConstants {
     public static final String P_SIZE = "pSize";
     public static final String HEAD = "head";
     public static final String LIST_TOTAL_COUNT = "list_total_count";
-    public static final String API_PARSE_ERROR_MESSAGE = "API 응답 파싱 예외 발생";
+
 
     public static final String COMP_MAN_TITLE = "COMP_MAIN_TITLE";
     public static final String LINK_URL = "LINK_URL";

@@ -1,6 +1,6 @@
 package com.guenbon.siso.interceptor;
 
-import com.guenbon.siso.exception.UnAuthorizedException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
 import com.guenbon.siso.service.JwtTokenProvider;
 import com.guenbon.siso.support.annotation.Login;
@@ -46,7 +46,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private String getAccessTokenFromRequest(HttpServletRequest request) {
         String accessToken = request.getHeader(ACCESS_TOKEN);
         if (accessToken == null || accessToken.isBlank()) {
-            throw new UnAuthorizedException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
         }
         return accessToken;
     }

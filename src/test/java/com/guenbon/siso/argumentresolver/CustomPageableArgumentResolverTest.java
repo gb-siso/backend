@@ -31,7 +31,7 @@ class CustomPageableArgumentResolverTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(expectedErrorCode.name()))
+                .andExpect(jsonPath("$.code").value(expectedErrorCode.getCode()))
                 .andExpect(jsonPath("$.message").value(expectedErrorCode.getMessage()))
                 .andReturn();
     }
