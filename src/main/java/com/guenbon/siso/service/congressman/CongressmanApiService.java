@@ -18,7 +18,7 @@ import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
-import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -30,56 +30,49 @@ public class CongressmanApiService {
 
     @Value("${api.news.key}")
     private String newsApikey;
+
     @Value("${api.bill.key}")
     private String billApikey;
 
     private final CongressmanService congressmanService;
     private final CongressApiClient congressApiClient;
 
-    public NewsListDTO findNewsList(String encryptedCongressmanId, Pageable pageable) {
-
+    public NewsListDTO findNewsList(final String encryptedCongressmanId, final Pageable pageable) {
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
 
-        HashMap<String, String> params = new HashMap<>();
-        params.put(COMP_MAIN_TITLE, congressman.getName());
+        Map<String, String> params = Map.of(COMP_MAIN_TITLE, congressman.getName());
+        JsonNode jsonNode = fetchApiResponse(pageable, API_NEWS_URL, newsApikey, params);
 
-        String apiResponse = congressApiClient.getApiResponse(pageable, API_NEWS_URL, newsApikey, params);
-        JsonNode jsonNode = JsonParserUtil.parseJson(apiResponse);
-
-        if (isApiResponseError(jsonNode)) {
-            handleApiError(jsonNode);
-        }
-
-        int totalCount = extractTotalCount(jsonNode, NEWS_API_PATH);
-        int totalPage = calculateTotalPages(totalCount, pageable.getPageSize());
-
+        int totalPage = calculateTotalPages(extractTotalCount(jsonNode, NEWS_API_PATH), pageable.getPageSize());
         return NewsListDTO.of(getContent(jsonNode, NEWS_API_PATH), totalPage);
     }
 
-    public BillListDTO findBillList(String encryptedCongressmanId, Pageable pageable) {
+    public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) {
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
 
-        HashMap<String, String> params = new HashMap<>();
-        params.put(AGE, "22");
-        params.put(PROPOSER, congressman.getName() + "의원");
+        Map<String, String> params = Map.of(
+                AGE, "22",
+                PROPOSER, congressman.getName() + "의원"
+        );
 
-        String apiResponse = congressApiClient.getApiResponse(pageable, API_BILL_URL, billApikey, params);
-        JsonNode jsonNode = JsonParserUtil.parseJson(apiResponse);
-
-        if (isApiResponseError(jsonNode)) {
-            handleApiError(jsonNode);
-        }
-
-        int totalCount = extractTotalCount(jsonNode, BILL_API_PATH);
-        int totalPage = calculateTotalPages(totalCount, pageable.getPageSize());
+        JsonNode jsonNode = fetchApiResponse(pageable, API_BILL_URL, billApikey, params);
+        int totalPage = calculateTotalPages(extractTotalCount(jsonNode, BILL_API_PATH), pageable.getPageSize());
 
         return BillListDTO.of(getContent(jsonNode, BILL_API_PATH), totalPage);
     }
 
+    private JsonNode fetchApiResponse(final Pageable pageable, final String apiUrl, final String apiKey, final Map<String, String> params) {
+        String apiResponse = congressApiClient.getApiResponse(pageable, apiUrl, apiKey, params);
+        JsonNode jsonNode = JsonParserUtil.parseJson(apiResponse);
+
+        if (isApiResponseError(jsonNode)) {
+            handleApiError(jsonNode);
+        }
+        return jsonNode;
+    }
+
     private boolean isApiResponseError(final JsonNode rootNode) {
-        // ✅ CongressApiClient의 getFieldValue 활용
-        String code = congressApiClient.getFieldValue(rootNode, "RESULT", "CODE");
-        return code.contains("-");
+        return congressApiClient.getFieldValue(rootNode, "RESULT", "CODE").contains("-");
     }
 
     private void handleApiError(final JsonNode rootNode) {
@@ -87,16 +80,16 @@ public class CongressmanApiService {
         throw new CustomException(CongressApiErrorCode.from(errorCode));
     }
 
-    private int extractTotalCount(final JsonNode rootNode, String apiPath) {
+    private int extractTotalCount(final JsonNode rootNode, final String apiPath) {
         return rootNode.path(apiPath).get(0)
                 .path(HEAD).get(0).path(LIST_TOTAL_COUNT).asInt();
     }
 
     private int calculateTotalPages(final int totalCount, final int pageSize) {
-        return (totalCount + pageSize - 1) / pageSize; // 올림 계산
+        return (int) Math.ceil((double) totalCount / pageSize);
     }
 
-    private JsonNode getContent(JsonNode jsonNode, String apiPath) {
+    private JsonNode getContent(final JsonNode jsonNode, final String apiPath) {
         return jsonNode.path(apiPath).get(1).path("row");
     }
 }
