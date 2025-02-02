@@ -103,7 +103,7 @@ class MemberServiceTest {
                 () -> assertThat(issueTokenResult.getRefreshTokenCookie()).isEqualTo(refreshTokenCookie.toString()),
                 () -> assertThat(issueTokenResult.getNickname()).isEqualTo(member.getNickname()),
                 () -> assertThat(issueTokenResult.getImage()).isEqualTo(member.getImageUrl())
-                );
+        );
     }
 
     @Test
@@ -136,6 +136,6 @@ class MemberServiceTest {
                 () -> assertThat(issueTokenResult.getRefreshTokenCookie()).isEqualTo(refreshTokenCookie.toString()),
                 () -> assertThat(issueTokenResult.getNickname()).isEqualTo(member.getNickname()),
                 () -> assertThat(issueTokenResult.getImage()).isEqualTo(member.getImageUrl())
-                );
+        );
     }
 }

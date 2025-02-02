@@ -1,5 +1,6 @@
 package com.guenbon.siso.controller;
 
+
 import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_INPUT_VALUE;
 import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_REQUEST_BODY_FORMAT;
 import static com.guenbon.siso.exception.errorCode.RatingErrorCode.DUPLICATED;
@@ -27,11 +28,9 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
-import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingDetailDTOFixture;
@@ -80,7 +79,7 @@ class RatingControllerTest extends ControllerTest {
         when(aesUtil.decrypt(ENCRYPTED_CONGRESSMAN_ID)).thenReturn(CONGRESSMAN_ID);
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
 
-        doThrow(new CustomException(RatingErrorCode.DUPLICATED)).when(ratingService)
+        doThrow(new CustomException(DUPLICATED)).when(ratingService)
                 .create(MEMBER_ID, CONGRESSMAN_ID);
 
         mockMvc.perform(post("/api/v1/ratings")
@@ -182,9 +181,8 @@ class RatingControllerTest extends ControllerTest {
                         "content", "content는 필수입니다."),
                 Arguments.of(Named.named("100자 넘는 content",
                                 RatingWriteDTOFixture.builder()
-                                        .setContent(new StringBuilder()
-                                                .append("a".repeat(101)) // 101자 길이 문자열 생성
-                                                .toString()).build()),
+                                        .setContent("a".repeat(101) // 101자 길이 문자열 생성
+                                        ).build()),
                         "content", "content는 100자 이하여야 합니다."),
                 Arguments.of(Named.named("null rating",
                                 RatingWriteDTOFixture.builder()
@@ -218,7 +216,7 @@ class RatingControllerTest extends ControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
                 .andExpect(jsonPath("$.message").value(INVALID_REQUEST_BODY_FORMAT.getMessage())) // 오류 메시지 검증
-                .andExpect(jsonPath("$.code").value(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT.getCode())); // 오류 코드 검증
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_BODY_FORMAT.getCode())); // 오류 코드 검증
     }
 
     @Test
@@ -245,7 +243,7 @@ class RatingControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.message").value(
                         String.format(GlobalExceptionHandler.TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, "invalidType",
                                 "Float"))) // 오류 메시지 검증
-                .andExpect(jsonPath("$.code").value(CommonErrorCode.INVALID_REQUEST_BODY_FORMAT.getCode())); // 오류 코드 검증
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_BODY_FORMAT.getCode())); // 오류 코드 검증
     }
 
     @Test

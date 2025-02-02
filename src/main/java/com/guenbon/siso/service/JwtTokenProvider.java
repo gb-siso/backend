@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider {
     private final String ISSUER = "siso";
     private final String ID = "id";
-    private String encodedKey;
+    private final String encodedKey;
 
     private final Long accessTokenValidTime = 1800000L;
     private final Long refreshTokenValidTime = 604800000L;

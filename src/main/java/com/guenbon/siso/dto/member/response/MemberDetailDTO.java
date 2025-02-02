@@ -2,11 +2,10 @@ package com.guenbon.siso.dto.member.response;
 
 import com.guenbon.siso.dto.member.common.MemberDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @NoArgsConstructor
 @Setter

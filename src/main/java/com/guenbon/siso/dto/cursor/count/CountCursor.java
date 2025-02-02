@@ -24,10 +24,8 @@ public class CountCursor {
         if (isAllFieldInvalid()) { // 모든 필드 inValid
             return true;
         }
-        if (isSomeFieldInvalid()) { // 일부 필드만 inValid
-            return false;
-        }
-        return true; // 모든 필드 valid
+        // 일부 필드만 inValid
+        return !isSomeFieldInvalid();// 모든 필드 valid
     }
 
     private boolean isSomeFieldInvalid() {
@@ -40,17 +38,11 @@ public class CountCursor {
 
 
     public boolean isIdCursorValid() {
-        if (idCursor == null || idCursor.isBlank() || idCursor.equals("null")) {
-            return false;
-        }
-        return true;
+        return idCursor != null && !idCursor.isBlank() && !idCursor.equals("null");
     }
 
     public boolean isCountCursorValid() {
-        if (countCursor == null || countCursor < 0) {
-            return false;
-        }
-        return true;
+        return countCursor != null && countCursor >= 0;
     }
 
     @Override

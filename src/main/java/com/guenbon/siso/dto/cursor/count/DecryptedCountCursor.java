@@ -12,10 +12,7 @@ public class DecryptedCountCursor {
     private Integer countCursor;
 
     public Boolean isEmpty() {
-        if (idCursor == null && countCursor == null) {
-            return true;
-        }
-        return false;
+        return idCursor == null && countCursor == null;
     }
 
     public static DecryptedCountCursor of(Long decryptedId, Integer countCursor) {

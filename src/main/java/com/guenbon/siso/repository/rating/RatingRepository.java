@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface RatingRepository extends JpaRepository<Rating, Long>, QuerydslRatingRepository {
     @Query("SELECT r FROM Rating r WHERE r.member.id = :memberId AND r.congressman.id = :congressmanId")
-    Optional<Rating> findByMemberIdAndCongressmanId(@Param("memberId") Long memberId, @Param("congressmanId") Long congressmanId);
+    Optional<Rating> findByMemberIdAndCongressmanId(@Param("memberId") Long memberId,
+                                                    @Param("congressmanId") Long congressmanId);
+
     boolean existsByMemberAndCongressman(Member member, Congressman congressman);
 }

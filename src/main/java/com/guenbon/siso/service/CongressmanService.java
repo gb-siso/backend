@@ -50,6 +50,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class CongressmanService {
 
+    public static final String MESSAGE = "MESSAGE";
     // API 키
     @Value("${api.news.key}")
     private String newsApikey;
@@ -197,8 +198,7 @@ public class CongressmanService {
 
     private void handleApiError(final JsonNode rootNode) {
         final String errorCode = rootNode.path(RESULT).path(CODE).asText().split("-")[1];
-        final CongressApiErrorCode congressApiErrorCode = CongressApiErrorCode.from(errorCode);
-        throw new CustomException(congressApiErrorCode);
+        throw new CustomException(CongressApiErrorCode.from(errorCode));
     }
 
     private int extractTotalCount(final JsonNode rootNode, String apiPath) {
