@@ -6,12 +6,11 @@ import com.guenbon.siso.dto.auth.kakao.UserInfo;
 import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
+import com.guenbon.siso.service.auth.AuthApiService;
 import com.guenbon.siso.service.auth.AuthService;
-import com.guenbon.siso.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,20 +26,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
-    private final MemberService memberService;
+    private final AuthApiService authApiService;
 
     @GetMapping("/login/kakao")
     public ResponseEntity<LoginDTO> kakaoLogin(@RequestParam(required = false) String code,
                                                @RequestParam(required = false) String error,
                                                @RequestParam(required = false, name = "error_description") String errorDescription) {
         handleError(error);
-        KakaoToken token = authService.getToken(code);
-        UserInfo userInfo = authService.getUserInfo(token);
-        IssueTokenResult issueTokenResult = memberService.issueToken(userInfo.getId());
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie());
-        return ResponseEntity.status(HttpStatus.OK)
-                .headers(httpHeaders)
+        KakaoToken token = authApiService.getToken(code);
+        UserInfo userInfo = authApiService.getUserInfo(token);
+        IssueTokenResult issueTokenResult = authService.issueToken(userInfo.getId());
+        return ResponseEntity.ok()
+                .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
                 .body(LoginDTO.from(issueTokenResult));
     }
 

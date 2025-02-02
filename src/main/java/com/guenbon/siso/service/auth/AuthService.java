@@ -1,85 +1,48 @@
 package com.guenbon.siso.service.auth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guenbon.siso.dto.auth.kakao.KakaoToken;
-import com.guenbon.siso.dto.auth.kakao.UserInfo;
-import com.guenbon.siso.exception.CustomException;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
-import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
+import com.guenbon.siso.dto.auth.IssueTokenResult;
+import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.service.member.MemberService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.boot.web.server.Cookie.SameSite;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
-    public static final String KAUTH_GET_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
-    public static final String KAUTH_GET_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
-    public static final String REDIRECT_URL = "http://localhost:8080/api/v1/login/kakao";
+    public static final String REFRESH_TOKEN = "refreshToken";
+    public static final String PATH = "/";
 
-    @Value("${api.kakao.key}")
-    private String kakaoApiKey;
-    private final WebClient webClient = WebClient.builder().build();
+    private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    private Mono<? extends Throwable> handleErrorResponse(String errorBody) {
-        log.error("Error response body: {}", errorBody);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            JsonNode errorResponse = objectMapper.readTree(errorBody);
-            int code = errorResponse.path("code").asInt();
-
-            log.error("Error code: {}", code);
-            return Mono.error(new CustomException(KakaoApiErrorCode.from(String.valueOf(code))));
-        } catch (JsonProcessingException e) {
-            log.error("Failed to parse error response", e);
-            return Mono.error(new CustomException(CommonErrorCode.JSON_PARSE_ERROR));
-        }
+    /**
+     * 카카오 아이디로 jwt 토큰을 발급한다. TODO 테스트 대상
+     *
+     * @param kakaoId 카카오 아이디
+     * @return 발급한 토큰과 회원정보를 포함한 {@link IssueTokenResult} 객체
+     */
+    @Transactional(readOnly = false)
+    public IssueTokenResult issueToken(final Long kakaoId) {
+        Member member = memberService.findOrCreateMember(kakaoId);
+        final String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+        member.storeRefreshToken(refreshToken);
+        return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
     }
 
-    public UserInfo getUserInfo(KakaoToken kakaoToken) {
-        return webClient.get()
-                .uri(KAUTH_GET_USER_INFO_URL)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + kakaoToken.getAccessToken())
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .retrieve()
-                .onStatus(httpStatus -> httpStatus != HttpStatus.OK, clientResponse ->
-                        clientResponse.bodyToMono(String.class)
-                                .flatMap(errorBody -> handleErrorResponse(errorBody))
-                )
-                .bodyToMono(UserInfo.class)
-                .block();
+    private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from(REFRESH_TOKEN, refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path(PATH)
+                .sameSite(SameSite.NONE.attributeValue())
+                .build();
     }
-
-    public KakaoToken getToken(String authCode) {
-        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
-        requestBody.add("grant_type", "authorization_code");
-        requestBody.add("client_id", kakaoApiKey);
-        requestBody.add("client_id", "123abcdef");
-        requestBody.add("redirect_url", REDIRECT_URL);
-        requestBody.add("code", authCode);
-
-        return webClient.post()
-                .uri(KAUTH_GET_TOKEN_URL)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(BodyInserters.fromFormData(requestBody))
-                .retrieve()
-                .onStatus(httpStatus -> httpStatus != HttpStatus.OK, clientResponse ->
-                        clientResponse.bodyToMono(String.class)
-                                .flatMap(errorBody -> handleErrorResponse(errorBody))
-                )
-                .bodyToMono(KakaoToken.class)
-                .block();
-    }
-
 }
