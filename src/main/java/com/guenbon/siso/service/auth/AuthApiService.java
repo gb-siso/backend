@@ -2,6 +2,7 @@ package com.guenbon.siso.service.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.KakaoApiClient;
+import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.kakao.KakaoToken;
 import com.guenbon.siso.dto.auth.kakao.UserInfo;
 import com.guenbon.siso.exception.CustomException;
@@ -17,13 +18,14 @@ import org.springframework.stereotype.Service;
 public class AuthApiService {
 
     private final KakaoApiClient kakaoApiClient;
+    private final AuthService authService;
 
-    public UserInfo getUserInfo(KakaoToken kakaoToken) {
+    private UserInfo getUserInfo(KakaoToken kakaoToken) {
         String response = kakaoApiClient.requestUserInfo(kakaoToken.getAccessToken()).block();
         return processResponse(response, UserInfo.class);
     }
 
-    public KakaoToken getToken(String authCode) {
+    private KakaoToken getToken(String authCode) {
         String response = kakaoApiClient.requestToken(authCode).block();
         return processResponse(response, KakaoToken.class);
     }
@@ -40,5 +42,11 @@ public class AuthApiService {
         int errorCode = JsonParserUtil.extractErrorCode(errorResponse);
         log.error("Kakao API Error Code: {}", errorCode);
         throw new CustomException(KakaoApiErrorCode.from(String.valueOf(errorCode)));
+    }
+
+    public IssueTokenResult authenticateWithKakao(String code) {
+        KakaoToken token = getToken(code);
+        UserInfo userInfo = getUserInfo(token);
+        return authService.issueToken(userInfo.getId());
     }
 }

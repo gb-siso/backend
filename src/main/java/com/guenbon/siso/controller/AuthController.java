@@ -1,8 +1,6 @@
 package com.guenbon.siso.controller;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
-import com.guenbon.siso.dto.auth.kakao.KakaoToken;
-import com.guenbon.siso.dto.auth.kakao.UserInfo;
 import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
@@ -33,9 +31,7 @@ public class AuthController {
                                                @RequestParam(required = false) String error,
                                                @RequestParam(required = false, name = "error_description") String errorDescription) {
         handleError(error);
-        KakaoToken token = authApiService.getToken(code);
-        UserInfo userInfo = authApiService.getUserInfo(token);
-        IssueTokenResult issueTokenResult = authService.issueToken(userInfo.getId());
+        final IssueTokenResult issueTokenResult = authApiService.authenticateWithKakao(code);
         return ResponseEntity.ok()
                 .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
                 .body(LoginDTO.from(issueTokenResult));
