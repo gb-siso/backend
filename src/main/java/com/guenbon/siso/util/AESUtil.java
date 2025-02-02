@@ -1,4 +1,4 @@
-package com.guenbon.siso.service;
+package com.guenbon.siso.util;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;

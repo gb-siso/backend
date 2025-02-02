@@ -7,9 +7,10 @@ import static com.guenbon.siso.support.constants.SortProperty.REG_DATE;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
-import com.guenbon.siso.service.AESUtil;
-import com.guenbon.siso.service.CongressmanService;
+import com.guenbon.siso.service.congressman.CongressmanApiService;
+import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.annotation.page.PageConfig;
+import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public class CongressmanController {
 
     private final AESUtil aesUtil;
     private final CongressmanService congressmanService;
+    private final CongressmanApiService congressmanApiService;
 
     @GetMapping
     public ResponseEntity<CongressmanListDTO> congressmanList(
@@ -55,12 +57,12 @@ public class CongressmanController {
     @GetMapping("/news/{congressmanId}")
     public ResponseEntity<NewsListDTO> newsList(@PathVariable String congressmanId,
                                                 @PageConfig(allowedSorts = REG_DATE, defaultSort = "regDate, DESC") Pageable pageable) {
-        return ResponseEntity.ok(congressmanService.findNewsList(congressmanId, pageable));
+        return ResponseEntity.ok(congressmanApiService.findNewsList(congressmanId, pageable));
     }
 
     @GetMapping("/bills/{congressmanId}")
     public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
                                                 @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC") Pageable pageable) {
-        return ResponseEntity.ok(congressmanService.findBillList(congressmanId, pageable));
+        return ResponseEntity.ok(congressmanApiService.findBillList(congressmanId, pageable));
     }
 }

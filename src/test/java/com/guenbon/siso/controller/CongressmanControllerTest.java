@@ -137,7 +137,7 @@ class CongressmanControllerTest extends ControllerTest {
     void newsList_invalidCongressmanId_ReturnsBadRequest(String decryptedCongressmanId, ErrorCode expectedCode)
             throws Exception {
         // given
-        when(congressmanService.findNewsList(decryptedCongressmanId,
+        when(congressmanApiService.findNewsList(decryptedCongressmanId,
                 PageRequest.of(0, 10, Sort.by(Sort.Order.desc("regDate"))))).thenThrow(
                 new CustomException(expectedCode));
 
@@ -163,7 +163,7 @@ class CongressmanControllerTest extends ControllerTest {
     void newsList_ApiErrorCode_ReturnsApiErrorResponse(CongressApiErrorCode congressApiErrorCode) throws Exception {
         // given
         final String decryptedCongressmanId = "decryptedCongressmanId";
-        when(congressmanService.findNewsList(decryptedCongressmanId,
+        when(congressmanApiService.findNewsList(decryptedCongressmanId,
                 PageRequest.of(0, 10, Sort.by(Sort.Order.desc("regDate"))))).thenThrow(
                 new CustomException(congressApiErrorCode));
 
@@ -186,7 +186,7 @@ class CongressmanControllerTest extends ControllerTest {
         final NewsDTO news2 = NewsDTO.of("기사제목2", "link2", "2025-01-15 08:00");
         final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by(Order.desc("regDate")));
 
-        when(congressmanService.findNewsList(decryptedCongressmanId,
+        when(congressmanApiService.findNewsList(decryptedCongressmanId,
                 pageRequest)).thenReturn(
                 NewsListDTO.of(List.of(news1, news2), 10)
         );
@@ -201,7 +201,7 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.newsList[0].title").value(news1.getTitle()))
                 .andExpect(jsonPath("$.newsList[1].title").value(news2.getTitle()));
 
-        verify(congressmanService, times(1)).findNewsList(decryptedCongressmanId, pageRequest);
+        verify(congressmanApiService, times(1)).findNewsList(decryptedCongressmanId, pageRequest);
     }
 
     @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
@@ -210,7 +210,7 @@ class CongressmanControllerTest extends ControllerTest {
     void billList_invalidCongressmanId_ReturnsBadRequest(String decryptedCongressmanId, ErrorCode expectedCode)
             throws Exception {
         // given
-        when(congressmanService.findBillList(decryptedCongressmanId,
+        when(congressmanApiService.findBillList(decryptedCongressmanId,
                 PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
                 new CustomException(expectedCode));
 
@@ -229,7 +229,7 @@ class CongressmanControllerTest extends ControllerTest {
     void billList_ApiErrorCode_ReturnsApiErrorResponse(CongressApiErrorCode congressApiErrorCode) throws Exception {
         // given
         final String decryptedCongressmanId = "decryptedCongressmanId";
-        when(congressmanService.findBillList(decryptedCongressmanId,
+        when(congressmanApiService.findBillList(decryptedCongressmanId,
                 PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
                 new CustomException(congressApiErrorCode));
 
@@ -253,7 +253,7 @@ class CongressmanControllerTest extends ControllerTest {
 
         final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by(Order.desc("proposeDate")));
 
-        when(congressmanService.findBillList(decryptedCongressmanId,
+        when(congressmanApiService.findBillList(decryptedCongressmanId,
                 pageRequest)).thenReturn(
                 BillListDTO.of(List.of(bill1, bill2), 10)
         );
@@ -268,6 +268,6 @@ class CongressmanControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.billList[0].title").value(bill1.getTitle()))
                 .andExpect(jsonPath("$.billList[1].title").value(bill2.getTitle()));
 
-        verify(congressmanService, times(1)).findBillList(decryptedCongressmanId, pageRequest);
+        verify(congressmanApiService, times(1)).findBillList(decryptedCongressmanId, pageRequest);
     }
 }

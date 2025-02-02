@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import com.guenbon.siso.util.AESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
