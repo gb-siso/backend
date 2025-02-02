@@ -4,6 +4,8 @@ import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.kakao.KakaoToken;
 import com.guenbon.siso.dto.auth.kakao.UserInfo;
 import com.guenbon.siso.dto.auth.response.LoginDTO;
+import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.service.AuthService;
 import com.guenbon.siso.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,10 @@ public class AuthController {
     private final MemberService memberService;
 
     @GetMapping("/login/kakao")
-    public ResponseEntity<LoginDTO> kakaoLogin(@RequestParam String code) {
+    public ResponseEntity<LoginDTO> kakaoLogin(@RequestParam(required = false) String code,
+                                               @RequestParam(required = false) String error,
+                                               @RequestParam(required = false, name = "error_description") String errorDescription) {
+        handleError(error);
         KakaoToken token = authService.getToken(code);
         UserInfo userInfo = authService.getUserInfo(token);
         IssueTokenResult issueTokenResult = memberService.issueToken(userInfo.getId());
@@ -37,6 +42,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(httpHeaders)
                 .body(LoginDTO.from(issueTokenResult));
+    }
+
+    private static void handleError(String error) {
+        if (error != null) {
+            throw new CustomException(KakaoApiErrorCode.from(error));
+        }
     }
 
     @PostMapping
