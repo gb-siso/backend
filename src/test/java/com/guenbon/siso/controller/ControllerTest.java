@@ -1,6 +1,7 @@
 package com.guenbon.siso.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guenbon.siso.service.auth.AuthApiService;
 import com.guenbon.siso.service.auth.AuthService;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.service.congressman.CongressmanApiService;
@@ -34,5 +35,7 @@ public class ControllerTest {
     protected MemberService memberService;
     @MockitoBean
     protected AuthService authService;
+    @MockitoBean
+    protected AuthApiService authApiService;
     protected final ObjectMapper objectMapper = new ObjectMapper();
 }
