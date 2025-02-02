@@ -1,12 +1,13 @@
 package com.guenbon.siso.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guenbon.siso.service.AESUtil;
-import com.guenbon.siso.service.AuthService;
-import com.guenbon.siso.service.CongressmanService;
-import com.guenbon.siso.service.JwtTokenProvider;
-import com.guenbon.siso.service.MemberService;
-import com.guenbon.siso.service.RatingService;
+import com.guenbon.siso.service.auth.AuthService;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.congressman.CongressmanApiService;
+import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.service.member.MemberService;
+import com.guenbon.siso.service.rating.RatingService;
+import com.guenbon.siso.util.AESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,6 +24,8 @@ public class ControllerTest {
     protected AESUtil aesUtil;
     @MockitoBean
     protected CongressmanService congressmanService;
+    @MockitoBean
+    protected CongressmanApiService congressmanApiService;
     @MockitoBean
     protected JwtTokenProvider jwtTokenProvider;
     @MockitoBean

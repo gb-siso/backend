@@ -2,7 +2,7 @@ package com.guenbon.siso.argumentresolver;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
-import com.guenbon.siso.service.JwtTokenProvider;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.support.annotation.LoginId;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

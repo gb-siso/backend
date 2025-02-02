@@ -1,4 +1,4 @@
-package com.guenbon.siso.support.util;
+package com.guenbon.siso.util;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;

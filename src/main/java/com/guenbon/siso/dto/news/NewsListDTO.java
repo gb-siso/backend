@@ -11,12 +11,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
+@Slf4j
 public class NewsListDTO {
 
     private List<NewsDTO> newsList;
@@ -34,6 +36,7 @@ public class NewsListDTO {
             final String title = StringEscapeUtils.unescapeHtml4(rawTitle);
             final String link = article.path(LINK_URL).asText();
             final String regDate = article.path(REG_DATE).asText();
+            log.info("title : {}, link : {}, regDate : {}", title, link, regDate);
 
             final NewsDTO newsDTO = NewsDTO.of(title, link, regDate);
             newsDTOList.add(newsDTO);

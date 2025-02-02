@@ -1,11 +1,12 @@
-package com.guenbon.siso.service;
+package com.guenbon.siso.service.member;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
-import com.guenbon.siso.support.util.RandomNicknameGenerator;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.util.RandomNicknameGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.server.Cookie.SameSite;

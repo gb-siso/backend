@@ -1,9 +1,9 @@
 package com.guenbon.siso.controller;
 
-import com.guenbon.siso.service.AESUtil;
-import com.guenbon.siso.service.CongressmanService;
-import com.guenbon.siso.service.JwtTokenProvider;
-import com.guenbon.siso.service.MemberService;
+import com.guenbon.siso.util.AESUtil;
+import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

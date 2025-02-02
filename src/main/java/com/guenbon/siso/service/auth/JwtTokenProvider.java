@@ -1,4 +1,4 @@
-package com.guenbon.siso.service;
+package com.guenbon.siso.service.auth;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
