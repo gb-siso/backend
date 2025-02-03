@@ -15,7 +15,7 @@ import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
-import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
 import java.util.Map;
@@ -77,7 +77,7 @@ public class CongressmanApiService {
 
     private void handleApiError(final JsonNode rootNode) {
         String errorCode = congressApiClient.getFieldValue(rootNode, "RESULT", "CODE").split("-")[1];
-        throw new CustomException(CongressApiErrorCode.from(errorCode));
+        throw new ApiException(CongressApiErrorCode.from(errorCode));
     }
 
     private int extractTotalCount(final JsonNode rootNode, final String apiPath) {

@@ -5,7 +5,7 @@ import com.guenbon.siso.client.KakaoApiClient;
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.kakao.KakaoToken;
 import com.guenbon.siso.dto.auth.kakao.UserInfo;
-import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class AuthApiService {
     private void handleErrorResponse(JsonNode errorResponse) {
         int errorCode = JsonParserUtil.extractErrorCode(errorResponse);
         log.error("Kakao API Error Code: {}", errorCode);
-        throw new CustomException(KakaoApiErrorCode.from(String.valueOf(errorCode)));
+        throw new ApiException(KakaoApiErrorCode.from(String.valueOf(errorCode)));
     }
 
     public IssueTokenResult authenticateWithKakao(String code) {

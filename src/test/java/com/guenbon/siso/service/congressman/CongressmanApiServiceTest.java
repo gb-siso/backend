@@ -11,6 +11,7 @@ import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
@@ -120,7 +121,7 @@ class CongressmanApiServiceTest {
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         assertThatThrownBy(() -> congressmanApiService.findNewsList(encryptedCongressmanId, pageable))
-                .isInstanceOf(CustomException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessageContaining(congressApiErrorCode.getMessage());
     }
 
@@ -178,7 +179,7 @@ class CongressmanApiServiceTest {
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         assertThatThrownBy(() -> congressmanApiService.findBillList(encryptedCongressmanId, pageable))
-                .isInstanceOf(CustomException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessageContaining(congressApiErrorCode.getMessage());
     }
 

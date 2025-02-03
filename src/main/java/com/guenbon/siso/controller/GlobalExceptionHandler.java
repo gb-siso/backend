@@ -6,8 +6,10 @@ import static com.guenbon.siso.exception.errorCode.CommonErrorCode.TYPE_MISMATCH
 import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.guenbon.siso.dto.error.ApiErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse.ValidationError;
+import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
@@ -60,6 +62,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ErrorResponse makeErrorResponse(ErrorCode errorCode) {
         return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage()).build();
+    }
+
+    // 외부 api 예외 처리
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(ApiException e) {
+        e.printStackTrace();
+        return handleExceptionInternal(e);
+    }
+
+    private ResponseEntity<ApiErrorResponse> handleExceptionInternal(ApiException e) {
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiErrorResponse.from(e.getErrorCode()));
     }
 
     // @Vaild 필드 검증 실패 처리
