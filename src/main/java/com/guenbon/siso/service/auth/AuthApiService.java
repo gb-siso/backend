@@ -39,7 +39,7 @@ public class AuthApiService {
     }
 
     private void handleErrorResponse(JsonNode errorResponse) {
-        int errorCode = JsonParserUtil.extractErrorCode(errorResponse);
+        String errorCode = JsonParserUtil.extractErrorCode(errorResponse);
         log.error("Kakao API Error Code: {}", errorCode);
         throw new ApiException(KakaoApiErrorCode.from(String.valueOf(errorCode)));
     }

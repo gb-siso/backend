@@ -31,7 +31,8 @@ public class KakaoApiClient {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(String.class)
+                .doOnNext(response -> log.info("Response: {}", response)); // 응답 로그 출력
     }
 
     @Transactional(propagation = Propagation.NEVER)
@@ -46,7 +47,9 @@ public class KakaoApiClient {
                 .uri(KAUTH_GET_TOKEN_URL)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(String.class);
+                .exchangeToMono(response -> {
+                    return response.bodyToMono(String.class)
+                            .doOnNext(body -> log.info("log kakao api body: {}", body));
+                });
     }
 }

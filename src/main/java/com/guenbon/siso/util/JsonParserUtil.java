@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JsonParserUtil {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final String ERROR_CODE = "error_code";
 
     public static JsonNode parseJson(final String response) {
         try {
@@ -26,16 +27,16 @@ public class JsonParserUtil {
             JsonNode rootNode = parseJson(json);
             return objectMapper.treeToValue(rootNode, responseType);
         } catch (Exception e) {
-            log.error("Failed to map JSON to object", e);
+            log.error("Failed to map JSON to object : {}", e.getMessage());
             throw new CustomException(CommonErrorCode.JSON_PARSE_ERROR);
         }
     }
 
     public static boolean hasErrorCode(JsonNode rootNode) {
-        return rootNode.has("code");
+        return rootNode.has(ERROR_CODE);
     }
 
-    public static int extractErrorCode(JsonNode rootNode) {
-        return rootNode.path("code").asInt();
+    public static String extractErrorCode(JsonNode rootNode) {
+        return rootNode.path(ERROR_CODE).asText();
     }
 }

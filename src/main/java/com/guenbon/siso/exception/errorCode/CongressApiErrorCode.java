@@ -36,7 +36,7 @@ public enum CongressApiErrorCode implements ErrorCode {
                 return congressApiErrorCode;
             }
         }
-        throw new CustomException(CommonErrorCode.INVALID_ERROR_CODE);
+        throw new CustomException(CommonErrorCode.FAIL_EXTERNAL_ERROR_CODE_MAPPING);
     }
 }
 
