@@ -15,6 +15,7 @@ public class JsonParserUtil {
     public static final String ERROR_CODE = "error_code";
 
     public static JsonNode parseJson(final String response) {
+        log.info("JsonParserUtil parseJson : {}", response);
         try {
             return objectMapper.readTree(response);
         } catch (JsonProcessingException e) {
