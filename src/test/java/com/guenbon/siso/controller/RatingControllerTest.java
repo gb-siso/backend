@@ -1,26 +1,8 @@
 package com.guenbon.siso.controller;
 
 
-import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_INPUT_VALUE;
-import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_REQUEST_BODY_FORMAT;
-import static com.guenbon.siso.exception.errorCode.RatingErrorCode.DUPLICATED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
@@ -31,29 +13,63 @@ import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.rating.RatingService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingDetailDTOFixture;
 import com.guenbon.siso.support.fixture.rating.RatingWriteDTOFixture;
-import java.util.List;
-import java.util.stream.Stream;
+import com.guenbon.siso.util.AESUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-class RatingControllerTest extends ControllerTest {
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_INPUT_VALUE;
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_REQUEST_BODY_FORMAT;
+import static com.guenbon.siso.exception.errorCode.RatingErrorCode.DUPLICATED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = RatingController.class)
+@Slf4j
+class RatingControllerTest {
 
     public static final String ENCRYPTED_CONGRESSMAN_ID = "encryptedCongressmanId";
     public static final Long CONGRESSMAN_ID = 1L;
     public static final Long MEMBER_ID = 10L;
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String BLANK_STRING = "";
+
+    @MockitoBean
+    protected JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private MockMvc mockMvc;
+    @MockitoBean
+    private AESUtil aesUtil;
+    @MockitoBean
+    private RatingService ratingService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     @DisplayName("빈 주입 확인 - MockMvc, AESUtil, JwtTokenProvider, ObjectMapper 빈 정상 주입")

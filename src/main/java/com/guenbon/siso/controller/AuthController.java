@@ -5,7 +5,6 @@ import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
-import com.guenbon.siso.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthController {
 
-    private final AuthService authService;
     private final AuthApiService authApiService;
 
     /**

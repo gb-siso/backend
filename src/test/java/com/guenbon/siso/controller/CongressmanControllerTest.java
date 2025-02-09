@@ -1,15 +1,5 @@
 package com.guenbon.siso.controller;
 
-import static com.guenbon.siso.exception.errorCode.PageableErrorCode.UNSUPPORTED_SORT_PROPERTY;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
@@ -21,9 +11,11 @@ import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.congressman.CongressmanApiService;
+import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanDTOFixture;
-import java.util.List;
-import java.util.stream.Stream;
+import com.guenbon.siso.util.AESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,17 +23,40 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.guenbon.siso.exception.errorCode.PageableErrorCode.UNSUPPORTED_SORT_PROPERTY;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = CongressmanController.class)
 @Slf4j
-class CongressmanControllerTest extends ControllerTest {
+class CongressmanControllerTest {
 
     public static final String BASE_URL = "/api/v1/congressman";
+
+    @MockitoBean
+    protected JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private MockMvc mockMvc;
+    @MockitoBean
+    private AESUtil aesUtil;
+    @MockitoBean
+    private CongressmanService congressmanService;
+    @MockitoBean
+    private CongressmanApiService congressmanApiService;
 
     @DisplayName("GET:" + BASE_URL + " 성공적으로 Congressman 목록을 반환한다")
     @Test
