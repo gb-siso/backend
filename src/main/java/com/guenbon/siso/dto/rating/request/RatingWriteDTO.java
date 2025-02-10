@@ -27,7 +27,7 @@ public class RatingWriteDTO {
     private String content;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "rating은 0.0 이상이어야 합니다.")
-    @DecimalMax(value = "5.0", inclusive = true, message = "rating은 5.0 이하여야 합니다.")
+    @DecimalMax(value = "10.0", inclusive = true, message = "rating은 10.0 이하여야 합니다.")
     @Digits(integer = 1, fraction = 1, message = "rating은 소수점 1자리까지 입력 가능합니다.")
     @NotNull(message = "rating는 필수입니다.")
     private Float rating;

@@ -193,8 +193,8 @@ class RatingControllerTest extends ControllerTest {
                         "rating", "rating은 0.0 이상이어야 합니다."),
                 Arguments.of(Named.named("rating above maximum",
                                 RatingWriteDTOFixture.builder()
-                                        .setRating(6.0f).build()),
-                        "rating", "rating은 5.0 이하여야 합니다."),
+                                        .setRating(11.0f).build()),
+                        "rating", "rating은 10.0 이하여야 합니다."),
                 Arguments.of(Named.named("rating with more than one decimal place",
                                 RatingWriteDTOFixture.builder()
                                         .setRating(3.123f).build()),
