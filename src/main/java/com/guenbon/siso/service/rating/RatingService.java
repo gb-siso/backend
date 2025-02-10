@@ -1,4 +1,4 @@
-package com.guenbon.siso.service;
+package com.guenbon.siso.service.rating;
 
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
@@ -8,9 +8,12 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.rating.RatingRepository;
+import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.service.member.MemberService;
+import com.guenbon.siso.util.AESUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +47,7 @@ public class RatingService {
 
     private void validateDuplicated(final Member member, final Congressman congressman) {
         if (ratingRepository.existsByMemberAndCongressman(member, congressman)) {
-            throw new BadRequestException(RatingErrorCode.DUPLICATED);
+            throw new CustomException(RatingErrorCode.DUPLICATED);
         }
     }
 

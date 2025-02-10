@@ -16,10 +16,14 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
 import com.guenbon.siso.repository.rating.RatingRepository;
+import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.service.member.MemberService;
+import com.guenbon.siso.service.rating.RatingService;
+import com.guenbon.siso.util.AESUtil;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.dislike.RatingDislikeFixture;
 import com.guenbon.siso.support.fixture.like.RatingLikeFixture;
@@ -65,7 +69,7 @@ class RatingServiceTest {
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
         // when, then
         assertThrows(
-                BadRequestException.class,
+                CustomException.class,
                 () -> ratingService.create(장몽이.getId(), 이준석.getId()),
                 RatingErrorCode.DUPLICATED.getMessage()
         );
@@ -90,10 +94,10 @@ class RatingServiceTest {
     void validateAndGetRecentRatings_nullCongressmanId_throwsBadRequestException() {
         // given
         final PageRequest pageable = createPageRequest("topicality", 0);
-        when(aesUtil.decrypt(null)).thenThrow(new BadRequestException(AESErrorCode.NULL_VALUE));
+        when(aesUtil.decrypt(null)).thenThrow(new CustomException(AESErrorCode.NULL_VALUE));
         // when, then
         assertThrows(
-                BadRequestException.class,
+                CustomException.class,
                 () -> ratingService.validateAndGetRecentRatings(null, pageable, null),
                 AESErrorCode.NULL_VALUE.getMessage()
         );

@@ -1,20 +1,49 @@
 package com.guenbon.siso.controller;
 
+import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.response.LoginDTO;
+import com.guenbon.siso.exception.ApiException;
+import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
+import com.guenbon.siso.service.auth.AuthApiService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
-    @GetMapping("/kakao")
-    public ResponseEntity<LoginDTO> kakaoLogin(String code) {
-        return null;
+    private final AuthApiService authApiService;
+
+    /**
+     * 카카오 로그인
+     *
+     * @param code             인가코드 (성공 시)
+     * @param error            에러코드 (실패 시)
+     * @param errorDescription 에러 설명
+     * @return
+     */
+    @GetMapping("/login/kakao")
+    public ResponseEntity<LoginDTO> kakaoLogin(@RequestParam(required = false) String code,
+                                               @RequestParam(required = false) String error,
+                                               @RequestParam(required = false, name = "error_description") String errorDescription) {
+        log.info("카카오 인가코드 error : {}, error_description : {}", error, errorDescription);
+        handleError(error);
+        final IssueTokenResult issueTokenResult = authApiService.authenticateWithKakao(code);
+        return ResponseEntity.ok()
+                .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
+                .body(LoginDTO.from(issueTokenResult));
+    }
+
+    // 쿼리 파라미터로 예외처리하므로 컨트롤러단에서 처리
+    private static void handleError(String error) {
+        if (error != null) {
+            throw new ApiException(KakaoApiErrorCode.from(error));
+        }
     }
 
     @PostMapping

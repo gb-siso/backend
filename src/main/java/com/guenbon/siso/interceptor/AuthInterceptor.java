@@ -1,8 +1,8 @@
 package com.guenbon.siso.interceptor;
 
-import com.guenbon.siso.exception.UnAuthorizedException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
-import com.guenbon.siso.service.JwtTokenProvider;
+import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.support.annotation.Login;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,11 +24,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        if (!(handler instanceof HandlerMethod)) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
             return true;
         }
-
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         Login loginAnnotation = handlerMethod.getMethodAnnotation(Login.class);
 
@@ -46,7 +44,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private String getAccessTokenFromRequest(HttpServletRequest request) {
         String accessToken = request.getHeader(ACCESS_TOKEN);
         if (accessToken == null || accessToken.isBlank()) {
-            throw new UnAuthorizedException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
         }
         return accessToken;
     }

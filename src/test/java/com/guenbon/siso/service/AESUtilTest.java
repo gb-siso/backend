@@ -3,8 +3,9 @@ package com.guenbon.siso.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.guenbon.siso.exception.BadRequestException;
+import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import com.guenbon.siso.util.AESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,11 +35,11 @@ class AESUtilTest {
     @DisplayName("encrypt와 decrypt에서 클라이언트 입력값에 의한 예외 발생 시 BadRequestException을 던진다")
     void encryptAndDecrypt_null_BadRequestException() {
         // encrypt null 값 예외 확인
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> aesUtil.encrypt(null), AESErrorCode.NULL_VALUE.getMessage());
 
         // decrypt null 값 예외 확인
-        assertThrows(BadRequestException.class,
+        assertThrows(CustomException.class,
                 () -> aesUtil.decrypt(null), AESErrorCode.NULL_VALUE.getMessage());
     }
 }

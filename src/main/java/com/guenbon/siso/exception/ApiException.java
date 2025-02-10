@@ -2,11 +2,13 @@ package com.guenbon.siso.exception;
 
 import com.guenbon.siso.exception.errorCode.ErrorCode;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
-public class ApiException extends CustomException {
+public class ApiException extends RuntimeException {
+    private final ErrorCode errorCode;
+
     public ApiException(final ErrorCode errorCode) {
-        super(errorCode, HttpStatus.BAD_REQUEST);
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 }
