@@ -13,7 +13,7 @@ public @interface PageConfig {
 
     String defaultSort() default "id, DESC"; // 기본 sort
 
-    int defaultPage() default 0; // 기본 page
+    int defaultPage() default 1; // 기본 page
 
     int defaultSize() default 10; // 기본 size
 }

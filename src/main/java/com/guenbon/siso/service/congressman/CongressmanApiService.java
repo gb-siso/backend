@@ -1,15 +1,5 @@
 package com.guenbon.siso.service.congressman;
 
-import static com.guenbon.siso.support.constants.ApiConstants.AGE;
-import static com.guenbon.siso.support.constants.ApiConstants.API_BILL_URL;
-import static com.guenbon.siso.support.constants.ApiConstants.API_NEWS_URL;
-import static com.guenbon.siso.support.constants.ApiConstants.BILL_API_PATH;
-import static com.guenbon.siso.support.constants.ApiConstants.COMP_MAIN_TITLE;
-import static com.guenbon.siso.support.constants.ApiConstants.HEAD;
-import static com.guenbon.siso.support.constants.ApiConstants.LIST_TOTAL_COUNT;
-import static com.guenbon.siso.support.constants.ApiConstants.NEWS_API_PATH;
-import static com.guenbon.siso.support.constants.ApiConstants.PROPOSER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillListDTO;
@@ -18,14 +8,19 @@ import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
+import static com.guenbon.siso.support.constants.ApiConstants.*;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CongressmanApiService {
 
     @Value("${api.news.key}")
@@ -43,8 +38,8 @@ public class CongressmanApiService {
         Map<String, String> params = Map.of(COMP_MAIN_TITLE, congressman.getName());
         JsonNode jsonNode = fetchApiResponse(pageable, API_NEWS_URL, newsApikey, params);
 
-        int totalPage = calculateTotalPages(extractTotalCount(jsonNode, NEWS_API_PATH), pageable.getPageSize());
-        return NewsListDTO.of(getContent(jsonNode, NEWS_API_PATH), totalPage);
+        int lastPage = calculateTotalPages(extractTotalCount(jsonNode, NEWS_API_PATH), pageable.getPageSize());
+        return NewsListDTO.of(getContent(jsonNode, NEWS_API_PATH), lastPage);
     }
 
     public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) {

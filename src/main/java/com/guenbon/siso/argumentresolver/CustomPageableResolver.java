@@ -44,7 +44,8 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
         final String property = sortParts[0].trim();
         final boolean isDescending = sortParts.length == 2 && "DESC".equalsIgnoreCase(sortParts[1].trim());
 
-        return PageRequest.of(page, size,
+        // page - 1 ( 요청 : 1페이지 -> 실제 : 0페이지 )
+        return PageRequest.of(page - 1, size,
                 isDescending ? Sort.by(property).descending() : Sort.by(property).ascending());
     }
 
@@ -65,7 +66,7 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
     }
 
     private void validatePageAndSize(final int page, final int size) {
-        if (page < 0) {
+        if (page <= 0) {
             throw new CustomException(PageableErrorCode.INVALID_PAGE);
         }
         if (size < 1) {
