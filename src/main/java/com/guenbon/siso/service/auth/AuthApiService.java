@@ -2,9 +2,12 @@ package com.guenbon.siso.service.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.KakaoApiClient;
+import com.guenbon.siso.client.NaverApiClient;
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.kakao.KakaoToken;
 import com.guenbon.siso.dto.auth.kakao.UserInfo;
+import com.guenbon.siso.dto.auth.naver.NaverToken;
+import com.guenbon.siso.dto.auth.naver.NaverUserInfo;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
@@ -18,14 +21,25 @@ import org.springframework.stereotype.Service;
 public class AuthApiService {
 
     private final KakaoApiClient kakaoApiClient;
+    private final NaverApiClient naverApiClient;
     private final AuthService authService;
 
-    private UserInfo getUserInfo(KakaoToken kakaoToken) {
+    private NaverUserInfo getNaverUserInfo(NaverToken naverToken) {
+        String response = naverApiClient.requestUserInfo(naverToken.getAccessToken()).block();
+        return processResponse(response, NaverUserInfo.class);
+    }
+
+    private NaverToken getNaverToken(String authCode, String state) {
+        String response = naverApiClient.requestToken(authCode, state).block();
+        return processResponse(response, NaverToken.class);
+    }
+
+    private UserInfo getKakaoUserInfo(KakaoToken kakaoToken) {
         String response = kakaoApiClient.requestUserInfo(kakaoToken.getAccessToken()).block();
         return processResponse(response, UserInfo.class);
     }
 
-    private KakaoToken getToken(String authCode) {
+    private KakaoToken getKakaoToken(String authCode) {
         String response = kakaoApiClient.requestToken(authCode).block();
         return processResponse(response, KakaoToken.class);
     }
@@ -45,8 +59,15 @@ public class AuthApiService {
     }
 
     public IssueTokenResult authenticateWithKakao(String code) {
-        KakaoToken token = getToken(code);
-        UserInfo userInfo = getUserInfo(token);
+        KakaoToken token = getKakaoToken(code);
+        UserInfo userInfo = getKakaoUserInfo(token);
         return authService.issueToken(userInfo.getId());
+    }
+
+    public IssueTokenResult authenticateWithNaver(String code, String state) {
+        NaverToken naverToken = getNaverToken(code, state);
+        NaverUserInfo naverUserInfo = getNaverUserInfo(naverToken);
+        log.info(naverUserInfo.toString());
+        return authService.issueTokenWithNaverId(naverUserInfo.getResponse().getId());
     }
 }

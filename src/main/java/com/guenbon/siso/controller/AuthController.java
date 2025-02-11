@@ -4,6 +4,7 @@ import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
+import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,17 +33,40 @@ public class AuthController {
                                                @RequestParam(required = false) String error,
                                                @RequestParam(required = false, name = "error_description") String errorDescription) {
         log.info("카카오 인가코드 error : {}, error_description : {}", error, errorDescription);
-        handleError(error);
+        handleKakaoError(error);
         final IssueTokenResult issueTokenResult = authApiService.authenticateWithKakao(code);
         return ResponseEntity.ok()
                 .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
                 .body(LoginDTO.from(issueTokenResult));
     }
 
+    // todo
+    @GetMapping("/login/naver")
+    public ResponseEntity<LoginDTO> naverLogin(@RequestParam(required = false) String code,
+                                               @RequestParam(required = false) String state,
+                                               @RequestParam(required = false) String error,
+                                               @RequestParam(required = false, name = "error_description") String errorDescription) {
+        // log
+        log.info("네이버 인가코드 error : {}, error_description : {}", error, errorDescription);
+        log.info("네이버 코드 : {} , 네이버 state : {}", code, state);
+        // 인가코드 받기 예외처리
+        handleNaverError(error);
+        final IssueTokenResult issueTokenResult = authApiService.authenticateWithNaver(code, state);
+        return ResponseEntity.ok()
+                .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
+                .body(LoginDTO.from(issueTokenResult));
+    }
+
     // 쿼리 파라미터로 예외처리하므로 컨트롤러단에서 처리
-    private static void handleError(String error) {
+    private static void handleKakaoError(String error) {
         if (error != null) {
             throw new ApiException(KakaoApiErrorCode.from(error));
+        }
+    }
+
+    private static void handleNaverError(String error) {
+        if (error != null) {
+            throw new ApiException(NaverApiErrorCode.from(error));
         }
     }
 

@@ -37,6 +37,15 @@ public class AuthService {
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
     }
 
+    @Transactional(readOnly = false)
+    public IssueTokenResult issueTokenWithNaverId(final String naverId) {
+        Member member = memberService.findByNaverIdOrCreateMember(naverId);
+        final String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+        member.storeRefreshToken(refreshToken);
+        return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
+    }
+
     private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_TOKEN, refreshToken)
                 .httpOnly(true)

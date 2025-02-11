@@ -1,11 +1,7 @@
 package com.guenbon.siso.entity;
 
 import com.guenbon.siso.entity.common.DateEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +20,8 @@ public class Member extends DateEntity {
     private Long id;
     @Column(name = "kakao_id", unique = true)
     private Long kakaoId;
+    @Column(name = "naver_id", unique = true)
+    private String naverId;
     private String nickname;
     @Column(name = "image_url")
     private String imageUrl;
@@ -37,6 +35,13 @@ public class Member extends DateEntity {
     public static Member from(Long kakaoId, String nickname, String imageUrl) {
         return Member.builder()
                 .kakaoId(kakaoId)
+                .nickname(nickname)
+                .imageUrl(imageUrl).build();
+    }
+
+    public static Member from(String naverId, String nickname, String imageUrl) {
+        return Member.builder()
+                .naverId(naverId)
                 .nickname(nickname)
                 .imageUrl(imageUrl).build();
     }

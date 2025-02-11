@@ -28,6 +28,10 @@ public class MemberService {
         return memberRepository.findByKakaoId(kakaoId).orElseGet(() -> createMember(kakaoId));
     }
 
+    public Member findByNaverIdOrCreateMember(String naverId) {
+        return memberRepository.findByNaverId(naverId).orElseGet(() -> createMember(naverId));
+    }
+
     /**
      * 랜덤한 닉네임을 가진 회원을 생성한다.
      *
@@ -42,6 +46,19 @@ public class MemberService {
             boolean existsByNickname = memberRepository.existsByNickname(randomNickname);
             if (!existsByNickname) {
                 return memberRepository.save(Member.from(kakaoId, randomNickname, DEFAULT_IMAGE));
+            }
+        }
+        throw new CustomException(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED);
+    }
+
+    private Member createMember(String naverId) {
+        String randomNickname;
+        for (int i = 1; i <= MAX_NICKNAME_GENERATION_ATTEMPTS; i++) {
+            randomNickname = RandomNicknameGenerator.generateNickname();
+            log.info("nickname generated {}", randomNickname);
+            boolean existsByNickname = memberRepository.existsByNickname(randomNickname);
+            if (!existsByNickname) {
+                return memberRepository.save(Member.from(naverId, randomNickname, DEFAULT_IMAGE));
             }
         }
         throw new CustomException(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED);
