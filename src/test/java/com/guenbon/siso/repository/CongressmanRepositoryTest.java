@@ -10,20 +10,28 @@ import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -40,6 +48,17 @@ class CongressmanRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @MockitoSpyBean
+    AuditingHandler auditingHandler;
+
+    @MockitoBean
+    DateTimeProvider dateTimeProvider;
+
+    @BeforeEach
+    void setUp() {
+        auditingHandler.setDateTimeProvider(dateTimeProvider);
+    }
 
     @Test
     @DisplayName("findById 가 존재하는 국회의원에 대해 정상 반환한다")
@@ -241,29 +260,26 @@ class CongressmanRepositoryTest {
         // given
         // member 5명  , rating
         final Member 장몽이 = saveMember(MemberFixture.builder().setNickname("jangmong99").setImageUrl("장몽image").build());
-        final Member 멍청이 = saveMember(
-                MemberFixture.builder().setNickname("chungmung99").setImageUrl("멍청image").build());
+        final Member 멍청이 = saveMember(MemberFixture.builder().setNickname("chungmung99").setImageUrl("멍청image").build());
         final Member 다미 = saveMember(MemberFixture.builder().setNickname("dami").setImageUrl("다미image").build());
         final Member 레온이 = saveMember(MemberFixture.builder().setNickname("leon1234").setImageUrl("레온image").build());
         final Member 얼죽이 = saveMember(MemberFixture.builder().setNickname("ulljook").setImageUrl("얼죽Image").build());
         // congressman 2명
         final Congressman 이준석 = saveCongressman(CongressmanFixture.builder().setName("이준석").setParty("더불어민주당").build());
         final Congressman 윤석열 = saveCongressman(CongressmanFixture.builder().setName("윤석열").setParty("한나라당").build());
+
         // rating (이준석)
-        saveRating(다미, 이준석, 3.5);
-        saveRating(레온이, 이준석, 3.5);
-        saveRating(장몽이, 이준석, 3.5);
-        saveRating(멍청이, 이준석, 3.5);
+        saveRating(다미, 이준석, 3.5, 1);
+        saveRating(레온이, 이준석, 3.5, 2);
+        saveRating(장몽이, 이준석, 3.5, 3);
+        saveRating(멍청이, 이준석, 3.5, 4);
         // rating (윤석열)
-        saveRating(얼죽이, 윤석열, 2.5);
-        saveRating(다미, 윤석열, 3.5);
+        saveRating(얼죽이, 윤석열, 2.5, 1);
+        saveRating(다미, 윤석열, 3.5, 2);
 
         // when
-        final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
-                이준석.getId());
-        final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(
-                윤석열.getId());
-
+        final List<String> 이준석_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(이준석.getId());
+        final List<String> 윤석열_평가작성_회원_이미지리스트 = congressmanRepository.getRecentMemberImagesByCongressmanId(윤석열.getId());
         // then
         assertAll(
                 () -> assertThat(이준석_평가작성_회원_이미지리스트).usingRecursiveComparison()
@@ -283,8 +299,13 @@ class CongressmanRepositoryTest {
                 .build();
     }
 
-    private void saveRating(Member member, Congressman congressman, double rate) {
-        ratingRepository.save(Rating.builder().member(member).congressman(congressman).rate(rate).build());
+    private Rating saveRating(Member member, Congressman congressman, double rate) {
+        return ratingRepository.save(Rating.builder().member(member).congressman(congressman).rate(rate).build());
+    }
+
+    private Rating saveRating(Member member, Congressman congressman, double rate, int plusDays) {
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.now().plusDays(plusDays)));
+        return ratingRepository.save(Rating.builder().member(member).congressman(congressman).rate(rate).build());
     }
 
     private Member saveMember(Member member) {
