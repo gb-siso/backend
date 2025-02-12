@@ -21,7 +21,6 @@ public final class ApiConstants {
     public static final String HEAD = "head";
     public static final String LIST_TOTAL_COUNT = "list_total_count";
 
-
     public static final String COMP_MAN_TITLE = "COMP_MAIN_TITLE";
     public static final String LINK_URL = "LINK_URL";
     public static final String REG_DATE = "REG_DATE";
@@ -32,4 +31,21 @@ public final class ApiConstants {
     public static final String PROPOSER = "PROPOSER";
     public static final String PUBL_PROPOSER = "PUBL_PROPOSER";
     public static final String RST_PROPOSER = "RST_PROPOSER";
+
+    // kakao
+    public static final String AUTHORIZATION_CODE = "authorization_code";
+    public static final String KAUTH_GET_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
+    public static final String KAUTH_GET_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
+    public static final String KAUTH_REDIRECT_URL = "http://localhost:8080/api/v1/login/kakao";
+    public static final String GRANT_TYPE = "grant_type";
+    public static final String CLIENT_ID = "client_id";
+    public static final String REDIRECT_URL = "redirect_url";
+
+    // naver
+    public static final String NAUTH_GET_TOKEN_URL = "https://nid.naver.com/oauth2.0/token";
+    public static final String NAUTH_GET_USER_INFO_URL = "https://openapi.naver.com/v1/nid/me";
+    public static final String CLIENT_SECRET = "client_secret";
+    public static final String STATE = "state";
+    public static final String BEARER = "Bearer ";
+
 }

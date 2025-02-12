@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Random;
 
 public class RandomNicknameGenerator {
+    private RandomNicknameGenerator() {
+
+    }
+
     private static final List<String> ADJECTIVES = Arrays.asList(
             "귀여운", "멋진", "행복한", "슬픈", "즐거운", "용감한", "현명한", "다정한", "화난", "차가운",
             "따뜻한", "환한", "어두운", "느린", "빠른", "달콤한", "쓴", "신", "짜릿한", "부드러운",

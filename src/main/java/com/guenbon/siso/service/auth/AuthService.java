@@ -29,8 +29,8 @@ public class AuthService {
      * @return 발급한 토큰과 회원정보를 포함한 {@link IssueTokenResult} 객체
      */
     @Transactional(readOnly = false)
-    public IssueTokenResult issueToken(final Long kakaoId) {
-        Member member = memberService.findOrCreateMember(kakaoId);
+    public IssueTokenResult issueTokenWithKakaoId(final Long kakaoId) {
+        Member member = memberService.findByKakaoIdOrCreateMember(kakaoId);
         final String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
         final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         member.storeRefreshToken(refreshToken);

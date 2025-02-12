@@ -24,7 +24,7 @@ public class MemberService {
         return memberRepository.findById(id).orElseThrow(() -> new CustomException(MemberErrorCode.NOT_EXISTS));
     }
 
-    public Member findOrCreateMember(Long kakaoId) {
+    public Member findByKakaoIdOrCreateMember(Long kakaoId) {
         return memberRepository.findByKakaoId(kakaoId).orElseGet(() -> createMember(kakaoId));
     }
 

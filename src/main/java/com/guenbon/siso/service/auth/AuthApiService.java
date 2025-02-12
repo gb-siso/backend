@@ -61,13 +61,12 @@ public class AuthApiService {
     public IssueTokenResult authenticateWithKakao(String code) {
         KakaoToken token = getKakaoToken(code);
         UserInfo userInfo = getKakaoUserInfo(token);
-        return authService.issueToken(userInfo.getId());
+        return authService.issueTokenWithKakaoId(userInfo.getId());
     }
 
     public IssueTokenResult authenticateWithNaver(String code, String state) {
         NaverToken naverToken = getNaverToken(code, state);
         NaverUserInfo naverUserInfo = getNaverUserInfo(naverToken);
-        log.info(naverUserInfo.toString());
         return authService.issueTokenWithNaverId(naverUserInfo.getResponse().getId());
     }
 }

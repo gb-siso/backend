@@ -36,7 +36,7 @@ public class AuthController {
         handleKakaoError(error);
         final IssueTokenResult issueTokenResult = authApiService.authenticateWithKakao(code);
         return ResponseEntity.ok()
-                .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
+                .header(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie())
                 .body(LoginDTO.from(issueTokenResult));
     }
 
@@ -53,7 +53,7 @@ public class AuthController {
         handleNaverError(error);
         final IssueTokenResult issueTokenResult = authApiService.authenticateWithNaver(code, state);
         return ResponseEntity.ok()
-                .headers(h -> h.add(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie()))
+                .header(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie())
                 .body(LoginDTO.from(issueTokenResult));
     }
 
