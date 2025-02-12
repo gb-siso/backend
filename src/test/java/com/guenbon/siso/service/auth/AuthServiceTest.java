@@ -29,8 +29,8 @@ class AuthServiceTest {
 
     // 성공 테스트
     @Test
-    @DisplayName("issueToken에서 이미 존재하는 회원일 시 토큰 생성 결과를 반환한다")
-    void issueToken_existMember_IssueTokenResult() {
+    @DisplayName("issueTokenWithKakaoId에서 이미 존재하는 회원일 시 토큰 생성 결과를 반환한다")
+    void issueTokenWithKakaoId_existMember_IssueTokenResult() {
         // given
         final Long kakaoId = 1L;
         final String refreshToken = "refreshToken";
@@ -43,12 +43,12 @@ class AuthServiceTest {
 
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
-        when(memberService.findOrCreateMember(kakaoId)).thenReturn(member);
+        when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when
-        IssueTokenResult issueTokenResult = authService.issueToken(kakaoId);
+        IssueTokenResult issueTokenResult = authService.issueTokenWithKakaoId(kakaoId);
 
         // then
         assertAll(
@@ -60,8 +60,8 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("issueToken에서 랜덤 닉네임 생성 성공 시 토큰 생성 결과를 반환한다")
-    void issueToken_successNicknameGenerate_IssueTokenResult() {
+    @DisplayName("issueTokenWithKakaoId에서 랜덤 닉네임 생성 성공 시 토큰 생성 결과를 반환한다")
+    void issueTokenWithKakaoId_successNicknameGenerate_IssueTokenResult() {
         // given
         final Long kakaoId = 1L;
         final String refreshToken = "refreshToken";
@@ -74,12 +74,74 @@ class AuthServiceTest {
 
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
-        when(memberService.findOrCreateMember(kakaoId)).thenReturn(member);
+        when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when
-        IssueTokenResult issueTokenResult = authService.issueToken(kakaoId);
+        IssueTokenResult issueTokenResult = authService.issueTokenWithKakaoId(kakaoId);
+
+        // then
+        assertAll(
+                () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(accessToken),
+                () -> assertThat(issueTokenResult.getRefreshTokenCookie()).isEqualTo(refreshTokenCookie.toString()),
+                () -> assertThat(issueTokenResult.getNickname()).isEqualTo(member.getNickname()),
+                () -> assertThat(issueTokenResult.getImage()).isEqualTo(member.getImageUrl())
+        );
+    }
+
+    @Test
+    @DisplayName("issueTokenWithNaverId에서 이미 존재하는 회원일 시 토큰 생성 결과를 반환한다")
+    void issueTokenWithNaverId_existMember_IssueTokenResult() {
+        // given
+        final String naverId = "naverId";
+        final String refreshToken = "refreshToken";
+        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path(AuthService.PATH)
+                .sameSite(SameSite.NONE.attributeValue())
+                .build();
+
+        final String accessToken = "accessToken";
+        Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
+        when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
+        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+
+        // when
+        IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
+
+        // then
+        assertAll(
+                () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(accessToken),
+                () -> assertThat(issueTokenResult.getRefreshTokenCookie()).isEqualTo(refreshTokenCookie.toString()),
+                () -> assertThat(issueTokenResult.getNickname()).isEqualTo(member.getNickname()),
+                () -> assertThat(issueTokenResult.getImage()).isEqualTo(member.getImageUrl())
+        );
+    }
+
+    @Test
+    @DisplayName("issueTokenWithNaverId에서 랜덤 닉네임 생성 성공 시 토큰 생성 결과를 반환한다")
+    void issueTokenWithNaverId_successNicknameGenerate_IssueTokenResult() {
+        // given
+        final String naverId = "naverId";
+        final String refreshToken = "refreshToken";
+        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path(AuthService.PATH)
+                .sameSite(SameSite.NONE.attributeValue())
+                .build();
+
+        final String accessToken = "accessToken";
+        Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
+        when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
+        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+
+        // when
+        IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
 
         // then
         assertAll(

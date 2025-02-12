@@ -12,7 +12,9 @@ import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
+
 import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,15 +62,78 @@ class MemberServiceTest {
 
     // 실패 테스트
     @Test
-    @DisplayName("findOrCreateMember에서 회원 생성 시 랜덤 닉네임 생성이 계속 중복되면 예외를 던진다")
-    void issueToken_duplicatedNickname_InternalServerException() {
+    @DisplayName("findByKakaoIdOrCreateMember에서 회원 생성 시 랜덤 닉네임 생성이 계속 중복되면 예외를 던진다")
+    void findByKakaoIdOrCreateMember_duplicatedNickname_InternalServerException() {
         // given
         final Long kakaoId = 1L;
         when(memberRepository.findByKakaoId(kakaoId)).thenReturn(Optional.empty());
         when(memberRepository.existsByNickname(any(String.class))).thenReturn(true);
 
         // when, then
-        assertThrows(CustomException.class, () -> memberService.findOrCreateMember(kakaoId),
+        assertThrows(CustomException.class, () -> memberService.findByKakaoIdOrCreateMember(kakaoId),
                 MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+    }
+
+    @Test
+    @DisplayName("findByKakaoIdOrCreateMember에서 이미 가입한 회원일 경우 해당 회원을 반환한다.")
+    void findByKakaoIdOrCreateMember_alreadyRegistered_registeredMember() {
+        // given
+        final Long kakaoId = 1L;
+        final Member expected = MemberFixture.builder().setKakaoId(kakaoId).build();
+        when(memberRepository.findByKakaoId(kakaoId)).thenReturn(Optional.of(expected));
+        // when, then
+        assertThat(memberService.findByKakaoIdOrCreateMember(kakaoId)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("findByKakaoIdOrCreateMember에서 랜덤 닉네임 생성 성공 시 회원을 반환한다.")
+    void findByKakaoIdOrCreateMember_success_Member() {
+        // given
+        final Long kakaoId = 1L;
+        final Member expected = MemberFixture.builder().setKakaoId(kakaoId).build();
+        when(memberRepository.findByKakaoId(kakaoId)).thenReturn(Optional.empty());
+        when(memberRepository.existsByNickname(any(String.class))).thenReturn(false);
+        when(memberRepository.save(any(Member.class))).thenReturn(expected);
+
+        // when, then
+        assertThat(memberService.findByKakaoIdOrCreateMember(kakaoId)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("findByNaverIdOrCreateMember에서 회원 생성 시 랜덤 닉네임 생성이 계속 중복되면 예외를 던진다")
+    void findByNaverIdOrCreateMember_duplicatedNickname_InternalServerException() {
+        // given
+        final String naverId = "naverId";
+        when(memberRepository.findByNaverId(naverId)).thenReturn(Optional.empty());
+        when(memberRepository.existsByNickname(any(String.class))).thenReturn(true);
+
+        // when, then
+        assertThrows(CustomException.class, () -> memberService.findByNaverIdOrCreateMember(naverId),
+                MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+    }
+
+    @Test
+    @DisplayName("findByNaverIdOrCreateMember에서 이미 가입한 회원일 경우 해당 회원을 반환한다.")
+    void findByNaverIdOrCreateMember_alreadyRegistered_registeredMember() {
+        // given
+        final String naverId = "naverId";
+        final Member expected = MemberFixture.builder().setNaverId(naverId).build();
+        when(memberRepository.findByNaverId(naverId)).thenReturn(Optional.of(expected));
+        // when, then
+        assertThat(memberService.findByNaverIdOrCreateMember(naverId)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("findByNaverIdOrCreateMember에서 랜덤 닉네임 생성 성공 시 회원을 반환한다.")
+    void findByNaverIdOrCreateMember_success_Member() {
+        // given
+        final String naverId = "naverId";
+        final Member expected = MemberFixture.builder().setNaverId(naverId).build();
+        when(memberRepository.findByNaverId(naverId)).thenReturn(Optional.empty());
+        when(memberRepository.existsByNickname(any(String.class))).thenReturn(false);
+        when(memberRepository.save(any(Member.class))).thenReturn(expected);
+
+        // when, then
+        assertThat(memberService.findByNaverIdOrCreateMember(naverId)).isEqualTo(expected);
     }
 }
