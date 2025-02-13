@@ -6,6 +6,7 @@ import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
+import com.guenbon.siso.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthApiService authApiService;
+    private final AuthService authService;
 
     /**
      * 카카오 로그인
@@ -70,13 +72,14 @@ public class AuthController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<LoginDTO> kakaoReissue(String refreshToken) {
-        return null;
+    @PostMapping("/reissue/kakao")
+    public ResponseEntity<LoginDTO> kakaoReissue(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
+        return authService.reissueWithKakao(refreshToken);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> logOut(Long memberId) {
+    public ResponseEntity<Void> logout(Long memberId) {
+
         return null;
     }
 }

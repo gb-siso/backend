@@ -1,12 +1,14 @@
 package com.guenbon.siso.service.auth;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
+import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,5 +55,9 @@ public class AuthService {
                 .path(PATH)
                 .sameSite(SameSite.NONE.attributeValue())
                 .build();
+    }
+
+    public ResponseEntity<LoginDTO> reissueWithKakao(String refreshToken) {
+        return null;
     }
 }

@@ -1,8 +1,7 @@
 package com.guenbon.siso.controller;
 
 
-import static com.guenbon.siso.exception.errorCode.CommonErrorCode.INVALID_REQUEST_BODY_FORMAT;
-import static com.guenbon.siso.exception.errorCode.CommonErrorCode.TYPE_MISMATCH;
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.*;
 import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -13,8 +12,10 @@ import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -154,5 +156,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ErrorResponse makeErrorResponse(ErrorCode errorCode, String message) {
         return ErrorResponse.builder().code(errorCode.getCode()).message(message).build();
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorResponse> handleMissingCookieException(MissingRequestCookieException e) {
+        return ResponseEntity.status(MISSING_COOKIE.getHttpStatus())
+                .body(makeErrorResponse(e));
+    }
+
+    private static ErrorResponse makeErrorResponse(MissingRequestCookieException e) {
+        return ErrorResponse.builder()
+                .code(MISSING_COOKIE.getCode())
+                .message(String.format("%s %s", MISSING_COOKIE.getMessage(), e.getCookieName())).build();
     }
 }
