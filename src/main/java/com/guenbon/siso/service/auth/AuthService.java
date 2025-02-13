@@ -55,7 +55,18 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional(readOnly = false)
     public IssueTokenResult reissueWithKakao(String refreshToken) {
-        return null;
+        // 리프레시토큰 유효성 검증
+        jwtTokenProvider.verifySignature(refreshToken);
+
+        // 리프레시토큰 db 조회
+        Member member = memberService.findByRefreshToken(refreshToken);
+
+        // 재발급 처리
+        final String reIssuedRefreshToken = jwtTokenProvider.createRefreshToken();
+        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+        member.storeRefreshToken(reIssuedRefreshToken);
+        return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(reIssuedRefreshToken), member);
     }
 }

@@ -63,4 +63,8 @@ public class MemberService {
         }
         throw new CustomException(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED);
     }
+
+    public Member findByRefreshToken(String refreshToken) {
+        return null;
+    }
 }
