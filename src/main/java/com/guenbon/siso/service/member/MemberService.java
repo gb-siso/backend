@@ -2,6 +2,7 @@ package com.guenbon.siso.service.member;
 
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.AuthErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.util.RandomNicknameGenerator;
@@ -65,6 +66,6 @@ public class MemberService {
     }
 
     public Member findByRefreshToken(String refreshToken) {
-        return null;
+        return memberRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new CustomException(AuthErrorCode.NOT_EXISTS_IN_DATABASE));
     }
 }
