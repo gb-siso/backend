@@ -1,14 +1,12 @@
 package com.guenbon.siso.service.auth;
 
 import com.guenbon.siso.dto.auth.IssueTokenResult;
-import com.guenbon.siso.dto.auth.response.LoginDTO;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +31,7 @@ public class AuthService {
     @Transactional(readOnly = false)
     public IssueTokenResult issueTokenWithKakaoId(final Long kakaoId) {
         Member member = memberService.findByKakaoIdOrCreateMember(kakaoId);
-        final String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+        final String refreshToken = jwtTokenProvider.createRefreshToken();
         final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         member.storeRefreshToken(refreshToken);
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
@@ -42,7 +40,7 @@ public class AuthService {
     @Transactional(readOnly = false)
     public IssueTokenResult issueTokenWithNaverId(final String naverId) {
         Member member = memberService.findByNaverIdOrCreateMember(naverId);
-        final String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+        final String refreshToken = jwtTokenProvider.createRefreshToken();
         final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         member.storeRefreshToken(refreshToken);
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
@@ -57,7 +55,7 @@ public class AuthService {
                 .build();
     }
 
-    public ResponseEntity<LoginDTO> reissueWithKakao(String refreshToken) {
+    public IssueTokenResult reissueWithKakao(String refreshToken) {
         return null;
     }
 }

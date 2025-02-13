@@ -1,9 +1,5 @@
 package com.guenbon.siso.service.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.service.member.MemberService;
@@ -16,6 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.http.ResponseCookie;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -44,7 +44,7 @@ class AuthServiceTest {
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
-        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when
@@ -75,7 +75,7 @@ class AuthServiceTest {
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
-        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when
@@ -106,7 +106,7 @@ class AuthServiceTest {
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
-        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when
@@ -137,7 +137,7 @@ class AuthServiceTest {
         final String accessToken = "accessToken";
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
-        when(jwtTokenProvider.createRefreshToken(member.getId())).thenReturn(refreshToken);
+        when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
 
         // when

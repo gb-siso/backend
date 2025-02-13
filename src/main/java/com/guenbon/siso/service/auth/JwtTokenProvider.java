@@ -2,21 +2,12 @@ package com.guenbon.siso.service.auth;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 
 @Component
@@ -53,16 +44,12 @@ public class JwtTokenProvider {
     }
 
     // JWT refresh 토큰 생성 (access token 재발행용)
-    public String createRefreshToken(Long memberId) {
-        // claim : id
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(ID, memberId);
-
+    public String createRefreshToken() {//
         // 발행시간
         Date now = new Date();
-
         // refresh 토큰 발행
         return Jwts.builder()
+                .setId(UUID.randomUUID().toString()) // 고유한 jti 추가
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
                 .signWith(SignatureAlgorithm.HS512, encodedKey)
