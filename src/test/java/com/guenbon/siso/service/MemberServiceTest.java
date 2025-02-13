@@ -1,26 +1,26 @@
 package com.guenbon.siso.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.AuthErrorCode;
 import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
-
-import java.util.Optional;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -135,5 +135,28 @@ class MemberServiceTest {
 
         // when, then
         assertThat(memberService.findByNaverIdOrCreateMember(naverId)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("findByRefreshToken가 db에서 refreshToken을 못찾으면 NOT_EXISTS_IN_DATABASE 에러코드인 CustomException을 던진다.")
+    void findByRefreshToken_notExists_CustomException() {
+        // given
+        final String refreshToken = "refreshToken";
+        when(memberRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.empty());
+        // when, then
+        assertThrows(CustomException.class, () -> memberService.findByRefreshToken(refreshToken), AuthErrorCode.NOT_EXISTS_IN_DATABASE.getMessage());
+    }
+
+    @Test
+    @DisplayName("findByRefreshToken가 db에서 refreshToken을 못찾으면 Member를 반환한다.")
+    void findByRefreshToken_success_Member() {
+        // given
+        final String refreshToken = "refreshToken";
+        final Member expected = MemberFixture.builder().setRefreshToken(refreshToken).build();
+        when(memberRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.of(expected));
+        // when
+        Member actual = memberService.findByRefreshToken(refreshToken);
+        // then
+        assertThat(actual).isEqualTo(expected);
     }
 }
