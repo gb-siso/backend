@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.http.ResponseCookie;
 
 import java.util.stream.Stream;
@@ -37,26 +36,21 @@ class AuthServiceTest {
     @Mock
     JwtTokenProvider jwtTokenProvider;
 
+    // dummy value
+    private final String accessToken = "accessToken";
+    private final String refreshToken = "refreshToken";
+
     // 성공 테스트
     @Test
     @DisplayName("issueTokenWithKakaoId에서 이미 존재하는 회원일 시 토큰 생성 결과를 반환한다")
     void issueTokenWithKakaoId_existMember_IssueTokenResult() {
         // given
         final Long kakaoId = 1L;
-        final String refreshToken = "refreshToken";
-        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path(AuthService.PATH)
-                .sameSite(SameSite.NONE.attributeValue())
-                .build();
-
-        final String accessToken = "accessToken";
+        final ResponseCookie refreshTokenCookie = createRefreshTokenCookie(refreshToken);
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
-
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithKakaoId(kakaoId);
 
@@ -74,15 +68,7 @@ class AuthServiceTest {
     void issueTokenWithKakaoId_successNicknameGenerate_IssueTokenResult() {
         // given
         final Long kakaoId = 1L;
-        final String refreshToken = "refreshToken";
-        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path(AuthService.PATH)
-                .sameSite(SameSite.NONE.attributeValue())
-                .build();
-
-        final String accessToken = "accessToken";
+        final ResponseCookie refreshTokenCookie = createRefreshTokenCookie(refreshToken);
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
@@ -105,23 +91,13 @@ class AuthServiceTest {
     void issueTokenWithNaverId_existMember_IssueTokenResult() {
         // given
         final String naverId = "naverId";
-        final String refreshToken = "refreshToken";
-        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path(AuthService.PATH)
-                .sameSite(SameSite.NONE.attributeValue())
-                .build();
-
-        final String accessToken = "accessToken";
+        final ResponseCookie refreshTokenCookie = createRefreshTokenCookie(refreshToken);
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
-
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
-
         // then
         assertAll(
                 () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(accessToken),
@@ -136,23 +112,13 @@ class AuthServiceTest {
     void issueTokenWithNaverId_successNicknameGenerate_IssueTokenResult() {
         // given
         final String naverId = "naverId";
-        final String refreshToken = "refreshToken";
-        final ResponseCookie refreshTokenCookie = ResponseCookie.from(AuthService.REFRESH_TOKEN, refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path(AuthService.PATH)
-                .sameSite(SameSite.NONE.attributeValue())
-                .build();
-
-        final String accessToken = "accessToken";
+        final ResponseCookie refreshTokenCookie = createRefreshTokenCookie(refreshToken);
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
-
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
-
         // then
         assertAll(
                 () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(accessToken),
@@ -167,10 +133,9 @@ class AuthServiceTest {
     @MethodSource("provideInvalidRefreshTokenErrorCode")
     void reissueWithKakao_invalidRefreshToken_CustomException(AuthErrorCode authErrorCode) {
         // given
-        final String invalidRefreshToken = "invalidRefreshToken";
-        when(jwtTokenProvider.verifySignature(invalidRefreshToken)).thenThrow(new CustomException(authErrorCode));
+        when(jwtTokenProvider.verifySignature(refreshToken)).thenThrow(new CustomException(authErrorCode));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissueWithKakao(invalidRefreshToken), authErrorCode.getMessage());
+        assertThrows(CustomException.class, () -> authService.reissueWithKakao(refreshToken), authErrorCode.getMessage());
     }
 
     private static Stream<AuthErrorCode> provideInvalidRefreshTokenErrorCode() {
@@ -181,32 +146,24 @@ class AuthServiceTest {
     @Test
     void reissueWithKakao_refreshTokenNotExistsInDatabase_CustomException() {
         // given
-        final String notInDatabaseRefreshToken = "notInDatabaseRefreshToken";
-        when(memberService.findByRefreshToken(notInDatabaseRefreshToken)).thenThrow(new CustomException(NOT_EXISTS_IN_DATABASE));
+        when(memberService.findByRefreshToken(refreshToken)).thenThrow(new CustomException(NOT_EXISTS_IN_DATABASE));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissueWithKakao(notInDatabaseRefreshToken), NOT_EXISTS_IN_DATABASE.getMessage());
+        assertThrows(CustomException.class, () -> authService.reissueWithKakao(refreshToken), NOT_EXISTS_IN_DATABASE.getMessage());
     }
 
     @DisplayName("reissueWithKakao 파라미터로 데이터베이스에 존재하는 유효한 refreshToken 전달 시 IssueTokenResult를 응답한다.")
     @Test
     void reissueWithKakao_success_IssueTokenResult() {
         // given
-        final String validRefreshToken = "notInDatabaseRefreshToken";
         final Member member = MemberFixture.builder().setId(1L).build();
         final String reissueAccessToken = "reissueAccessToken";
         final String reissueRefreshToken = "reissueRefreshToken";
-        final String expectedRefreshTokenCookie = ResponseCookie.from("refreshToken", reissueRefreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .build()
-                .toString();
-        when(memberService.findByRefreshToken(validRefreshToken)).thenReturn(member);
+        final String expectedRefreshTokenCookie = createRefreshTokenCookie(reissueRefreshToken).toString();
+        when(memberService.findByRefreshToken(refreshToken)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(reissueRefreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(reissueAccessToken);
         // when
-        IssueTokenResult issueTokenResult = authService.reissueWithKakao(validRefreshToken);
+        IssueTokenResult issueTokenResult = authService.reissueWithKakao(refreshToken);
         // then
         assertAll(
                 () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(reissueAccessToken),
@@ -214,5 +171,14 @@ class AuthServiceTest {
                 () -> assertThat(issueTokenResult.getNickname()).isEqualTo(member.getNickname()),
                 () -> assertThat(issueTokenResult.getRefreshTokenCookie()).isEqualTo(expectedRefreshTokenCookie)
         );
+    }
+
+    private static ResponseCookie createRefreshTokenCookie(String value) {
+        return ResponseCookie.from("refreshToken", value)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .build();
     }
 }

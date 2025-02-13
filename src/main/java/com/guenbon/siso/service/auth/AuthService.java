@@ -31,19 +31,13 @@ public class AuthService {
     @Transactional(readOnly = false)
     public IssueTokenResult issueTokenWithKakaoId(final Long kakaoId) {
         Member member = memberService.findByKakaoIdOrCreateMember(kakaoId);
-        final String refreshToken = jwtTokenProvider.createRefreshToken();
-        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
-        member.storeRefreshToken(refreshToken);
-        return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
+        return issueTokens(member);
     }
 
     @Transactional(readOnly = false)
     public IssueTokenResult issueTokenWithNaverId(final String naverId) {
         Member member = memberService.findByNaverIdOrCreateMember(naverId);
-        final String refreshToken = jwtTokenProvider.createRefreshToken();
-        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
-        member.storeRefreshToken(refreshToken);
-        return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(refreshToken), member);
+        return issueTokens(member);
     }
 
     private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
@@ -59,11 +53,13 @@ public class AuthService {
     public IssueTokenResult reissueWithKakao(String refreshToken) {
         // 리프레시토큰 유효성 검증
         jwtTokenProvider.verifySignature(refreshToken);
-
         // 리프레시토큰 db 조회
         Member member = memberService.findByRefreshToken(refreshToken);
-
         // 재발급 처리
+        return issueTokens(member);
+    }
+
+    private IssueTokenResult issueTokens(Member member) {
         final String reIssuedRefreshToken = jwtTokenProvider.createRefreshToken();
         final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
         member.storeRefreshToken(reIssuedRefreshToken);
