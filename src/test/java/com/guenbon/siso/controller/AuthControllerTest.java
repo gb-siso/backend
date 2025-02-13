@@ -176,16 +176,16 @@ class AuthControllerTest {
     }
 
     // 재발급 실패 테스트
-    @DisplayName("카카오 accessToken 재발급 요청 시 refreshToken이 유효하지 않으면 에러 응답한다.")
+    @DisplayName("accessToken 재발급 요청 시 refreshToken이 유효하지 않으면 에러 응답한다.")
     @EnumSource(AuthErrorCode.class)
     @ParameterizedTest
-    void kakaoReissue_invalidRefreshToken_errorResponse(AuthErrorCode authErrorCode) throws Exception {
+    void reissue_invalidRefreshToken_errorResponse(AuthErrorCode authErrorCode) throws Exception {
         // given
         final String invalidRefreshToken = "invalidRefreshToken";
-        when(authService.reissueWithKakao(invalidRefreshToken)).thenThrow(new CustomException(authErrorCode));
+        when(authService.reissue(invalidRefreshToken)).thenThrow(new CustomException(authErrorCode));
         MockCookie cookie = new MockCookie("refreshToken", invalidRefreshToken);
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(cookie))
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue").cookie(cookie))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().is(authErrorCode.getHttpStatus().value()))
@@ -198,7 +198,7 @@ class AuthControllerTest {
     void kakaoReissue_noRefreshToken_errorResponse() throws Exception {
         // given
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao"))
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue"))
                 .andDo(print())
                 .andExpect(jsonPath("$.message").value("요청 시 필수 쿠키 값 없음 refreshToken"))
                 .andExpect(jsonPath("$.code").value(CommonErrorCode.MISSING_COOKIE.getCode()));
@@ -212,10 +212,10 @@ class AuthControllerTest {
         final String dummyRefreshToken = "dummyRefreshToken";
         final String refreshTokenCookie = createRefreshTokenCookie(dummyRefreshToken);
         final IssueTokenResult expected = buildDummyIssueTokenResult(refreshTokenCookie);
-        when(authService.reissueWithKakao(validRefreshToken)).thenReturn(expected);
+        when(authService.reissue(validRefreshToken)).thenReturn(expected);
         MockCookie cookie = new MockCookie("refreshToken", validRefreshToken);
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(cookie))
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue").cookie(cookie))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().is2xxSuccessful())

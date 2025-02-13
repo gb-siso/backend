@@ -50,7 +50,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = false)
-    public IssueTokenResult reissueWithKakao(String refreshToken) {
+    public IssueTokenResult reissue(String refreshToken) {
         // 리프레시토큰 유효성 검증
         jwtTokenProvider.verifySignature(refreshToken);
         // 리프레시토큰 db 조회

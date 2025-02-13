@@ -128,32 +128,32 @@ class AuthServiceTest {
         );
     }
 
-    @DisplayName("reissueWithKakao 파라미터로 유효하지 않은 refreshToken 전달 시 알맞은 에러코드와 CustomException을 던진다.")
+    @DisplayName("reissue 파라미터로 유효하지 않은 refreshToken 전달 시 알맞은 에러코드와 CustomException을 던진다.")
     @ParameterizedTest
     @MethodSource("provideInvalidRefreshTokenErrorCode")
-    void reissueWithKakao_invalidRefreshToken_CustomException(AuthErrorCode authErrorCode) {
+    void reissue_invalidRefreshToken_CustomException(AuthErrorCode authErrorCode) {
         // given
         when(jwtTokenProvider.verifySignature(refreshToken)).thenThrow(new CustomException(authErrorCode));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissueWithKakao(refreshToken), authErrorCode.getMessage());
+        assertThrows(CustomException.class, () -> authService.reissue(refreshToken), authErrorCode.getMessage());
     }
 
     private static Stream<AuthErrorCode> provideInvalidRefreshTokenErrorCode() {
         return Stream.of(EXPIRED, UNSUPPORTED, MALFORMED, SIGNATURE, NULL_OR_BLANK_TOKEN);
     }
 
-    @DisplayName("reissueWithKakao 파라미터로 데이터베이스에 존재하지 않는 refreshToken 전달 시 NOT_EXISTS_IN_DATABASE 에러코드 CustomException을 던진다.")
+    @DisplayName("reissue 파라미터로 데이터베이스에 존재하지 않는 refreshToken 전달 시 NOT_EXISTS_IN_DATABASE 에러코드 CustomException을 던진다.")
     @Test
-    void reissueWithKakao_refreshTokenNotExistsInDatabase_CustomException() {
+    void reissue_refreshTokenNotExistsInDatabase_CustomException() {
         // given
         when(memberService.findByRefreshToken(refreshToken)).thenThrow(new CustomException(NOT_EXISTS_IN_DATABASE));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissueWithKakao(refreshToken), NOT_EXISTS_IN_DATABASE.getMessage());
+        assertThrows(CustomException.class, () -> authService.reissue(refreshToken), NOT_EXISTS_IN_DATABASE.getMessage());
     }
 
-    @DisplayName("reissueWithKakao 파라미터로 데이터베이스에 존재하는 유효한 refreshToken 전달 시 IssueTokenResult를 응답한다.")
+    @DisplayName("reissue 파라미터로 데이터베이스에 존재하는 유효한 refreshToken 전달 시 IssueTokenResult를 응답한다.")
     @Test
-    void reissueWithKakao_success_IssueTokenResult() {
+    void reissue_success_IssueTokenResult() {
         // given
         final Member member = MemberFixture.builder().setId(1L).build();
         final String reissueAccessToken = "reissueAccessToken";
@@ -163,7 +163,7 @@ class AuthServiceTest {
         when(jwtTokenProvider.createRefreshToken()).thenReturn(reissueRefreshToken);
         when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(reissueAccessToken);
         // when
-        IssueTokenResult issueTokenResult = authService.reissueWithKakao(refreshToken);
+        IssueTokenResult issueTokenResult = authService.reissue(refreshToken);
         // then
         assertAll(
                 () -> assertThat(issueTokenResult.getAccessToken()).isEqualTo(reissueAccessToken),

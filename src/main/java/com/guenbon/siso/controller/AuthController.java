@@ -72,9 +72,9 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/reissue/kakao")
+    @PostMapping("/reissue")
     public ResponseEntity<LoginDTO> kakaoReissue(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
-        IssueTokenResult issueTokenResult = authService.reissueWithKakao(refreshToken);
+        IssueTokenResult issueTokenResult = authService.reissue(refreshToken);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, issueTokenResult.getRefreshTokenCookie())
                 .body(LoginDTO.from(issueTokenResult));
