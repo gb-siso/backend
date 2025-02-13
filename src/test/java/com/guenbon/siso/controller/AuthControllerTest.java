@@ -3,9 +3,13 @@ package com.guenbon.siso.controller;
 import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.error.ApiErrorResponse;
 import com.guenbon.siso.exception.ApiException;
+import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.AuthErrorCode;
+import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
+import com.guenbon.siso.service.auth.AuthService;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +19,10 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.web.server.Cookie;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.mock.web.MockCookie;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -30,11 +36,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerTest {
 
     @Autowired
-    protected MockMvc mockMvc;
+    MockMvc mockMvc;
     @MockitoBean
-    protected AuthApiService authApiService;
+    AuthApiService authApiService;
     @MockitoBean
-    protected JwtTokenProvider jwtTokenProvider;
+    AuthService authService;
+    @MockitoBean
+    JwtTokenProvider jwtTokenProvider;
 
     public static final String BASE_URL = "/api/v1/auth";
     public static final String CODE = "code";
@@ -185,5 +193,34 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.nickname").value(expected.getNickname()))
                 .andExpect(jsonPath("$.imageUrl").value(expected.getImage()))
                 .andExpect(jsonPath("$.accessToken").value(expected.getAccessToken()));
+    }
+
+    // 재발급 실패 테스트
+    @DisplayName("카카오 accessToken 재발급 요청 시 refreshToken이 유효하지 않으면 에러 응답한다.")
+    @EnumSource(AuthErrorCode.class)
+    @ParameterizedTest
+    void kakaoReissue_invalidRefreshToken_errorResponse(AuthErrorCode authErrorCode) throws Exception {
+        // given
+        final String invalidRefreshToken = "invalidRefreshToken";
+        when(authService.reissueWithKakao(invalidRefreshToken)).thenThrow(new CustomException(authErrorCode));
+        MockCookie refreshToken = new MockCookie("refreshToken", invalidRefreshToken);
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(refreshToken))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().is(authErrorCode.getHttpStatus().value()))
+                .andExpect(jsonPath("$.message").value(authErrorCode.getMessage()))
+                .andExpect(jsonPath("$.code").value(authErrorCode.getCode()));
+    }
+
+    @DisplayName("카카오 accessToken 재발급 요청 시 refreshToken이 없으면 에러 응답한다.")
+    @Test
+    void kakaoReissue_noRefreshToken_errorResponse() throws Exception {
+        // given
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao"))
+                .andDo(print())
+                .andExpect(jsonPath("$.message").value("요청 시 필수 쿠키 값 없음 refreshToken"))
+                .andExpect(jsonPath("$.code").value(CommonErrorCode.MISSING_COOKIE.getCode()));
     }
 }

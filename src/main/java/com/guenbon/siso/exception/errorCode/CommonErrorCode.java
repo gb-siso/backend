@@ -12,6 +12,7 @@ public enum CommonErrorCode implements ErrorCode {
     INVALID_REQUEST_BODY_FORMAT(HttpStatus.BAD_REQUEST, "CMN003", "요청 본문 형식이 올바르지 않음"),
     JSON_PARSE_ERROR(HttpStatus.BAD_REQUEST, "CMN004", "JSON 파싱 오류"),
     FAIL_EXTERNAL_ERROR_CODE_MAPPING(HttpStatus.BAD_REQUEST, "CMN005", "외부 에러 코드 매핑 실패"),
+    MISSING_COOKIE(HttpStatus.BAD_REQUEST, "CMN006", "요청 시 필수 쿠키 값 없음"),
     ;
 
     private final HttpStatus httpStatus;
