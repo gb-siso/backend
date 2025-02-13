@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.web.server.Cookie;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mock.web.MockCookie;
@@ -203,9 +202,9 @@ class AuthControllerTest {
         // given
         final String invalidRefreshToken = "invalidRefreshToken";
         when(authService.reissueWithKakao(invalidRefreshToken)).thenThrow(new CustomException(authErrorCode));
-        MockCookie refreshToken = new MockCookie("refreshToken", invalidRefreshToken);
+        MockCookie cookie = new MockCookie("refreshToken", invalidRefreshToken);
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(refreshToken))
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(cookie))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().is(authErrorCode.getHttpStatus().value()))
@@ -222,5 +221,35 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.message").value("요청 시 필수 쿠키 값 없음 refreshToken"))
                 .andExpect(jsonPath("$.code").value(CommonErrorCode.MISSING_COOKIE.getCode()));
+    }
+
+    @DisplayName("카카오 accessToken 재발급 요청 시 refreshToken이 유효하고 db에 존재하면 토큰을 재발급한다.")
+    @Test
+    void kakaoReissue_success_reissueToken() throws Exception {
+        // given
+        final String validRefreshToken = "validRefreshToken";
+        final String dummyRefreshToken = "dummyRefreshToken";
+        final String refreshTokenCookie = ResponseCookie.from("refreshToken", dummyRefreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite(Cookie.SameSite.NONE.attributeValue())
+                .build().toString();
+        final IssueTokenResult expected = IssueTokenResult.builder()
+                .refreshTokenCookie(refreshTokenCookie)
+                .accessToken("accessToken")
+                .image("image")
+                .nickname("nickname").build();
+        when(authService.reissueWithKakao(validRefreshToken)).thenReturn(expected);
+        MockCookie cookie = new MockCookie("refreshToken", validRefreshToken);
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/reissue/kakao").cookie(cookie))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(cookie().value("refreshToken", dummyRefreshToken))
+                .andExpect(jsonPath("$.nickname").value(expected.getNickname()))
+                .andExpect(jsonPath("$.imageUrl").value(expected.getImage()))
+                .andExpect(jsonPath("$.accessToken").value(expected.getAccessToken()));
     }
 }
