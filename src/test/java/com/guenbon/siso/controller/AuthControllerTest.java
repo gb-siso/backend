@@ -93,17 +93,8 @@ class AuthControllerTest {
         // given
         final String validKakaoAuthCode = "validKakaoAuthCode";
         final String dummyRefreshToken = "dummyRefreshToken";
-        final String refreshTokenCookie = ResponseCookie.from("refreshToken", dummyRefreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite(Cookie.SameSite.NONE.attributeValue())
-                .build().toString();
-        final IssueTokenResult expected = IssueTokenResult.builder()
-                .refreshTokenCookie(refreshTokenCookie)
-                .accessToken("accessToken")
-                .image("image")
-                .nickname("nickname").build();
+        final String refreshTokenCookie = createRefreshTokenCookie(dummyRefreshToken);
+        final IssueTokenResult expected = buildDummyIssueTokenResult(refreshTokenCookie);
 
         when(authApiService.authenticateWithKakao(validKakaoAuthCode)).thenReturn(expected);
 
@@ -166,20 +157,10 @@ class AuthControllerTest {
         final String validNaverAuthCode = "validNaverAuthCode";
         final String state = "state";
         final String dummyRefreshToken = "dummyRefreshToken";
-        final String refreshTokenCookie = ResponseCookie.from("refreshToken", dummyRefreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite(Cookie.SameSite.NONE.attributeValue())
-                .build().toString();
-        final IssueTokenResult expected = IssueTokenResult.builder()
-                .refreshTokenCookie(refreshTokenCookie)
-                .accessToken("accessToken")
-                .image("image")
-                .nickname("nickname").build();
+        final String refreshTokenCookie = createRefreshTokenCookie(dummyRefreshToken);
+        final IssueTokenResult expected = buildDummyIssueTokenResult(refreshTokenCookie);
 
         when(authApiService.authenticateWithNaver(validNaverAuthCode, state)).thenReturn(expected);
-
         // when then
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + LOGIN_NAVER_PATH)
                         .param(CODE, validNaverAuthCode) // errorCode 대신 getCode() 사용
@@ -229,17 +210,8 @@ class AuthControllerTest {
         // given
         final String validRefreshToken = "validRefreshToken";
         final String dummyRefreshToken = "dummyRefreshToken";
-        final String refreshTokenCookie = ResponseCookie.from("refreshToken", dummyRefreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite(Cookie.SameSite.NONE.attributeValue())
-                .build().toString();
-        final IssueTokenResult expected = IssueTokenResult.builder()
-                .refreshTokenCookie(refreshTokenCookie)
-                .accessToken("accessToken")
-                .image("image")
-                .nickname("nickname").build();
+        final String refreshTokenCookie = createRefreshTokenCookie(dummyRefreshToken);
+        final IssueTokenResult expected = buildDummyIssueTokenResult(refreshTokenCookie);
         when(authService.reissueWithKakao(validRefreshToken)).thenReturn(expected);
         MockCookie cookie = new MockCookie("refreshToken", validRefreshToken);
         // when, then
@@ -251,5 +223,22 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.nickname").value(expected.getNickname()))
                 .andExpect(jsonPath("$.imageUrl").value(expected.getImage()))
                 .andExpect(jsonPath("$.accessToken").value(expected.getAccessToken()));
+    }
+
+    private static String createRefreshTokenCookie(String value) {
+        return ResponseCookie.from("refreshToken", value)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite(Cookie.SameSite.NONE.attributeValue())
+                .build().toString();
+    }
+
+    private static IssueTokenResult buildDummyIssueTokenResult(String refreshTokenCookie) {
+        return IssueTokenResult.builder()
+                .refreshTokenCookie(refreshTokenCookie)
+                .accessToken("accessToken")
+                .image("image")
+                .nickname("nickname").build();
     }
 }
