@@ -25,7 +25,7 @@ public class NaverApiClient {
         return webClient.get()
                 .uri(NAUTH_GET_TOKEN_URL, uriBuilder -> uriBuilder
                         .queryParam(GRANT_TYPE, AUTHORIZATION_CODE)
-                        .queryParam(CODE, code)
+                        .queryParam(NAVER_CODE_PARAMETER, code)
                         .queryParam(CLIENT_ID, naverClientId)
                         .queryParam(CLIENT_SECRET, naverClientSecret)
                         .queryParam(STATE, state)

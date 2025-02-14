@@ -47,5 +47,6 @@ public final class ApiConstants {
     public static final String CLIENT_SECRET = "client_secret";
     public static final String STATE = "state";
     public static final String BEARER = "Bearer ";
+    public static final String NAVER_CODE_PARAMETER = "code";
 
 }
