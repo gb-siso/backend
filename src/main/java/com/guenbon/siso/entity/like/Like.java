@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Check;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -16,6 +17,7 @@ import lombok.experimental.SuperBuilder;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"rating_id", "member_id"})
         })
+@Check(constraints = "(dtype = 'RatingLike' AND rating_id IS NOT NULL AND congressman_id IS NULL) OR (dtype = 'CongressmanLike' AND congressman_id IS NOT NULL AND rating_id IS NULL)")
 public class Like extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

@@ -4,15 +4,15 @@ drop table if exists rating;
 drop table if exists congressman;
 drop table if exists member;
 
-create table congressman (times_elected integer, created_date datetime(6), id bigint not null auto_increment, modified_date datetime(6), name varchar(255), party varchar(255), primary key (id)) engine=InnoDB;
+create table congressman (times_elected integer not null, created_date datetime(6), id bigint not null auto_increment, modified_date datetime(6), name varchar(255) not null, party varchar(255) not null, primary key (id)) engine=InnoDB;
 
 create table dislike (congressman_id bigint, id bigint not null auto_increment, member_id bigint, rating_id bigint, dtype varchar(31) not null, primary key (id)) engine=InnoDB;
 
-create table `like` (congressman_id bigint, created_date datetime(6), id bigint not null auto_increment, member_id bigint, modified_date datetime(6), rating_id bigint, dtype varchar(31) not null, primary key (id)) engine=InnoDB;
+create table `like` (congressman_id bigint, created_date datetime(6), id bigint not null auto_increment, member_id bigint, modified_date datetime(6), rating_id bigint, dtype varchar(31) not null, primary key (id), check ((dtype = 'RatingLike' AND rating_id IS NOT NULL AND congressman_id IS NULL) OR (dtype = 'CongressmanLike' AND congressman_id IS NOT NULL AND rating_id IS NULL))) engine=InnoDB;
 
-create table member (created_date datetime(6), id bigint not null auto_increment, kakao_id bigint unique, naver_id varchar(255) unique, modified_date datetime(6), image_url varchar(255), nickname varchar(255), refresh_token varchar(255), primary key (id)) engine=InnoDB;
+create table member (created_date datetime(6), id bigint not null auto_increment, kakao_id bigint, modified_date datetime(6), image_url varchar(255), naver_id varchar(255), nickname varchar(255) not null, refresh_token varchar(255), primary key (id)) engine=InnoDB;
 
-create table rating (rate float(53), congressman_id bigint, created_date datetime(6), id bigint not null auto_increment, member_id bigint, modified_date datetime(6), content varchar(255), primary key (id)) engine=InnoDB;
+create table rating (rate float(53) not null, congressman_id bigint not null, created_date datetime(6), id bigint not null auto_increment, member_id bigint not null, modified_date datetime(6), content varchar(255) not null, primary key (id)) engine=InnoDB;
 
 alter table dislike add constraint unique_rating_member unique (rating_id, member_id);
 

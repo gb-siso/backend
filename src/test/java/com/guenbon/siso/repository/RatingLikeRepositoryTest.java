@@ -1,7 +1,5 @@
 package com.guenbon.siso.repository;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
@@ -12,6 +10,7 @@ import com.guenbon.siso.repository.like.RatingLikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
+import com.guenbon.siso.support.fixture.rating.RatingFixture;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +20,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -44,7 +45,7 @@ public class RatingLikeRepositoryTest {
         // given
         final Member 장몽이 = memberRepository.save(MemberFixture.builder().setNickname("장몽이").build());
         final Congressman 이준석 = congressmanRepository.save(CongressmanFixture.builder().setName("이준석").build());
-        final Rating rating = ratingRepository.save(Rating.builder().member(장몽이).congressman(이준석).build());
+        final Rating rating = ratingRepository.save(RatingFixture.builder().setMember(장몽이).setCongressman(이준석).build());
         likeRateAndSave(rating, 장몽이);
 
         // when, then
