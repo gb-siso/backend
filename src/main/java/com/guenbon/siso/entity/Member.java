@@ -22,6 +22,7 @@ public class Member extends DateEntity {
     private Long kakaoId;
     @Column(name = "naver_id", unique = true)
     private String naverId;
+    @Column(nullable = false)
     private String nickname;
     @Column(name = "image_url")
     private String imageUrl;

@@ -24,15 +24,17 @@ public class Rating extends DateEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "congressman_id")
+    @JoinColumn(name = "congressman_id", nullable = false)
     private Congressman congressman;
 
+    @Column(nullable = false)
     private Double rate;
 
+    @Column(nullable = false)
     private String content;
 
     @Builder.Default

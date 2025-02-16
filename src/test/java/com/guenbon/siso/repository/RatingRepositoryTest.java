@@ -1,8 +1,5 @@
 package com.guenbon.siso.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.entity.Congressman;
@@ -16,9 +13,7 @@ import com.guenbon.siso.repository.like.RatingLikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
+import com.guenbon.siso.support.fixture.rating.RatingFixture;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +25,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -64,10 +66,7 @@ public class RatingRepositoryTest {
         final Congressman 이준석 = CongressmanFixture.builder()
                 .setName("이준석")
                 .build();
-        final Rating given = Rating.builder()
-                .member(장몽이)
-                .congressman(이준석)
-                .build();
+        final Rating given = RatingFixture.builder().setMember(장몽이).setCongressman(이준석).build();
 
         final Member savedMember = memberRepository.save(장몽이);
         final Congressman savedCongressman = congressmanRepository.save(이준석);
@@ -94,10 +93,7 @@ public class RatingRepositoryTest {
         final Congressman 이준석 = CongressmanFixture.builder()
                 .setName("이준석")
                 .build();
-        final Rating given = Rating.builder()
-                .member(장몽이)
-                .congressman(이준석)
-                .build();
+        final Rating given = RatingFixture.builder().setMember(장몽이).setCongressman(이준석).build();
 
         memberRepository.save(장몽이);
         congressmanRepository.save(이준석);
@@ -168,7 +164,7 @@ public class RatingRepositoryTest {
     }
 
     private Rating saveRating(final Member member, final Congressman congressman) {
-        return ratingRepository.save(Rating.builder().member(member).congressman(congressman).build());
+        return ratingRepository.save(RatingFixture.builder().setMember(member).setCongressman(congressman).build());
     }
 
     private void configureLikesAndDislikes(final Rating[] ratings, final Member[] members) {

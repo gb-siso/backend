@@ -9,6 +9,7 @@ import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
+import com.guenbon.siso.support.fixture.rating.RatingFixture;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -300,12 +301,12 @@ class CongressmanRepositoryTest {
     }
 
     private Rating saveRating(Member member, Congressman congressman, double rate) {
-        return ratingRepository.save(Rating.builder().member(member).congressman(congressman).rate(rate).build());
+        return ratingRepository.save(RatingFixture.builder().setMember(member).setCongressman(congressman).setRate(rate).build());
     }
 
     private Rating saveRating(Member member, Congressman congressman, double rate, int plusDays) {
         when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.now().plusDays(plusDays)));
-        return ratingRepository.save(Rating.builder().member(member).congressman(congressman).rate(rate).build());
+        return ratingRepository.save(RatingFixture.builder().setMember(member).setCongressman(congressman).setRate(rate).build());
     }
 
     private Member saveMember(Member member) {
