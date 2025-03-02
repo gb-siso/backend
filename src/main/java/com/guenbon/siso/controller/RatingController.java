@@ -6,7 +6,6 @@ import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.service.rating.RatingService;
 import com.guenbon.siso.support.annotation.LoginId;
 import com.guenbon.siso.support.annotation.page.PageConfig;
-import com.guenbon.siso.util.AESUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +24,13 @@ import static com.guenbon.siso.support.constants.SortProperty.*;
 @Slf4j
 public class RatingController {
     private final RatingService ratingService;
-    private final AESUtil aesUtil;
 
     @PostMapping
     public void ratingSave(@LoginId Long loginId, @Validated @RequestBody RatingWriteDTO ratingWriteDTO,
                            HttpServletResponse response)
             throws IOException {
         final String encryptedCongressmanId = ratingWriteDTO.getCongressmanId();
-        ratingService.create(loginId, aesUtil.decrypt(encryptedCongressmanId));
+        ratingService.create(loginId, ratingWriteDTO);
         response.sendRedirect("/api/v1/congressman/" + encryptedCongressmanId);
     }
 

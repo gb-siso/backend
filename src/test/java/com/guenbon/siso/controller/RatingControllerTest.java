@@ -19,7 +19,6 @@ import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingDetailDTOFixture;
 import com.guenbon.siso.support.fixture.rating.RatingWriteDTOFixture;
-import com.guenbon.siso.util.AESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
@@ -66,8 +65,6 @@ class RatingControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private AESUtil aesUtil;
-    @MockitoBean
     private RatingService ratingService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -76,7 +73,6 @@ class RatingControllerTest {
     void allBeansInjectedSuccessfully() {
         assertAll(
                 () -> assertThat(mockMvc).isNotNull(),
-                () -> assertThat(aesUtil).isNotNull(),
                 () -> assertThat(jwtTokenProvider).isNotNull(),
                 () -> assertThat(objectMapper).isNotNull()
         );
@@ -88,15 +84,12 @@ class RatingControllerTest {
         final RatingWriteDTO badRequest = RatingWriteDTO.builder()
                 .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
                 .content("평범한 국회의원")
-                .rating(3.0F).build();
+                .rating(3.0).build();
 
         final String json = objectMapper.writeValueAsString(badRequest);
 
-        when(aesUtil.decrypt(ENCRYPTED_CONGRESSMAN_ID)).thenReturn(CONGRESSMAN_ID);
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
-
-        doThrow(new CustomException(DUPLICATED)).when(ratingService)
-                .create(MEMBER_ID, CONGRESSMAN_ID);
+        when(ratingService.create(eq(MEMBER_ID), any(RatingWriteDTO.class))).thenThrow(new CustomException(DUPLICATED));
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", ACCESS_TOKEN)
@@ -115,15 +108,12 @@ class RatingControllerTest {
         final RatingWriteDTO badRequest = RatingWriteDTO.builder()
                 .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
                 .content("평범한 국회의원")
-                .rating(3.0F).build();
+                .rating(3.0).build();
 
         final String json = objectMapper.writeValueAsString(badRequest);
 
-        when(aesUtil.decrypt(ENCRYPTED_CONGRESSMAN_ID)).thenReturn(CONGRESSMAN_ID);
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
-
-        doThrow(new CustomException(MemberErrorCode.NOT_EXISTS)).when(ratingService)
-                .create(MEMBER_ID, CONGRESSMAN_ID);
+        when(ratingService.create(eq(MEMBER_ID), any(RatingWriteDTO.class))).thenThrow(new CustomException(MemberErrorCode.NOT_EXISTS));
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", ACCESS_TOKEN)
@@ -142,15 +132,12 @@ class RatingControllerTest {
         final RatingWriteDTO badRequest = RatingWriteDTO.builder()
                 .congressmanId(ENCRYPTED_CONGRESSMAN_ID)
                 .content("평범한 국회의원")
-                .rating(3.0F).build();
+                .rating(3.0).build();
 
         final String json = objectMapper.writeValueAsString(badRequest);
 
-        when(aesUtil.decrypt(ENCRYPTED_CONGRESSMAN_ID)).thenReturn(CONGRESSMAN_ID);
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(MEMBER_ID);
-
-        doThrow(new CustomException(CongressmanErrorCode.NOT_EXISTS)).when(ratingService)
-                .create(MEMBER_ID, CONGRESSMAN_ID);
+        when(ratingService.create(eq(MEMBER_ID), any(RatingWriteDTO.class))).thenThrow(new CustomException(CongressmanErrorCode.NOT_EXISTS));
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", ACCESS_TOKEN)
@@ -206,15 +193,15 @@ class RatingControllerTest {
                         "rating", "rating는 필수입니다."),
                 Arguments.of(Named.named("rating below minimum",
                                 RatingWriteDTOFixture.builder()
-                                        .setRating(-1.0f).build()),
+                                        .setRating(-1.0).build()),
                         "rating", "rating은 0.0 이상이어야 합니다."),
                 Arguments.of(Named.named("rating above maximum",
                                 RatingWriteDTOFixture.builder()
-                                        .setRating(11.0f).build()),
+                                        .setRating(11.0).build()),
                         "rating", "rating은 10.0 이하여야 합니다."),
                 Arguments.of(Named.named("rating with more than one decimal place",
                                 RatingWriteDTOFixture.builder()
-                                        .setRating(3.123f).build()),
+                                        .setRating(3.123).build()),
                         "rating", "rating은 소수점 1자리까지 입력 가능합니다.")
         );
     }
@@ -258,7 +245,7 @@ class RatingControllerTest {
                 .andExpect(status().isBadRequest()) // HTTP 상태코드 400 검증
                 .andExpect(jsonPath("$.message").value(
                         String.format(GlobalExceptionHandler.TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, "invalidType",
-                                "Float"))) // 오류 메시지 검증
+                                "Double"))) // 오류 메시지 검증
                 .andExpect(jsonPath("$.code").value(INVALID_REQUEST_BODY_FORMAT.getCode())); // 오류 코드 검증
     }
 
@@ -280,14 +267,13 @@ class RatingControllerTest {
         final RatingWriteDTO request = RatingWriteDTO.builder()
                 .congressmanId(encryptedCongressmanId)
                 .content("평범한 국회의원")
-                .rating(3.0F).build();
+                .rating(3.0).build();
 
         final String json = objectMapper.writeValueAsString(request);
 
-        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(CONGRESSMAN_ID);
         when(jwtTokenProvider.getMemberId(accessToken)).thenReturn(MEMBER_ID);
 
-        doNothing().when(ratingService).create(member.getId(), congressman.getId());
+        when(ratingService.create(member.getId(), request)).thenReturn(encryptedCongressmanId);
 
         mockMvc.perform(post("/api/v1/ratings")
                         .header("accessToken", accessToken)
@@ -298,7 +284,7 @@ class RatingControllerTest {
                 .andExpect(redirectedUrl("/api/v1/congressman/" + encryptedCongressmanId))
                 .andReturn();
 
-        verify(ratingService, times(1)).create(member.getId(), congressman.getId());
+        verify(ratingService, times(1)).create(eq(member.getId()), any(RatingWriteDTO.class));
     }
 
     @ParameterizedTest(name = "idCursor={0}, countCursor={1}일 때, 에러 필드={2}, 에러 메세지={3} 반환")

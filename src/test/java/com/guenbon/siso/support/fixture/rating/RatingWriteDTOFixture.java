@@ -10,7 +10,7 @@ public class RatingWriteDTOFixture {
 
     private String congressmanId = "congressmanId";
     private String content = "content";
-    private Float rating = 3.0f;
+    private Double rating = 3.0;
 
     public static RatingWriteDTOFixture builder() {
         return new RatingWriteDTOFixture();
@@ -26,7 +26,7 @@ public class RatingWriteDTOFixture {
         return this;
     }
 
-    public RatingWriteDTOFixture setRating(Float rating) {
+    public RatingWriteDTOFixture setRating(Double rating) {
         this.rating = rating;
         return this;
     }

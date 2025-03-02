@@ -3,6 +3,7 @@ package com.guenbon.siso.service.rating;
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.dto.member.common.MemberDTO;
+import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
@@ -14,12 +15,13 @@ import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.util.AESUtil;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional(readOnly = true)
 @Service
@@ -35,14 +37,17 @@ public class RatingService {
     private final AESUtil aesUtil;
 
     @Transactional(readOnly = false)
-    public void create(final Long memberId, final Long congressmanId) {
+    public String create(final Long memberId, RatingWriteDTO ratingWriteDTO) {
         final Member member = memberService.findById(memberId);
-        final Congressman congressman = congressmanService.findById(congressmanId);
+        final Congressman congressman = congressmanService.findById(aesUtil.decrypt(ratingWriteDTO.getCongressmanId()));
         validateDuplicated(member, congressman);
         ratingRepository.save(Rating.builder()
                 .member(member)
                 .congressman(congressman)
+                .content(ratingWriteDTO.getContent())
+                .rate(ratingWriteDTO.getRating())
                 .build());
+        return ratingWriteDTO.getCongressmanId();
     }
 
     private void validateDuplicated(final Member member, final Congressman congressman) {
@@ -89,7 +94,7 @@ public class RatingService {
             Sort sort = pageable.getSort();
             return switch (sort.getOrderFor(SORT_LIKE) != null ? SORT_LIKE
                     : sort.getOrderFor(SORT_DISLIKE) != null ? SORT_DISLIKE
-                            : SORT_TOPICALITY) {
+                    : SORT_TOPICALITY) {
                 case SORT_LIKE -> new CountCursor(lastElement.getId(), lastElement.getLikeCount());
                 case SORT_DISLIKE -> new CountCursor(lastElement.getId(), lastElement.getDislikeCount());
                 default -> new CountCursor(lastElement.getId(), lastElement.getTopicality());

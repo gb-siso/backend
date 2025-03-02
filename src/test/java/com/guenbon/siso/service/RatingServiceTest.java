@@ -1,17 +1,8 @@
 package com.guenbon.siso.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
+import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.entity.Member;
@@ -23,12 +14,12 @@ import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.service.rating.RatingService;
-import com.guenbon.siso.util.AESUtil;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.dislike.RatingDislikeFixture;
 import com.guenbon.siso.support.fixture.like.RatingLikeFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
-import java.util.List;
+import com.guenbon.siso.support.fixture.rating.RatingWriteDTOFixture;
+import com.guenbon.siso.util.AESUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +28,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RatingServiceTest {
@@ -62,15 +61,19 @@ class RatingServiceTest {
     @DisplayName("중복되는 memberId와 congressmanId로 create 메서드 호출 시 BadRequestException 발생")
     void create_duplicateMemberAndCongressman_throwsBadRequestException() {
         // given
+
+        RatingWriteDTO ratingWriteDTO = RatingWriteDTOFixture.builder().build();
         final Member 장몽이 = MemberFixture.fromId(1L);
         final Congressman 이준석 = CongressmanFixture.fromId(1L);
+        when(aesUtil.decrypt(ratingWriteDTO.getCongressmanId())).thenReturn(이준석.getId());
         when(ratingRepository.existsByMemberAndCongressman(장몽이, 이준석)).thenReturn(true);
         when(memberService.findById(장몽이.getId())).thenReturn(장몽이);
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
+
         // when, then
         assertThrows(
                 CustomException.class,
-                () -> ratingService.create(장몽이.getId(), 이준석.getId()),
+                () -> ratingService.create(장몽이.getId(), ratingWriteDTO),
                 RatingErrorCode.DUPLICATED.getMessage()
         );
     }
@@ -79,13 +82,17 @@ class RatingServiceTest {
     @DisplayName("중복되지 않는 memberId와 congressmanId로 create 메서드 호출 시 Rating 생성 성공")
     void create_uniqueMemberAndCongressman_createsRating() {
         // given
+
+        RatingWriteDTO ratingWriteDTO = RatingWriteDTOFixture.builder().build();
         final Member 장몽이 = MemberFixture.fromId(1L);
         final Congressman 이준석 = CongressmanFixture.fromId(1L);
+        when(aesUtil.decrypt(ratingWriteDTO.getCongressmanId())).thenReturn(이준석.getId());
         when(ratingRepository.existsByMemberAndCongressman(장몽이, 이준석)).thenReturn(false);
         when(memberService.findById(장몽이.getId())).thenReturn(장몽이);
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
+
         // when, then
-        assertDoesNotThrow(() -> ratingService.create(장몽이.getId(), 이준석.getId()));
+        assertDoesNotThrow(() -> ratingService.create(장몽이.getId(), ratingWriteDTO));
         verify(ratingRepository, times(1)).save(any(Rating.class));
     }
 

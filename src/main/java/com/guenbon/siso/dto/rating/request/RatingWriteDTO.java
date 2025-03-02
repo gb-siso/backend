@@ -30,5 +30,5 @@ public class RatingWriteDTO {
     @DecimalMax(value = "10.0", inclusive = true, message = "rating은 10.0 이하여야 합니다.")
     @Digits(integer = 2, fraction = 1, message = "rating은 소수점 1자리까지 입력 가능합니다.")
     @NotNull(message = "rating는 필수입니다.")
-    private Float rating;
+    private Double rating;
 }
