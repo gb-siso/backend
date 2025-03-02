@@ -9,8 +9,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import static com.guenbon.siso.support.constants.ApiConstants.*;
 
@@ -38,16 +42,15 @@ public class KakaoApiClient {
         MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         requestBody.add(GRANT_TYPE, AUTHORIZATION_CODE);
         requestBody.add(CLIENT_ID, kakaoApiKey);
-        requestBody.add(REDIRECT_URL, KAUTH_REDIRECT_URL);
-        requestBody.add(CODE, authCode);
+        requestBody.add(REDIRECT_URL, URLEncoder.encode(KAUTH_REDIRECT_URL, StandardCharsets.UTF_8)); // URL 인코딩
+        requestBody.add(CODE_QUERY_PARAMETER_LOWERCASE, authCode);
 
         return webClient.post()
                 .uri(KAUTH_GET_TOKEN_URL)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue(requestBody)
-                .exchangeToMono(response -> {
-                    return response.bodyToMono(String.class)
-                            .doOnNext(body -> log.info("log kakao api body: {}", body));
-                });
+                .body(BodyInserters.fromFormData(requestBody)) // bodyValue() 대신 사용
+                .exchangeToMono(response -> response.bodyToMono(String.class)
+                        .doOnNext(body -> log.info("log kakao api body: {}", body))
+                );
     }
 }

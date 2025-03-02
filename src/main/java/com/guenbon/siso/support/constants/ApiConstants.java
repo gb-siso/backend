@@ -40,6 +40,7 @@ public final class ApiConstants {
     public static final String GRANT_TYPE = "grant_type";
     public static final String CLIENT_ID = "client_id";
     public static final String REDIRECT_URL = "redirect_url";
+    public static final String CODE_QUERY_PARAMETER_LOWERCASE = "code";
 
     // naver
     public static final String NAUTH_GET_TOKEN_URL = "https://nid.naver.com/oauth2.0/token";
