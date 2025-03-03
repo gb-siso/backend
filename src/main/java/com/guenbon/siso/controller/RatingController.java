@@ -37,7 +37,7 @@ public class RatingController {
     @GetMapping("/{encryptedCongressmanId}")
     public ResponseEntity<RatingListDTO> ratingList(
             @PathVariable String encryptedCongressmanId,
-            @PageConfig(allowedSorts = {LIKE, DISLIKE, TOPICALITY},
+            @PageConfig(allowedSorts = {LIKE, DISLIKE, TOPICALITY, REG_DATE},
                     defaultSort = "topicality, DESC", defaultSize = 20) Pageable pageable,
             @Validated @ModelAttribute CountCursor cursor) {
         return ResponseEntity.ok(

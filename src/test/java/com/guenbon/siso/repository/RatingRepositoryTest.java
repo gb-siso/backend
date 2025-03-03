@@ -15,23 +15,31 @@ import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingFixture;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -50,6 +58,17 @@ public class RatingRepositoryTest {
     RatingLikeRepository ratingLikeRepository;
     @Autowired
     RatingDislikeRepository ratingDislikeRepository;
+
+    @MockitoSpyBean
+    AuditingHandler auditingHandler;
+
+    @MockitoBean
+    DateTimeProvider dateTimeProvider;
+
+    @BeforeEach
+    void setUp() {
+        auditingHandler.setDateTimeProvider(dateTimeProvider);
+    }
 
     @Test
     void ratingRepository_null_아님() {
@@ -114,11 +133,11 @@ public class RatingRepositoryTest {
         final Congressman congressman = saveCongressman();
 
         final Rating[] ratings = {
-                saveRating(members[0], congressman), // 좋아요 1 싫어요 1
-                saveRating(members[1], congressman), // 좋아요 1 싫어요 0
-                saveRating(members[2], congressman), // 좋아요 0 싫어요 1
-                saveRating(members[3], congressman), // 좋아요 2 싫어요 0
-                saveRating(members[4], congressman)  // 좋아요 0 싫어요 2
+                saveRating(members[0], congressman, 0), // 좋아요 1 싫어요 1
+                saveRating(members[1], congressman, 1), // 좋아요 1 싫어요 0
+                saveRating(members[2], congressman, 2), // 좋아요 0 싫어요 1
+                saveRating(members[3], congressman, 3), // 좋아요 2 싫어요 0
+                saveRating(members[4], congressman, 4)  // 좋아요 0 싫어요 2
         };
 
         configureLikesAndDislikes(ratings, members);
@@ -142,6 +161,20 @@ public class RatingRepositoryTest {
                 DecryptedCountCursor.of(topicalitySortLastRatingPage0.getId(),
                         topicalitySortLastRatingPage0.getTopicality()));
 
+        final List<Rating> regDateSortResultPage0 = fetchSortedRatings(ratings[0], "regDate", null);
+        final Rating regDateSortLastRatingPage0 = regDateSortResultPage0.get(
+                regDateSortResultPage0.size() - 1);
+        final List<Rating> regDateSortLastRatingPage1 = fetchSortedRatings(regDateSortLastRatingPage0, "regDate",
+                DecryptedCountCursor.of(regDateSortLastRatingPage0.getId(), 0));
+
+        log.info("list 확인");
+        for (Rating rating : regDateSortResultPage0) {
+            log.info(rating.toString());
+        }
+        for (Rating rating : regDateSortLastRatingPage1) {
+            log.info(rating.toString());
+        }
+
         // then
         assertAll(
                 () -> assertRatingOrder(likeSortResultPage0, ratings[3], ratings[1], ratings[0]),
@@ -149,7 +182,9 @@ public class RatingRepositoryTest {
                 () -> assertRatingOrder(dislikeSortResultPage0, ratings[4], ratings[2], ratings[0]),
                 () -> assertRatingOrder(dislikeSortResultPage1, ratings[0], ratings[3], ratings[1]),
                 () -> assertRatingOrder(topicalitySortResultPage0, ratings[4], ratings[3], ratings[0]),
-                () -> assertRatingOrder(topicalitySortResultPage1, ratings[0], ratings[2], ratings[1])
+                () -> assertRatingOrder(topicalitySortResultPage1, ratings[0], ratings[2], ratings[1]),
+                () -> assertRatingOrder(regDateSortResultPage0, ratings[4], ratings[3], ratings[2]),
+                () -> assertRatingOrder(regDateSortLastRatingPage1, ratings[2], ratings[1], ratings[0])
         );
     }
 
@@ -163,7 +198,8 @@ public class RatingRepositoryTest {
         return congressmanRepository.save(CongressmanFixture.builder().build());
     }
 
-    private Rating saveRating(final Member member, final Congressman congressman) {
+    private Rating saveRating(final Member member, final Congressman congressman, int days) {
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.now().plusDays(days)));
         return ratingRepository.save(RatingFixture.builder().setMember(member).setCongressman(congressman).build());
     }
 

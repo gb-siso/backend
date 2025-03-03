@@ -31,6 +31,8 @@ public class RatingService {
     public static final String SORT_LIKE = "like";
     public static final String SORT_DISLIKE = "dislike";
     public static final String SORT_TOPICALITY = "topicality";
+    public static final String SORT_REG_DATE = "regDate";
+    public static final int ZERO = 0;
     private final RatingRepository ratingRepository;
     private final MemberService memberService;
     private final CongressmanService congressmanService;
@@ -94,9 +96,11 @@ public class RatingService {
             Sort sort = pageable.getSort();
             return switch (sort.getOrderFor(SORT_LIKE) != null ? SORT_LIKE
                     : sort.getOrderFor(SORT_DISLIKE) != null ? SORT_DISLIKE
+                    : sort.getOrderFor(SORT_REG_DATE) != null ? SORT_REG_DATE
                     : SORT_TOPICALITY) {
                 case SORT_LIKE -> new CountCursor(lastElement.getId(), lastElement.getLikeCount());
                 case SORT_DISLIKE -> new CountCursor(lastElement.getId(), lastElement.getDislikeCount());
+                case SORT_REG_DATE -> new CountCursor(lastElement.getId(), ZERO);
                 default -> new CountCursor(lastElement.getId(), lastElement.getTopicality());
             };
         }
