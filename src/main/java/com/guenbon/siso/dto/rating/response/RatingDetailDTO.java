@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
@@ -18,10 +20,11 @@ public class RatingDetailDTO {
     private Double rate;
     private Integer likeCount;
     private Integer dislikeCount;
+    private LocalDateTime createdAt;
 
     public static RatingDetailDTO from(Rating rating, MemberDTO member, String encryptedId) {
         return new RatingDetailDTO(encryptedId, member, rating.getContent(), rating.getRate(), rating.getLikeCount(),
-                rating.getDislikeCount());
+                rating.getDislikeCount(), rating.getCreatedDate());
     }
 
     public Integer getTopicality() {

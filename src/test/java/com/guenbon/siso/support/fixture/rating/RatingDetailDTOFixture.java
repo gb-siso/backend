@@ -7,6 +7,8 @@ import com.guenbon.siso.support.fixture.member.MemberDTOFixture;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class RatingDetailDTOFixture {
@@ -17,6 +19,7 @@ public class RatingDetailDTOFixture {
     private Double rate = 2.0;
     private Integer likeCount = 10;
     private Integer dislikeCount = 2;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public static RatingDetailDTOFixture builder() {
         return new RatingDetailDTOFixture();
@@ -25,6 +28,10 @@ public class RatingDetailDTOFixture {
     public RatingDetailDTOFixture setId(String id) {
         this.id = id;
         return this;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public RatingDetailDTOFixture setMember(MemberDTO member) {
@@ -53,6 +60,6 @@ public class RatingDetailDTOFixture {
     }
 
     public RatingDetailDTO build() {
-        return new RatingDetailDTO(id, member, content, rate, likeCount, dislikeCount);
+        return new RatingDetailDTO(id, member, content, rate, likeCount, dislikeCount, createdAt);
     }
 }
