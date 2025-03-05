@@ -7,6 +7,7 @@ import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.service.reaction.RatingLikeService;
 import com.guenbon.siso.support.constants.ReactionStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -31,6 +34,16 @@ class ReactionControllerTest {
     protected JwtTokenProvider jwtTokenProvider;
     @MockitoBean
     protected RatingLikeService ratingLikeService;
+
+    @Test
+    @DisplayName("빈 주입 확인")
+    void allBeansInjectedSuccessfully() {
+        assertAll(
+                () -> assertThat(mockMvc).isNotNull(),
+                () -> assertThat(jwtTokenProvider).isNotNull(),
+                () -> assertThat(ratingLikeService).isNotNull()
+        );
+    }
 
     @Test
     @DisplayName("이미 해당 평가에 대해 좋아요를 누른 회원이 평가 좋아요 작성 요청할 경우 좋아요 중복 예외응답을 한다.")
@@ -80,8 +93,8 @@ class ReactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.like.status").value(ReactionStatus.CREATED))
-                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.DELETED))
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.CREATED.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.DELETED.name()))
                 .andReturn();
 
         verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
@@ -110,9 +123,9 @@ class ReactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.like.status").value(ReactionStatus.CREATED))
-                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.DELETED))
-                .andExpect(jsonPath("$.dislike.reactionId").value(null))
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.CREATED.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.NONE.name()))
+                .andExpect(jsonPath("$.dislike.reactionId").value(Matchers.nullValue()))
                 .andReturn();
 
         verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
