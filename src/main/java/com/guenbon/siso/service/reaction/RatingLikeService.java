@@ -8,4 +8,8 @@ public class RatingLikeService {
     public RatingReactionDTO create(String encryptedRatingId, Long memberId) {
         return null;
     }
+
+    public RatingReactionDTO delete(String encryptedRatingId, Long memberId) {
+        return null;
+    }
 }

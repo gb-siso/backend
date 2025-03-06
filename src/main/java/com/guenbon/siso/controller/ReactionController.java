@@ -20,4 +20,9 @@ public class ReactionController {
     public ResponseEntity<RatingReactionDTO> createRatingLike(@PathVariable String encryptedRatingId, @LoginId Long loginId) {
         return ResponseEntity.ok().body(ratingLikeService.create(encryptedRatingId, loginId));
     }
+
+    @DeleteMapping("/likes/rating/{encryptedRatingId}")
+    public ResponseEntity<RatingReactionDTO> deleteRatingLike(@PathVariable String encryptedRatingId, @LoginId Long loginId) {
+        return ResponseEntity.ok().body(ratingLikeService.delete(encryptedRatingId, loginId));
+    }
 }
