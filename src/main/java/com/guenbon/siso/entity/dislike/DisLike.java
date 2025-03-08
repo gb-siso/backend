@@ -3,9 +3,11 @@ package com.guenbon.siso.entity.dislike;
 import com.guenbon.siso.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @SuperBuilder

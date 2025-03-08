@@ -4,12 +4,14 @@ import com.guenbon.siso.dto.reaction.response.RatingReactionDTO;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.dislike.RatingDislike;
+import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.reaction.RatingLikeErrorCode;
 import com.guenbon.siso.repository.dislike.RatingDislikeRepository;
 import com.guenbon.siso.repository.like.RatingLikeRepository;
+import com.guenbon.siso.service.member.MemberService;
+import com.guenbon.siso.service.rating.RatingService;
 import com.guenbon.siso.support.constants.ReactionStatus;
-import com.guenbon.siso.support.fixture.dislike.RatingDislikeFixture;
 import com.guenbon.siso.support.fixture.like.RatingLikeFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingFixture;
@@ -26,6 +28,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +41,10 @@ class RatingLikeServiceTest {
     RatingLikeRepository ratingLikeRepository;
     @Mock
     RatingDislikeRepository ratingDislikeRepository;
+    @Mock
+    MemberService memberService;
+    @Mock
+    RatingService ratingService;
 
     @Test
     @DisplayName("이미 좋아요 누른 평가에 대해 create 호출할 경우 DUPLICATED 예외를 던진다.")
@@ -46,8 +53,12 @@ class RatingLikeServiceTest {
         final String encryptedRatingId = "encryptedRatingId";
         final Long ratingId = 1L;
         final Long memberId = 2L;
+        final Member member = MemberFixture.builder().setId(memberId).build();
+        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
 
         when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
+        when(memberService.findById(memberId)).thenReturn(member);
+        when(ratingService.findById(ratingId)).thenReturn(rating);
         when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(RatingLikeFixture.builder().build()));
 
         // when // then
@@ -63,15 +74,24 @@ class RatingLikeServiceTest {
         final Long memberId = 2L;
         final Member member = MemberFixture.builder().setId(memberId).build();
         final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
-
-        final RatingDislike ratingDislike = RatingDislikeFixture.builder().setRating(rating).setMember(member).build();
+        final RatingLike ratingLike = RatingLike.builder().rating(rating).member(member).build();
+        final RatingDislike ratingDislike = RatingDislike.builder().rating(rating).member(member).build();
 
         when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
+        when(memberService.findById(memberId)).thenReturn(member);
+        when(ratingService.findById(ratingId)).thenReturn(rating);
         when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
+        when(ratingLikeRepository.save(any(RatingLike.class))).thenReturn(ratingLike);
         when(ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(ratingDislike));
 
-        // when // then
-        assertThrows(CustomException.class, () -> ratingLikeService.create(encryptedRatingId, memberId), RatingLikeErrorCode.DUPLICATED.getMessage());
+        // when
+        RatingReactionDTO actual = ratingLikeService.create(encryptedRatingId, memberId);
+
+        // then
+        assertAll(
+                () -> assertThat(actual.getDislike().getStatus()).isEqualTo(ReactionStatus.DELETED),
+                () -> assertThat(actual.getLike().getStatus()).isEqualTo(ReactionStatus.CREATED)
+        );
     }
 
     @Test
@@ -83,6 +103,14 @@ class RatingLikeServiceTest {
         final Long memberId = 2L;
         final Member member = MemberFixture.builder().setId(memberId).build();
         final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
+        final RatingLike ratingLike = RatingLike.builder().rating(rating).member(member).build();
+
+        when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
+        when(memberService.findById(memberId)).thenReturn(member);
+        when(ratingService.findById(ratingId)).thenReturn(rating);
+        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
+        when(ratingLikeRepository.save(any(RatingLike.class))).thenReturn(ratingLike);
+        when(ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
         // when
         RatingReactionDTO actual = ratingLikeService.create(encryptedRatingId, memberId);
         // then

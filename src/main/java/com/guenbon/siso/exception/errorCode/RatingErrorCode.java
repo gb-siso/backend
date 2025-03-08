@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum RatingErrorCode implements ErrorCode {
     DUPLICATED(HttpStatus.CONFLICT, "RTG001", "중복된 Rating"),
+    NOT_EXISTS(HttpStatus.NOT_FOUND, "RTG002", "해당 평가가 존재하지 않음"),
     ;
 
     private final HttpStatus httpStatus;

@@ -20,6 +20,10 @@ public class RatingReactionDTO {
         public static Reaction of(String reactionId, ReactionStatus status) {
             return new Reaction(reactionId, status);
         }
+
+        public static Reaction none() {
+            return new Reaction(null, ReactionStatus.NONE);
+        }
     }
 
     public static RatingReactionDTO of(String ratingId, Reaction like, Reaction dislike) {

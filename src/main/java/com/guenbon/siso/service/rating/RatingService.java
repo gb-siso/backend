@@ -106,4 +106,9 @@ public class RatingService {
         }
         return null;
     }
+
+    // todo 테스트 작성 필요
+    public Rating findById(Long id) {
+        return ratingRepository.findById(id).orElseThrow(() -> new CustomException(RatingErrorCode.NOT_EXISTS));
+    }
 }
