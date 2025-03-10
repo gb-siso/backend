@@ -2,8 +2,10 @@ package com.guenbon.siso.controller;
 
 import com.guenbon.siso.dto.reaction.response.RatingReactionDTO;
 import com.guenbon.siso.exception.CustomException;
+import com.guenbon.siso.exception.errorCode.reaction.RatingDisLikeErrorCode;
 import com.guenbon.siso.exception.errorCode.reaction.RatingLikeErrorCode;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.reaction.RatingDisLikeService;
 import com.guenbon.siso.service.reaction.RatingLikeService;
 import com.guenbon.siso.support.constants.ReactionStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,8 @@ class ReactionControllerTest {
     protected JwtTokenProvider jwtTokenProvider;
     @MockitoBean
     protected RatingLikeService ratingLikeService;
+    @MockitoBean
+    protected RatingDisLikeService ratingDisLikeService;
 
     @Test
     @DisplayName("빈 주입 확인")
@@ -111,7 +115,7 @@ class ReactionControllerTest {
 
         final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
                 RatingReactionDTO.Reaction.of("likeId", ReactionStatus.CREATED),
-                RatingReactionDTO.Reaction.of(null, ReactionStatus.NONE)
+                RatingReactionDTO.Reaction.none()
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -131,6 +135,176 @@ class ReactionControllerTest {
         verify(ratingLikeService, times(1)).create(encryptedRatingId, memberId);
     }
 
+    @Test
+    @DisplayName("해당 평가에 대해 좋아요를 누르지 않은 회원이 평가 좋아요 해제 작성 요청할 경우 좋아요 누르지 않음 예외응답을 한다.")
+    void notLiked_deleteRatingLike_notLikedErrorCode() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingLikeService.delete(encryptedRatingId, memberId))
+                .thenThrow(new CustomException(RatingLikeErrorCode.NOT_LIKED));
+
+        // when, then
+        mockMvc.perform(delete("/api/v1/likes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value(RatingLikeErrorCode.NOT_LIKED.getMessage()))
+                .andExpect(jsonPath("$.code").value(RatingLikeErrorCode.NOT_LIKED.getCode()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingLikeService, times(1)).delete(encryptedRatingId, memberId);
+    }
+
+    @Test
+    @DisplayName("본인이 누른 게 아닌 좋아요 해제 작성 요청할 경우 나의 좋아요가 아님 예외응답을 한다.")
+    void notMyLike_deleteRatingLike_notMyLikeErrorCode() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingLikeService.delete(encryptedRatingId, memberId))
+                .thenThrow(new CustomException(RatingLikeErrorCode.NOT_MY_LIKE));
+
+        // when, then
+        mockMvc.perform(delete("/api/v1/likes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value(RatingLikeErrorCode.NOT_MY_LIKE.getMessage()))
+                .andExpect(jsonPath("$.code").value(RatingLikeErrorCode.NOT_MY_LIKE.getCode()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingLikeService, times(1)).delete(encryptedRatingId, memberId);
+    }
+
+    @Test
+    @DisplayName("본인이 작성한 평가 좋아요에 대해 좋아요 해제 요청하면 좋아요를 해제하고 응답한다. 응답은 좋아요 해제 내용을 포함한다.")
+    void myLike_deleteRatingLike_deleteLike() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
+                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
+                RatingReactionDTO.Reaction.of(null, ReactionStatus.NONE)
+        );
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingLikeService.delete(encryptedRatingId, memberId)).thenReturn(expected);
+
+        // when, then
+        mockMvc.perform(delete("/api/v1/likes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.DELETED.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.NONE.name()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingLikeService, times(1)).delete(encryptedRatingId, memberId);
+    }
+
+    // todo : 이하 싫어요
+    @Test
+    @DisplayName("이미 해당 평가에 대해 싫어요를 누른 회원이 평가 싫어요 작성 요청할 경우 좋아요 중복 예외응답을 한다.")
+    void duplicated_createRatingDisLike_duplicatedRatingDisLikeErrorCode() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingDisLikeService.create(encryptedRatingId, memberId))
+                .thenThrow(new CustomException(RatingDisLikeErrorCode.DUPLICATED));
+
+        // when, then
+        mockMvc.perform(post("/api/v1/dislikes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value(RatingDisLikeErrorCode.DUPLICATED.getMessage()))
+                .andExpect(jsonPath("$.code").value(RatingDisLikeErrorCode.DUPLICATED.getCode()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingDisLikeService, times(1)).create(encryptedRatingId, memberId);
+    }
+
+    @Test
+    @DisplayName("좋아요를 누른 평가에 대해 싫어요 작성 요청하면 좋아요를 해제하고 싫어요를 작성한다. 이 때 응답은 좋아요가 삭제되었다는 내용을 포함한다.")
+    void liked_createRatingDisLike_deleteLikeAndCreateDisLike() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
+                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
+                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
+        );
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingDisLikeService.create(encryptedRatingId, memberId)).thenReturn(expected);
+
+        // when, then
+        mockMvc.perform(post("/api/v1/dislikes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.DELETED.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.CREATED.name()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingDisLikeService, times(1)).create(encryptedRatingId, memberId);
+    }
+
+    @Test
+    @DisplayName("평가에 대해 싫어요 작성 요청하면 싫어요를 작성하고 응답한다. 응답은 싫어요 생성 내용을 포함한다.")
+    void valid_createRatingDisLike_createDisLike() throws Exception {
+        // given
+        final String ACCESS_TOKEN = "accessToken";
+        final Long memberId = 1L;
+        final String encryptedRatingId = "encryptedRatingId";
+
+        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
+                RatingReactionDTO.Reaction.none(),
+                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
+        );
+
+        when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
+        when(ratingDisLikeService.create(encryptedRatingId, memberId)).thenReturn(expected);
+
+        // when, then
+        mockMvc.perform(post("/api/v1/dislikes/rating/" + encryptedRatingId)
+                        .header("accessToken", ACCESS_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.NONE.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.CREATED.name()))
+                .andReturn();
+
+        verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
+        verify(ratingDisLikeService, times(1)).create(encryptedRatingId, memberId);
+    }
+
+    // todo 여기부터 하면됨
     @Test
     @DisplayName("해당 평가에 대해 좋아요를 누르지 않은 회원이 평가 좋아요 해제 작성 요청할 경우 좋아요 누르지 않음 예외응답을 한다.")
     void notLiked_deleteRatingLike_notLikedErrorCode() throws Exception {
