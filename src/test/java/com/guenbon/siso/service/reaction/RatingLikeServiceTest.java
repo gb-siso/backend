@@ -26,8 +26,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -62,7 +62,9 @@ class RatingLikeServiceTest {
         when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(RatingLikeFixture.builder().build()));
 
         // when // then
-        assertThrows(CustomException.class, () -> ratingLikeService.create(encryptedRatingId, memberId), RatingLikeErrorCode.DUPLICATED.getMessage());
+        assertThatThrownBy(() -> ratingLikeService.create(encryptedRatingId, memberId))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(RatingLikeErrorCode.DUPLICATED.getMessage());
     }
 
     @Test
@@ -127,29 +129,15 @@ class RatingLikeServiceTest {
         final String encryptedRatingId = "encryptedRatingId";
         final Long ratingId = 1L;
         final Long memberId = 2L;
-        final Member member = MemberFixture.builder().setId(memberId).build();
-        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
 
         // mock stubbing 보류
+        when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
+        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
 
         // when // then
-        assertThrows(CustomException.class, () -> ratingLikeService.delete(encryptedRatingId, memberId), RatingLikeErrorCode.NOT_LIKED.getMessage());
-    }
-
-    @Test
-    @DisplayName("내가 좋아요 누른 게 아닌 평가에 대해 좋아요 delete 호출할 경우 NOT_MY_LIKE 예외를 던진다.")
-    void notMyLike_delete_notMyLikeErrorCode() {
-        // given
-        final String encryptedRatingId = "encryptedRatingId";
-        final Long ratingId = 1L;
-        final Long memberId = 2L;
-        final Member member = MemberFixture.builder().setId(memberId).build();
-        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
-
-        // mock stubbing 보류
-
-        // when // then
-        assertThrows(CustomException.class, () -> ratingLikeService.delete(encryptedRatingId, memberId), RatingLikeErrorCode.NOT_MY_LIKE.getMessage());
+        assertThatThrownBy(() -> ratingLikeService.delete(encryptedRatingId, memberId))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(RatingLikeErrorCode.NOT_LIKED.getMessage());
     }
 
     @Test
@@ -161,8 +149,11 @@ class RatingLikeServiceTest {
         final Long memberId = 2L;
         final Member member = MemberFixture.builder().setId(memberId).build();
         final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
+        final RatingLike ratingLike = RatingLike.builder().rating(rating).member(member).build();
 
         // mock stubbing 보류
+        when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
+        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(ratingLike));
 
         // when
         RatingReactionDTO actual = ratingLikeService.delete(encryptedRatingId, memberId);

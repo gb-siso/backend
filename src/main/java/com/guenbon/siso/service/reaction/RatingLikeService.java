@@ -58,6 +58,14 @@ public class RatingLikeService {
     }
 
     public RatingReactionDTO delete(String encryptedRatingId, Long memberId) {
-        return null;
+        final Long ratingId = aesUtil.decrypt(encryptedRatingId);
+        // 좋아요 누르지 않았는데 좋아요 해제 요청 시 예외처리
+        final RatingLike ratingLike = ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId).orElseThrow(() -> new CustomException(RatingLikeErrorCode.NOT_LIKED));
+        ratingLikeRepository.delete(ratingLike);
+        return RatingReactionDTO.of(
+                aesUtil.encrypt(ratingId),
+                RatingReactionDTO.Reaction.of(aesUtil.encrypt(ratingLike.getId()), ReactionStatus.DELETED),
+                RatingReactionDTO.Reaction.none()
+        );
     }
 }
