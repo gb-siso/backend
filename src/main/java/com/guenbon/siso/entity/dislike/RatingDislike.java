@@ -15,10 +15,6 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class RatingDislike extends DisLike {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rating_id")
     private Rating rating;
