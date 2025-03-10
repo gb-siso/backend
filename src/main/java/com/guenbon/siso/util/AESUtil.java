@@ -2,14 +2,19 @@ package com.guenbon.siso.util;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import java.util.Objects;
 
 @Component
 public class AESUtil {
@@ -22,16 +27,10 @@ public class AESUtil {
 
     public String encrypt(Long plainLong) {
         try {
-            if (plainLong == null) {
-                throw new CustomException(AESErrorCode.NULL_VALUE);
-            }
-            String target = String.valueOf(plainLong); // Long을 String으로 변환
+            Objects.requireNonNull(plainLong);
+            String target = String.valueOf(plainLong);
             Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
-            byte[] inputBytes = target.getBytes();
-            byte[] resultBytes = cipher.doFinal(inputBytes);
-
-            // Base64 URL-safe로 인코딩
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(resultBytes); // URL-safe 인코딩
+            return encryptToBase64(target, cipher);
         } catch (IllegalArgumentException | ClassCastException e) {
             throw new CustomException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
@@ -41,15 +40,18 @@ public class AESUtil {
         }
     }
 
+    private static String encryptToBase64(String target, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        byte[] inputBytes = target.getBytes();
+        byte[] resultBytes = cipher.doFinal(inputBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(resultBytes);
+    }
+
     public Long decrypt(String encryptedText) {
         try {
+            Objects.requireNonNull(encryptedText);
             Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
-
-            // Base64 URL-safe로 디코딩
-            byte[] inputBytes = Base64.getUrlDecoder().decode(encryptedText); // URL-safe 디코딩
-            byte[] resultBytes = cipher.doFinal(inputBytes);
-            String resultString = new String(resultBytes); // 복호화된 결과를 String으로 변환
-            return Long.valueOf(resultString); // String을 Long으로 변환
+            String decryptedString = decryptToString(cipher, encryptedText);
+            return Long.parseLong(decryptedString);
         } catch (IllegalArgumentException | ClassCastException e) {
             throw new CustomException(AESErrorCode.INVALID_INPUT);
         } catch (NullPointerException e) {
@@ -65,5 +67,11 @@ public class AESUtil {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(mode, secretKeySpec);
         return cipher;
+    }
+
+    private String decryptToString(Cipher cipher, String encryptedText) throws Exception {
+        byte[] inputBytes = Base64.getUrlDecoder().decode(encryptedText);
+        byte[] resultBytes = cipher.doFinal(inputBytes);
+        return new String(resultBytes, StandardCharsets.UTF_8);
     }
 }
