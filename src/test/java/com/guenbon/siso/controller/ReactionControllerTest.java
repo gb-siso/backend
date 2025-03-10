@@ -379,8 +379,8 @@ class ReactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.like.status").value(ReactionStatus.DELETED.name()))
-                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.NONE.name()))
+                .andExpect(jsonPath("$.like.status").value(ReactionStatus.NONE.name()))
+                .andExpect(jsonPath("$.dislike.status").value(ReactionStatus.DELETED.name()))
                 .andReturn();
 
         verify(jwtTokenProvider, times(1)).getMemberId(ACCESS_TOKEN);
