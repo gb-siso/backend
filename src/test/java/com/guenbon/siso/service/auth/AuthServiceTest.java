@@ -21,8 +21,8 @@ import java.util.stream.Stream;
 
 import static com.guenbon.siso.exception.errorCode.AuthErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -135,7 +135,9 @@ class AuthServiceTest {
         // given
         when(jwtTokenProvider.verifySignature(refreshToken)).thenThrow(new CustomException(authErrorCode));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissue(refreshToken), authErrorCode.getMessage());
+        assertThatThrownBy(() -> authService.reissue(refreshToken))
+    .isInstanceOf(CustomException.class)
+    .hasMessage(authErrorCode.getMessage());;
     }
 
     private static Stream<AuthErrorCode> provideInvalidRefreshTokenErrorCode() {
@@ -148,7 +150,9 @@ class AuthServiceTest {
         // given
         when(memberService.findByRefreshToken(refreshToken)).thenThrow(new CustomException(NOT_EXISTS_IN_DATABASE));
         // when, then
-        assertThrows(CustomException.class, () -> authService.reissue(refreshToken), NOT_EXISTS_IN_DATABASE.getMessage());
+        assertThatThrownBy(() -> authService.reissue(refreshToken))
+    .isInstanceOf(CustomException.class)
+    .hasMessage(NOT_EXISTS_IN_DATABASE.getMessage());;
     }
 
     @DisplayName("reissue 파라미터로 데이터베이스에 존재하는 유효한 refreshToken 전달 시 IssueTokenResult를 응답한다.")

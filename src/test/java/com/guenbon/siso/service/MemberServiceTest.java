@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -56,8 +56,9 @@ class MemberServiceTest {
         final Long 존재하지_않는_ID = 1L;
         when(memberRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
         // when then
-        assertThrows(CustomException.class, () -> memberService.findById(존재하지_않는_ID),
-                MemberErrorCode.NOT_EXISTS.getMessage());
+        assertThatThrownBy(() -> memberService.findById(존재하지_않는_ID))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(MemberErrorCode.NOT_EXISTS.getMessage());
     }
 
     // 실패 테스트
@@ -70,8 +71,10 @@ class MemberServiceTest {
         when(memberRepository.existsByNickname(any(String.class))).thenReturn(true);
 
         // when, then
-        assertThrows(CustomException.class, () -> memberService.findByKakaoIdOrCreateMember(kakaoId),
-                MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+        assertThatThrownBy(() -> memberService.findByKakaoIdOrCreateMember(kakaoId))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+        ;
     }
 
     @Test
@@ -108,8 +111,10 @@ class MemberServiceTest {
         when(memberRepository.existsByNickname(any(String.class))).thenReturn(true);
 
         // when, then
-        assertThrows(CustomException.class, () -> memberService.findByNaverIdOrCreateMember(naverId),
-                MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+        assertThatThrownBy(() -> memberService.findByNaverIdOrCreateMember(naverId))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(MemberErrorCode.RANDOM_NICKNAME_GENERATE_FAILED.getMessage());
+        ;
     }
 
     @Test
@@ -144,7 +149,10 @@ class MemberServiceTest {
         final String refreshToken = "refreshToken";
         when(memberRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.empty());
         // when, then
-        assertThrows(CustomException.class, () -> memberService.findByRefreshToken(refreshToken), AuthErrorCode.NOT_EXISTS_IN_DATABASE.getMessage());
+        assertThatThrownBy(() -> memberService.findByRefreshToken(refreshToken))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(AuthErrorCode.NOT_EXISTS_IN_DATABASE.getMessage());
+        ;
     }
 
     @Test

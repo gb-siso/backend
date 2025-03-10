@@ -32,6 +32,7 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,11 +72,10 @@ class RatingServiceTest {
         when(congressmanService.findById(이준석.getId())).thenReturn(이준석);
 
         // when, then
-        assertThrows(
-                CustomException.class,
-                () -> ratingService.create(장몽이.getId(), ratingWriteDTO),
-                RatingErrorCode.DUPLICATED.getMessage()
-        );
+        assertThatThrownBy(
+                () -> ratingService.create(장몽이.getId(), ratingWriteDTO))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(RatingErrorCode.DUPLICATED.getMessage());
     }
 
     @Test
@@ -103,11 +103,9 @@ class RatingServiceTest {
         final PageRequest pageable = createPageRequest("topicality", 0);
         when(aesUtil.decrypt(null)).thenThrow(new CustomException(AESErrorCode.NULL_VALUE));
         // when, then
-        assertThrows(
-                CustomException.class,
-                () -> ratingService.validateAndGetRecentRatings(null, pageable, null),
-                AESErrorCode.NULL_VALUE.getMessage()
-        );
+        assertThatThrownBy(() -> ratingService.validateAndGetRecentRatings(null, pageable, null))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(AESErrorCode.NULL_VALUE.getMessage());
     }
 
     @Test

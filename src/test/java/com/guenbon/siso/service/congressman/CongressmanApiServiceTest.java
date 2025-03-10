@@ -1,11 +1,5 @@
 package com.guenbon.siso.service.congressman;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -20,8 +14,6 @@ import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.util.AESUtil;
-import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -33,6 +25,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class CongressmanApiServiceTest {
@@ -71,9 +72,10 @@ class CongressmanApiServiceTest {
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
 
         // when, then
-        assertThrows(CustomException.class,
-                () -> congressmanApiService.findNewsList(encryptedCongressmanId, PageRequest.of(0, 4)),
-                errorCode.getMessage());
+        assertThatThrownBy(
+                () -> congressmanApiService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(errorCode.getMessage());
     }
 
     @DisplayName("findNewsList 메서드에 유효한 파라미터를 전달하면 congressmanName이 제목에 포함된 NewsDTO가 작성날짜 내림차순으로 구성된 NewsListDTO를 반환한다")
@@ -143,9 +145,10 @@ class CongressmanApiServiceTest {
 
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
         // when, then
-        assertThrows(CustomException.class,
-                () -> congressmanApiService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
-                errorCode.getMessage());
+        assertThatThrownBy(
+                () -> congressmanApiService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(errorCode.getMessage());
     }
 
     @DisplayName("findBillList에 존재하지 않는 congressmanId를 전달하면 CongressmanErrorCode.NOT_EXISTS 에러코드인 BadRequestException을 던진다")
@@ -159,9 +162,11 @@ class CongressmanApiServiceTest {
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
 
         // when, then
-        assertThrows(CustomException.class,
-                () -> congressmanApiService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)),
-                errorCode.getMessage());
+        assertThatThrownBy(
+                () -> congressmanApiService.findBillList(encryptedCongressmanId, PageRequest.of(0, 4)))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(errorCode.getMessage());
+
         verify(congressmanService).getCongressman(encryptedCongressmanId);
     }
 

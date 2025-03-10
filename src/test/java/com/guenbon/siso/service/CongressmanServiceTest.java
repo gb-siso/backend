@@ -1,11 +1,5 @@
 package com.guenbon.siso.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -18,11 +12,6 @@ import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.congressman.CongressmanGetListDTOFixture;
 import com.guenbon.siso.util.AESUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +19,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -62,9 +63,12 @@ class CongressmanServiceTest {
         // given
         final Long 존재하지_않는_ID = 1L;
         when(congressmanRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
+
         // when then
-        assertThrows(CustomException.class, () -> congressmanService.findById(존재하지_않는_ID),
-                CongressmanErrorCode.NOT_EXISTS.getMessage());
+        assertThatThrownBy(
+                () -> congressmanService.findById(존재하지_않는_ID))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(CongressmanErrorCode.NOT_EXISTS.getMessage());
     }
 
     @DisplayName("getCongressmanListDTO 메서드의 cursorId가 null이면 BadRequestException을 던지며 에러코드는 CommonErrorCode.NULL_VALUE_NOT_ALLOWED이다")
@@ -81,9 +85,10 @@ class CongressmanServiceTest {
         when(aesUtil.decrypt(null)).thenThrow(new CustomException(AESErrorCode.NULL_VALUE));
 
         // when, then
-        assertThrows(CustomException.class,
-                () -> congressmanService.getCongressmanListDTO(pageable, cursorId, cursorRate, party, search),
-                AESErrorCode.NULL_VALUE.getMessage());
+        assertThatThrownBy(
+                () -> congressmanService.getCongressmanListDTO(pageable, cursorId, cursorRate, party, search))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(AESErrorCode.NULL_VALUE.getMessage());
     }
 
     @DisplayName("getCongressmanListDTO가 마지막 스크롤이 아닌 경우 CongressmanListDTO를 반환한다")
