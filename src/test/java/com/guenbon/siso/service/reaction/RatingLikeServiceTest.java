@@ -12,7 +12,6 @@ import com.guenbon.siso.repository.like.RatingLikeRepository;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.service.rating.RatingService;
 import com.guenbon.siso.support.constants.ReactionStatus;
-import com.guenbon.siso.support.fixture.like.RatingLikeFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import com.guenbon.siso.support.fixture.rating.RatingFixture;
 import com.guenbon.siso.util.AESUtil;
@@ -59,7 +58,7 @@ class RatingLikeServiceTest {
         when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
         when(memberService.findById(memberId)).thenReturn(member);
         when(ratingService.findById(ratingId)).thenReturn(rating);
-        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(RatingLikeFixture.builder().build()));
+        when(ratingLikeRepository.existsByRatingIdAndMemberId(ratingId, memberId)).thenReturn(true);
 
         // when // then
         assertThatThrownBy(() -> ratingLikeService.create(encryptedRatingId, memberId))
@@ -82,7 +81,7 @@ class RatingLikeServiceTest {
         when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
         when(memberService.findById(memberId)).thenReturn(member);
         when(ratingService.findById(ratingId)).thenReturn(rating);
-        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
+        when(ratingLikeRepository.existsByRatingIdAndMemberId(ratingId, memberId)).thenReturn(false);
         when(ratingLikeRepository.save(any(RatingLike.class))).thenReturn(ratingLike);
         when(ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(ratingDislike));
 
@@ -110,7 +109,7 @@ class RatingLikeServiceTest {
         when(aesUtil.decrypt(encryptedRatingId)).thenReturn(ratingId);
         when(memberService.findById(memberId)).thenReturn(member);
         when(ratingService.findById(ratingId)).thenReturn(rating);
-        when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
+        when(ratingLikeRepository.existsByRatingIdAndMemberId(ratingId, memberId)).thenReturn(false);
         when(ratingLikeRepository.save(any(RatingLike.class))).thenReturn(ratingLike);
         when(ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
         // when

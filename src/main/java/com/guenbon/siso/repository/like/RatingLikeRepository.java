@@ -6,5 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface RatingLikeRepository extends JpaRepository<RatingLike, Long>, QuerydslRatingLikeRepository {
+
     Optional<RatingLike> findByRatingIdAndMemberId(Long ratingId, Long memberId);
+
+    boolean existsByRatingIdAndMemberId(Long ratingId, Long memberId);
 }
