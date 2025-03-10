@@ -119,4 +119,57 @@ class RatingLikeServiceTest {
                 () -> assertThat(actual.getDislike().getStatus()).isEqualTo(ReactionStatus.NONE)
         );
     }
+
+    @Test
+    @DisplayName("좋아요 안 누른 평가에 대해 좋아요 delete 호출할 경우 NOT_LIKED 예외를 던진다.")
+    void notLiked_delete_notLikedErrorCode() {
+        // given
+        final String encryptedRatingId = "encryptedRatingId";
+        final Long ratingId = 1L;
+        final Long memberId = 2L;
+        final Member member = MemberFixture.builder().setId(memberId).build();
+        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
+
+        // mock stubbing 보류
+
+        // when // then
+        assertThrows(CustomException.class, () -> ratingLikeService.delete(encryptedRatingId, memberId), RatingLikeErrorCode.NOT_LIKED.getMessage());
+    }
+
+    @Test
+    @DisplayName("내가 좋아요 누른 게 아닌 평가에 대해 좋아요 delete 호출할 경우 NOT_MY_LIKE 예외를 던진다.")
+    void notMyLike_delete_notMyLikeErrorCode() {
+        // given
+        final String encryptedRatingId = "encryptedRatingId";
+        final Long ratingId = 1L;
+        final Long memberId = 2L;
+        final Member member = MemberFixture.builder().setId(memberId).build();
+        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
+
+        // mock stubbing 보류
+
+        // when // then
+        assertThrows(CustomException.class, () -> ratingLikeService.delete(encryptedRatingId, memberId), RatingLikeErrorCode.NOT_MY_LIKE.getMessage());
+    }
+
+    @Test
+    @DisplayName("내가 좋아요 누른 평가에 대해 좋아요 delete 호출할 경우 성공한다. 응답 좋아요 상태는 DELETED다.")
+    void myLike_delete_success() {
+        // given
+        final String encryptedRatingId = "encryptedRatingId";
+        final Long ratingId = 1L;
+        final Long memberId = 2L;
+        final Member member = MemberFixture.builder().setId(memberId).build();
+        final Rating rating = RatingFixture.builder().setId(ratingId).setMember(member).build();
+
+        // mock stubbing 보류
+
+        // when
+        RatingReactionDTO actual = ratingLikeService.delete(encryptedRatingId, memberId);
+        // then
+        assertAll(
+                () -> assertThat(actual.getLike().getStatus()).isEqualTo(ReactionStatus.DELETED),
+                () -> assertThat(actual.getDislike().getStatus()).isEqualTo(ReactionStatus.NONE)
+        );
+    }
 }
