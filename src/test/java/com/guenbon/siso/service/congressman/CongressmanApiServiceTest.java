@@ -1,11 +1,5 @@
 package com.guenbon.siso.service.congressman;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -20,8 +14,6 @@ import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.util.AESUtil;
-import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -33,6 +25,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class CongressmanApiServiceTest {
@@ -219,5 +220,11 @@ class CongressmanApiServiceTest {
                     .as("발의안은 proposeDate 기준 내림차순으로 정렬되어야 합니다.")
                     .isAfterOrEqualTo(BillDTOList.get(i + 1).getProposeDate());
         }
+    }
+
+    // 임시 국회의원 통합 api 확인용
+    @Test
+    void temp() {
+        congressmanApiService.syncCongressmanData();
     }
 }

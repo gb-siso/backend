@@ -11,9 +11,12 @@ import com.guenbon.siso.util.JsonParserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import static com.guenbon.siso.support.constants.ApiConstants.*;
@@ -23,11 +26,15 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @Slf4j
 public class CongressmanApiService {
 
+    private final ClientHttpConnector clientHttpConnector;
     @Value("${api.news.key}")
     private String newsApikey;
 
     @Value("${api.bill.key}")
     private String billApikey;
+
+    @Value("${api.info.key}")
+    private String infoApikey;
 
     private final CongressmanService congressmanService;
     private final CongressApiClient congressApiClient;
@@ -86,5 +93,27 @@ public class CongressmanApiService {
 
     private JsonNode getContent(final JsonNode jsonNode, final String apiPath) {
         return jsonNode.path(apiPath).get(1).path("row");
+    }
+
+    public void syncCongressmanData() {
+        JsonNode jsonNode = fetchApiResponse(PageRequest.of(0, 5), API_CONGRESSMAN_INFO_URL, infoApikey, null);
+        logJsonNode(jsonNode, "");
+    }
+
+    private static void logJsonNode(JsonNode node, String indent) {
+        if (node.isObject()) { // 객체인 경우
+            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                System.out.println(indent + field.getKey() + ":");
+                logJsonNode(field.getValue(), indent + "  ");
+            }
+        } else if (node.isArray()) { // 배열인 경우
+            for (JsonNode element : node) {
+                logJsonNode(element, indent + "  ");
+            }
+        } else { // 값인 경우
+            System.out.println(indent + node);
+        }
     }
 }

@@ -32,6 +32,9 @@ public final class ApiConstants {
     public static final String PUBL_PROPOSER = "PUBL_PROPOSER";
     public static final String RST_PROPOSER = "RST_PROPOSER";
 
+    // 국회의원 정보
+    public static final String API_CONGRESSMAN_INFO_URL = "https://open.assembly.go.kr/portal/openapi/ALLNAMEMBER";
+
     // kakao
     public static final String AUTHORIZATION_CODE = "authorization_code";
     public static final String KAUTH_GET_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
