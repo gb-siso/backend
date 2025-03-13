@@ -78,7 +78,7 @@ public class CongressmanApiService {
         return jsonNode;
     }
 
-    public List<CongressmanInfoDTO> syncCongressmanData() {
+    public List<CongressmanInfoDTO> fetchAndParseCongressmanData() {
         int call = 1;
         int page = 0;
         int size = 1000;
