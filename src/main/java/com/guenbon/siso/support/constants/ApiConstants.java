@@ -34,6 +34,8 @@ public final class ApiConstants {
 
     // 국회의원 정보
     public static final String API_CONGRESSMAN_INFO_URL = "https://open.assembly.go.kr/portal/openapi/ALLNAMEMBER";
+    public static final String CONGRESSMAN_INFO_API_PATH = "ALLNAMEMBER";
+    public static final String ASSEMBLY_SESSIONS_PATH = "GTELT_ERACO";
 
     // kakao
     public static final String AUTHORIZATION_CODE = "authorization_code";

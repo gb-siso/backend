@@ -1,5 +1,6 @@
 package com.guenbon.siso.service.congressman;
 
+import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -29,6 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,6 +48,8 @@ class CongressmanApiServiceTest {
     CongressmanRepository congressmanRepository;
     @MockitoBean
     AESUtil aesUtil;
+    @Autowired
+    private CongressApiClient congressApiClient;
 
     @DisplayName("findNewsList에 복호화에 실패하는 congressmanId를 전달하면 AESErrorCode.INVALID_INPUT 에러코드인 BadRequestException을 던진다")
     @Test
@@ -129,7 +133,7 @@ class CongressmanApiServiceTest {
     public static Stream<Arguments> provideApiExceptionParameters() {
         return Stream.of(
                 Arguments.of(Named.named("1000을 넘는 pagesize", PageRequest.of(0, 10000)),
-                        CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED),
+                        MAX_REQUEST_LIMIT_EXCEEDED),
                 Arguments.of(Named.named("마지막 페이지를 넘는 pagenumber", PageRequest.of(9999999, 2)),
                         CongressApiErrorCode.NO_DATA_FOUND)
         );
@@ -220,11 +224,5 @@ class CongressmanApiServiceTest {
                     .as("발의안은 proposeDate 기준 내림차순으로 정렬되어야 합니다.")
                     .isAfterOrEqualTo(BillDTOList.get(i + 1).getProposeDate());
         }
-    }
-
-    // 임시 국회의원 통합 api 확인용
-    @Test
-    void temp() {
-        congressmanApiService.syncCongressmanData();
     }
 }
