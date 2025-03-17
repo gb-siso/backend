@@ -11,7 +11,7 @@ public class CongressmanGetListDTOFixture {
     private Long id;
     private String name = "장지담";
     private Double rate;
-    private Integer timesElected = 10;
+    private String timesElected = "10";
     private String party = "미래혁신당";
 
     public static CongressmanGetListDTOFixture builder() {
@@ -33,7 +33,7 @@ public class CongressmanGetListDTOFixture {
         return this;
     }
 
-    public CongressmanGetListDTOFixture setTimesElected(Integer timesElected) {
+    public CongressmanGetListDTOFixture setTimesElected(String timesElected) {
         this.timesElected = timesElected;
         return this;
     }

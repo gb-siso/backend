@@ -82,11 +82,11 @@ class CongressmanRepositoryTest {
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
         final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
 
-        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setName("서재민").build());
-        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setName("김선균").build());
-        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setName("정승수").build());
-        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setName("송효근").build());
-        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").build());
+        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setCode("a").setName("서재민").build());
+        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setCode("b").setName("김선균").build());
+        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setCode("c").setName("정승수").build());
+        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setCode("d").setName("송효근").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setCode("e").setName("장지담").build());
 
         saveRating(jangmong99, 서재민, 5.0);
         saveRating(jangmong99, 김선균, 4.0);
@@ -126,11 +126,11 @@ class CongressmanRepositoryTest {
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
         final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
 
-        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setName("서재민").build());
-        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setName("김선균").build());
-        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setName("정승수").build());
-        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setName("송효근").build());
-        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").build());
+        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setCode("a").setName("서재민").build());
+        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setCode("b").setName("김선균").build());
+        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setCode("c").setName("정승수").build());
+        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setCode("d").setName("송효근").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setCode("e").setName("장지담").build());
 
         saveRating(jangmong99, 서재민, 5.0);
         saveRating(jangmong99, 김선균, 4.0);
@@ -169,12 +169,12 @@ class CongressmanRepositoryTest {
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
         final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
 
-        final Congressman 김땅콩 = saveCongressman(CongressmanFixture.builder().setName("김땅콩").setParty("더불어민주당").build());
-        final Congressman 김유신 = saveCongressman(CongressmanFixture.builder().setName("김유신").setParty("한나라당").build());
+        final Congressman 김땅콩 = saveCongressman(CongressmanFixture.builder().setCode("abc123").setName("김땅콩").setParty("더불어민주당").build());
+        final Congressman 김유신 = saveCongressman(CongressmanFixture.builder().setCode("def456").setName("김유신").setParty("한나라당").build());
         final Congressman 레오나르도김 = saveCongressman(
-                CongressmanFixture.builder().setName("레오나르도 김").setParty("국민의힘").build());
-        final Congressman 장몽이 = saveCongressman(CongressmanFixture.builder().setName("장몽이").setParty("국민의힘").build());
-        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").setParty("국민의힘").build());
+                CongressmanFixture.builder().setCode("jdk123").setName("레오나르도 김").setParty("국민의힘").build());
+        final Congressman 장몽이 = saveCongressman(CongressmanFixture.builder().setCode("qwe123").setName("장몽이").setParty("국민의힘").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setCode("rty456").setName("장지담").setParty("국민의힘").build());
 
         saveRating(jangmong99, 김땅콩, 5.0);
         saveRating(jangmong99, 김유신, 4.0);
@@ -216,11 +216,11 @@ class CongressmanRepositoryTest {
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
         final Member chungmung99 = saveMember(MemberFixture.builder().setNickname("chungmung99").build());
 
-        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setName("서재민").setParty("더불어민주당").build());
-        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setName("김선균").setParty("한나라당").build());
-        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setName("정승수").setParty("국민의힘").build());
-        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setName("송효근").setParty("국민의힘").build());
-        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setName("장지담").setParty("국민의힘").build());
+        final Congressman 서재민 = saveCongressman(CongressmanFixture.builder().setCode("a").setName("서재민").setParty("더불어민주당").build());
+        final Congressman 김선균 = saveCongressman(CongressmanFixture.builder().setCode("b").setName("김선균").setParty("한나라당").build());
+        final Congressman 정승수 = saveCongressman(CongressmanFixture.builder().setCode("c").setName("정승수").setParty("국민의힘").build());
+        final Congressman 송효근 = saveCongressman(CongressmanFixture.builder().setCode("d").setName("송효근").setParty("국민의힘").build());
+        final Congressman 장지담 = saveCongressman(CongressmanFixture.builder().setCode("e").setName("장지담").setParty("국민의힘").build());
 
         saveRating(jangmong99, 서재민, 5.0);
         saveRating(jangmong99, 김선균, 4.0);
@@ -266,8 +266,8 @@ class CongressmanRepositoryTest {
         final Member 레온이 = saveMember(MemberFixture.builder().setNickname("leon1234").setImageUrl("레온image").build());
         final Member 얼죽이 = saveMember(MemberFixture.builder().setNickname("ulljook").setImageUrl("얼죽Image").build());
         // congressman 2명
-        final Congressman 이준석 = saveCongressman(CongressmanFixture.builder().setName("이준석").setParty("더불어민주당").build());
-        final Congressman 윤석열 = saveCongressman(CongressmanFixture.builder().setName("윤석열").setParty("한나라당").build());
+        final Congressman 이준석 = saveCongressman(CongressmanFixture.builder().setCode("abc123").setName("이준석").setParty("더불어민주당").build());
+        final Congressman 윤석열 = saveCongressman(CongressmanFixture.builder().setCode("def456").setName("윤석열").setParty("한나라당").build());
 
         // rating (이준석)
         saveRating(다미, 이준석, 3.5, 1);

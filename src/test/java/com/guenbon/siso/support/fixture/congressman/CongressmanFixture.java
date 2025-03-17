@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CongressmanFixture {
+public class CongressmanFixture { // todo 신규 필드 추가 (테스트 꺠짐)
+
+    private String code = "ABC123";
 
     private Long id;
 
@@ -14,10 +16,15 @@ public class CongressmanFixture {
 
     private String party = "국민의힘";
 
-    private Integer timesElected = 3;
+    private String timesElected = "3";
 
     public static CongressmanFixture builder() {
         return new CongressmanFixture();
+    }
+
+    public CongressmanFixture setCode(String code) {
+        this.code = code;
+        return this;
     }
 
     public CongressmanFixture setId(Long id) {
@@ -35,13 +42,14 @@ public class CongressmanFixture {
         return this;
     }
 
-    public CongressmanFixture setTimesElected(Integer timesElected) {
+    public CongressmanFixture setTimesElected(String timesElected) {
         this.timesElected = timesElected;
         return this;
     }
 
     public Congressman build() {
         return Congressman.builder()
+                .code(code)
                 .id(id)
                 .name(name)
                 .party(party)

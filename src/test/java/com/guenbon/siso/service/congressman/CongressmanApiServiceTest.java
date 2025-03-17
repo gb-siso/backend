@@ -179,8 +179,6 @@ class CongressmanApiServiceTest {
         final Long decryptedCongressmanId = 1L;
         final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
-//        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));;
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         assertThatThrownBy(() -> congressmanApiService.findBillList(encryptedCongressmanId, pageable))

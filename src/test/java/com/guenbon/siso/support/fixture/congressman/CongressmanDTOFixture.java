@@ -2,9 +2,10 @@ package com.guenbon.siso.support.fixture.congressman;
 
 
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -12,7 +13,7 @@ public class CongressmanDTOFixture {
     private String id;
     private String name = "윤석열";
     private String party = "국민의힘";
-    private Integer timesElected = 1;
+    private String timesElected = "1";
     private Double rate;
     private List<String> ratedMemberImages = List.of("탄핵.jpg", "계엄.jpg", "당선.jpg");
 
@@ -35,7 +36,7 @@ public class CongressmanDTOFixture {
         return this;
     }
 
-    public CongressmanDTOFixture setTimesElected(Integer timesElected) {
+    public CongressmanDTOFixture setTimesElected(String timesElected) {
         this.timesElected = timesElected;
         return this;
     }
