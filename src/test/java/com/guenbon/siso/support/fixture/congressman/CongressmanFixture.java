@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CongressmanFixture { // todo 신규 필드 추가 (테스트 꺠짐)
+public class CongressmanFixture {
 
     private String code = "ABC123";
 

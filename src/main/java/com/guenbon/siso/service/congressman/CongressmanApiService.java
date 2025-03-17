@@ -3,7 +3,6 @@ package com.guenbon.siso.service.congressman;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillListDTO;
-import com.guenbon.siso.dto.congressman.CongressmanInfoDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.ApiException;
@@ -20,7 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED;
 import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.NO_DATA_FOUND;
@@ -80,13 +80,13 @@ public class CongressmanApiService {
         return jsonNode;
     }
 
-    public List<CongressmanInfoDTO> fetchAndParseCongressmanData() {
+    public List<Congressman> fetchRecentCongressmanList() {
         int call = 1;
         int page = 0;
         int size = 1000;
         int callLimit = 5;
 
-        List<CongressmanInfoDTO> congressmanInfoDTOList = new ArrayList<>();
+        List<Congressman> recentCongressmanList = new ArrayList<>();
 
         while (true) {
             if (call > callLimit) {
@@ -106,23 +106,40 @@ public class CongressmanApiService {
                 }
             }
 
-            filterAndAddCongressmanInfo(jsonNode, congressmanInfoDTOList);
+            // 22대 국회의원 데이터(현재)만 리스트에 추가
+            filterAndAddCongressman(jsonNode, recentCongressmanList);
             page++;
             call++;
         }
-        return congressmanInfoDTOList;
+        return recentCongressmanList;
     }
 
-    public void filterAndAddCongressmanInfo(JsonNode jsonNode, List<CongressmanInfoDTO> congressmanInfoDTOList) {
+    public void filterAndAddCongressman(JsonNode jsonNode, List<Congressman> recentCongressmanList) {
         JsonNode rows = getContent(jsonNode, CONGRESSMAN_INFO_API_PATH);
         if (rows.isArray()) {
             for (JsonNode row : rows) {
                 String assemblySessions = row.path(ASSEMBLY_SESSIONS_PATH).asText();
                 if (assemblySessions.contains(ASSEMBLY_SESSION_NOW)) { // "제22대" 포함 여부 확인
-                    congressmanInfoDTOList.add(CongressmanInfoDTO.of(row, assemblySessions));
+                    recentCongressmanList.add(Congressman.of(row, parseAssemblySessions(assemblySessions)));
                 }
             }
         }
+    }
+
+    public List<Integer> parseAssemblySessions(String assemblySessions) {
+        List<Integer> sessions = new ArrayList<>();
+
+        // 정규표현식으로 "제XX대" 형식의 문자열을 찾음
+        Pattern pattern = Pattern.compile("제(\\d+)대");
+        Matcher matcher = pattern.matcher(assemblySessions);
+
+        // 매칭된 부분에서 숫자만 추출하여 List에 추가
+        while (matcher.find()) {
+            int sessionNumber = Integer.parseInt(matcher.group(1)); // 숫자 부분 추출
+            sessions.add(sessionNumber);
+        }
+
+        return sessions;
     }
 
     private boolean isLastPage(JsonNode jsonNode) {
@@ -151,42 +168,10 @@ public class CongressmanApiService {
         return jsonNode.path(apiPath).get(1).path("row");
     }
 
-    public void syncCongressmanData() {
-        // 외부 api로 받아온 congressman dto list
-        List<CongressmanInfoDTO> apiCongressmanList = fetchAndParseCongressmanData();
+    public void fetchAndSyncCongressmen() {
+        // 외부 api 로 받아온 congressman dto list
+        List<Congressman> recentCongressmanList = fetchRecentCongressmanList();
 
-        // todo 수정 필요 : apiCongressmanList 를 congressmanService 에 파라미터로 넘기고
-        //  이하 로직은 congressmanService 에서 처리해야함
-        // 그래야 하나의 트랜잭션 내에서 관리 가능하다.
-
-        // db congressman 테이블에서 현재 목록 가져오기
-        List<Congressman> dbCongressmanList = congressmanService.getCongressmanList();
-
-        Map<String, CongressmanInfoDTO> congressmanMapFromDB = dbCongressmanList.stream()
-                .collect(Collectors.toMap(Congressman::getCode, CongressmanInfoDTO::from));
-
-        List<CongressmanInfoDTO> toInsert = new ArrayList<>();
-        List<CongressmanInfoDTO> toUpdate = new ArrayList<>();
-        List<CongressmanInfoDTO> toDelete = new ArrayList<>(dbCongressmanList.stream().map(CongressmanInfoDTO::from).toList());
-
-        for (CongressmanInfoDTO apiCongressman : apiCongressmanList) {
-
-            CongressmanInfoDTO dbCongressman = congressmanMapFromDB.get(apiCongressman.getCode());
-
-            if (dbCongressman == null) {
-                toInsert.add(apiCongressman);
-            } else {
-                if (!apiCongressman.equals(dbCongressman)) {
-                    // 만약 여기서 리스트에 넣지 않고 개별 Congressman 에 대해 update 한다면?
-                    toUpdate.add(apiCongressman);
-                }
-                toDelete.remove(apiCongressman);
-            }
-        }
-
-        // 리스트로 배치 처리
-        congressmanService.batchAddCongressman(toInsert);
-        congressmanService.batchModifyCongressman(toUpdate);
-        congressmanService.batchRemoveCongressman(toDelete);
+        congressmanService.syncCongressman(recentCongressmanList);
     }
 }

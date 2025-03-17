@@ -1,6 +1,5 @@
 package com.guenbon.siso.service.congressman;
 
-import com.guenbon.siso.dto.congressman.CongressmanInfoDTO;
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -15,7 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -91,36 +92,73 @@ public class CongressmanService {
         }
     }
 
-    // todo Congressman 참조하는 Rating, Rating 참조하는 RatingLike, RatingDisLike 삭제 필요 -> CASCADE.ALL 처리함
-    @Transactional(readOnly = false)
-    public void batchRemoveCongressman(List<CongressmanInfoDTO> toDelete) {
-        List<String> codes = toDelete.stream()
-                .map(CongressmanInfoDTO::getCode)
-                .collect(Collectors.toList());
-
-        congressmanRepository.batchDeleteByCodes(codes);
+    public void batchRemoveCongressman(List<Congressman> toDelete) {
+        List<Long> idList = toDelete.stream().map(Congressman::getId).collect(Collectors.toList());
+        congressmanRepository.batchDelete(idList);
     }
 
-
-    @Transactional(readOnly = false)
-    public void batchModifyCongressman(List<CongressmanInfoDTO> toUpdate) {
-        // todo 성능 고려 배치 처리 필요
-
-    }
-
-    @Transactional(readOnly = false)
-    public void batchAddCongressman(List<CongressmanInfoDTO> toInsert) {
-        if (toInsert.isEmpty()) return;
-
-        List<Congressman> congressmen = toInsert.stream()
-                .map(Congressman::from)
-                .collect(Collectors.toList());
-
-        congressmanRepository.saveAll(congressmen);  // Batch Insert 실행
+    public void batchInsertAndUpdateCongressman(List<Congressman> toInsertAndUpdate) {
+        if (toInsertAndUpdate.isEmpty()) return;
+        congressmanRepository.saveAll(toInsertAndUpdate);  // Batch Insert 실행
     }
 
     public List<Congressman> getCongressmanList() {
         return congressmanRepository.findAll();
+    }
+
+    /**
+     * @param recentCongressmanList 국회 api 로 가져온 최신 국회의원 목록
+     */
+    @Transactional(readOnly = false)
+    public void syncCongressman(List<Congressman> recentCongressmanList) {
+        // congressman 테이블에서 국회의원 목록 가져오기
+        List<Congressman> dbCongressmanList = getCongressmanList();
+
+        Map<String, Congressman> dbCongressmanMap = dbCongressmanList.stream()
+                .collect(Collectors.toMap(Congressman::getCode, congressman -> congressman));
+
+        List<Congressman> toInsertAndUpdate = new ArrayList<>();
+        List<Congressman> toDelete = new ArrayList<>(dbCongressmanList);
+
+        for (Congressman recentCongressman : recentCongressmanList) {
+
+            Congressman dbCongressman = dbCongressmanMap.get(recentCongressman.getCode());
+
+            if (dbCongressman == null) {
+                toInsertAndUpdate.add(recentCongressman);
+            } else {
+                if (!equalsWithoutId(recentCongressman, dbCongressman)) {
+                    toInsertAndUpdate.add(dbCongressman.updateFieldsFrom(recentCongressman));
+                }
+                toDelete.remove(dbCongressman);
+            }
+        }
+
+        // 삽입, 수정
+        batchInsertAndUpdateCongressman(toInsertAndUpdate);
+        // 삭제
+        batchRemoveCongressman(toDelete);
+    }
+
+    public boolean equalsWithoutId(Congressman recentCongressman, Congressman dbCongressman) {
+        if (recentCongressman == dbCongressman) {
+            return true;  // 두 객체가 동일한 경우
+        }
+
+        if (recentCongressman == null || dbCongressman == null) {
+            return false;  // 한 객체가 null인 경우
+        }
+
+        return recentCongressman.getName().equals(dbCongressman.getName()) &&
+                recentCongressman.getParty().equals(dbCongressman.getParty()) &&
+                recentCongressman.getTimesElected().equals(dbCongressman.getTimesElected()) &&
+                recentCongressman.getCode().equals(dbCongressman.getCode()) &&
+                (recentCongressman.getPosition() == null ? dbCongressman.getPosition() == null : recentCongressman.getPosition().equals(dbCongressman.getPosition())) &&
+                (recentCongressman.getElectoralDistrict() == null ? dbCongressman.getElectoralDistrict() == null : recentCongressman.getElectoralDistrict().equals(dbCongressman.getElectoralDistrict())) &&
+                (recentCongressman.getElectoralType() == null ? dbCongressman.getElectoralType() == null : recentCongressman.getElectoralType().equals(dbCongressman.getElectoralType())) &&
+                (recentCongressman.getAssemblySessions() == null ? dbCongressman.getAssemblySessions() == null : recentCongressman.getAssemblySessions().equals(dbCongressman.getAssemblySessions())) &&
+                (recentCongressman.getSex() == null ? dbCongressman.getSex() == null : recentCongressman.getSex().equals(dbCongressman.getSex())) &&
+                (recentCongressman.getImageUrl() == null ? dbCongressman.getImageUrl() == null : recentCongressman.getImageUrl().equals(dbCongressman.getImageUrl()));
     }
 }
 

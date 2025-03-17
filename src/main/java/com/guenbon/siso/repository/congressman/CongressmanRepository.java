@@ -23,9 +23,7 @@ public interface CongressmanRepository extends JpaRepository<Congressman, Long>,
     List<Congressman> findAll();
 
     @Modifying(clearAutomatically = true)
-    @Query("DELETE FROM Congressman c WHERE c.code IN :codes")
-    int batchDeleteByCodes(@Param("codes") List<String> codes);
-
-
+    @Query("DELETE FROM Congressman c WHERE c.id IN :idList")
+    int batchDelete(@Param("idList") List<Long> idList);
 
 }

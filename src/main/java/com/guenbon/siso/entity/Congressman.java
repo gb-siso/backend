@@ -1,7 +1,7 @@
 package com.guenbon.siso.entity;
 
 
-import com.guenbon.siso.dto.congressman.CongressmanInfoDTO;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.entity.common.DateEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -54,7 +54,6 @@ public class Congressman extends DateEntity {
 
     private String imageUrl;
 
-
     @Override
     public String toString() {
         return "Congressman{" +
@@ -65,18 +64,37 @@ public class Congressman extends DateEntity {
                 '}';
     }
 
-    public static Congressman from(CongressmanInfoDTO dto) {
+    public static Congressman of(JsonNode row, List<Integer> assemblySessions) {
         return Congressman.builder()
-                .code(dto.getCode())
-                .name(dto.getName())
-                .party(dto.getParty())
-                .position(dto.getPosition())
-                .electoralDistrict(dto.getElectoralDistrict())
-                .electoralType(dto.getElectoralType())
-                .timesElected(dto.getTimesElected())
-                .assemblySessions(dto.getAssemblySessions())
-                .sex(dto.getSex())
-                .imageUrl(dto.getImageUrl())
+                .code(row.path("NAAS_CD").asText())
+                .name(row.path("NAAS_NM").asText())
+                .position(row.path("DTY_NM").asText(null))
+                .party(row.path("PLPT_NM").asText(null))
+                .electoralDistrict(row.path("ELECD_NM").asText(null))
+                .electoralType(row.path("ELECD_DIV_NM").asText(null))
+                .timesElected(row.path("RLCT_DIV_NM").asText(null))
+                .assemblySessions(assemblySessions)
+                .sex(row.path("NTR_DIV").asText(null))
+                .imageUrl(row.path("NAAS_PIC").asText(null))
                 .build();
+    }
+
+    public Congressman updateFieldsFrom(Congressman other) {
+        if (other == null) {
+            return this;  // 다른 객체가 null이면 자기 자신을 그대로 반환
+        }
+
+        this.name = other.getName();
+        this.party = other.getParty();
+        this.timesElected = other.getTimesElected();
+        this.code = other.getCode();
+        this.position = other.getPosition();
+        this.electoralDistrict = other.getElectoralDistrict();
+        this.electoralType = other.getElectoralType();
+        this.assemblySessions = other.getAssemblySessions();
+        this.sex = other.getSex();
+        this.imageUrl = other.getImageUrl();
+
+        return this;  // 자기 자신을 반환
     }
 }
