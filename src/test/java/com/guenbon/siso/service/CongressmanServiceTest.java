@@ -1,12 +1,7 @@
 package com.guenbon.siso.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.entity.Congressman;
@@ -18,11 +13,6 @@ import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.congressman.CongressmanGetListDTOFixture;
 import com.guenbon.siso.util.AESUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +20,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -189,5 +191,43 @@ class CongressmanServiceTest {
                 .timesElected(congressmanGetListDTO.getTimesElected())
                 .ratedMemberImages(ratedMemberImages)
                 .build();
+    }
+
+    @Test
+    @DisplayName("syncCongressman 이 db에 없는 데이터는 insert, db와 다른 데이터는 update, db 에만 있는 데이터는 delete 한다.")
+    void valid_syncCongressman_success() {
+        // given
+        /**
+         * 삽입 : 최신에 있고 db에 없음
+         * 수정 : 최신, db에 있는데 상태가 다름
+         * 삭제 : db에 있고 최신에 없음
+         */
+        // 삽입
+        Congressman son = CongressmanFixture.builder().setId(1L).setName("son").setCode("abc123").build();
+        // 수정
+        Congressman leeRecent = CongressmanFixture.builder().setId(2L).setName("lee").setCode("abc456").build();
+        Congressman leeDatabase = CongressmanFixture.builder().setId(2L).setName("lee lee").setCode("abc456").build();
+        // 삭제
+        Congressman kim = CongressmanFixture.builder().setId(3L).setName("kim").setCode("abc789").build();
+
+        // api 로 얻은 최신 국회의원 리스트
+        List<Congressman> recent = List.of(son, leeRecent);
+
+        // db에 있는 국회의원 리스트
+        List<Congressman> database = List.of(leeDatabase, kim);
+
+        when(congressmanRepository.findAll()).thenReturn(database);
+        when(congressmanRepository.saveAll(any())).thenReturn(recent);
+        when(congressmanRepository.batchDelete(any())).thenReturn(1);
+
+        // when
+        CongressmanBatchResultDTO congressmanBatchResultDTO = congressmanService.syncCongressman(recent);
+
+        // then
+        assertAll(
+                () -> assertThat(congressmanBatchResultDTO.getBatchRemoveResultCount()).isEqualTo(1),
+                () -> assertThat(congressmanBatchResultDTO.getBathInsertAndUpdateResult().stream().map(CongressmanBatchResultDTO.CongressmanDTO::getCode))
+                        .containsAll(recent.stream().map(Congressman::getCode).toList())
+        );
     }
 }
