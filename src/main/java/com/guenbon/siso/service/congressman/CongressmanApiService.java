@@ -14,8 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,7 @@ public class CongressmanApiService {
     private final CongressApiClient congressApiClient;
 
     public NewsListDTO findNewsList(final String encryptedCongressmanId, final Pageable pageable) {
+        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
 
         Map<String, String> params = Map.of(COMP_MAIN_TITLE, congressman.getName());
@@ -168,10 +171,11 @@ public class CongressmanApiService {
         return jsonNode.path(apiPath).get(1).path("row");
     }
 
+    // 매일 05 시 스프링 스케쥴러로 호출
+    @Scheduled(cron = "0 0 5 * * *")
     public void fetchAndSyncCongressmen() {
-        // 외부 api 로 받아온 congressman dto list
+        log.info("fetchAndSyncCongressmen 호출 : {}", LocalDateTime.now());
         List<Congressman> recentCongressmanList = fetchRecentCongressmanList();
-
         congressmanService.syncCongressman(recentCongressmanList);
     }
 }

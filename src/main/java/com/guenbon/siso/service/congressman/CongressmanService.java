@@ -1,6 +1,7 @@
 package com.guenbon.siso.service.congressman;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.entity.Congressman;
@@ -14,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ public class CongressmanService {
     }
 
     public Congressman getCongressman(String encryptedCongressmanId) {
+        log.info("!! getCongressman 실제 호출됨 !!");
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         return findById(congressmanId);
     }
@@ -92,14 +96,14 @@ public class CongressmanService {
         }
     }
 
-    public void batchRemoveCongressman(List<Congressman> toDelete) {
+    public int batchRemoveCongressman(List<Congressman> toDelete) {
         List<Long> idList = toDelete.stream().map(Congressman::getId).collect(Collectors.toList());
-        congressmanRepository.batchDelete(idList);
+        return congressmanRepository.batchDelete(idList);
     }
 
-    public void batchInsertAndUpdateCongressman(List<Congressman> toInsertAndUpdate) {
-        if (toInsertAndUpdate.isEmpty()) return;
-        congressmanRepository.saveAll(toInsertAndUpdate);  // Batch Insert 실행
+    public List<Congressman> batchInsertAndUpdateCongressman(List<Congressman> toInsertAndUpdate) {
+        if (toInsertAndUpdate.isEmpty()) return Collections.emptyList();
+        return congressmanRepository.saveAll(toInsertAndUpdate);  // Batch Insert 실행
     }
 
     public List<Congressman> getCongressmanList() {
@@ -110,7 +114,7 @@ public class CongressmanService {
      * @param recentCongressmanList 국회 api 로 가져온 최신 국회의원 목록
      */
     @Transactional(readOnly = false)
-    public void syncCongressman(List<Congressman> recentCongressmanList) {
+    public CongressmanBatchResultDTO syncCongressman(List<Congressman> recentCongressmanList) {
         // congressman 테이블에서 국회의원 목록 가져오기
         List<Congressman> dbCongressmanList = getCongressmanList();
 
@@ -135,9 +139,19 @@ public class CongressmanService {
         }
 
         // 삽입, 수정
-        batchInsertAndUpdateCongressman(toInsertAndUpdate);
+        List<Congressman> bathInsertAndUpdateResult = batchInsertAndUpdateCongressman(toInsertAndUpdate);
         // 삭제
-        batchRemoveCongressman(toDelete);
+        int batchRemoveResultCount = batchRemoveCongressman(toDelete);
+
+        log.info("syncCongressman 국회의원 정보 동기화 정상 처리 완료");
+        log.info(" 삽입 & 수정 수 : " + bathInsertAndUpdateResult.size());
+        log.info(" 삭제 수 : " + batchRemoveResultCount);
+
+        return CongressmanBatchResultDTO.of(LocalDateTime.now(), bathInsertAndUpdateResult.stream().map(this::from).toList(), batchRemoveResultCount);
+    }
+
+    public CongressmanBatchResultDTO.CongressmanDTO from(Congressman congressman) {
+        return new CongressmanBatchResultDTO.CongressmanDTO(aesUtil.encrypt(congressman.getId()), congressman.getCode(), congressman.getName());
     }
 
     public boolean equalsWithoutId(Congressman recentCongressman, Congressman dbCongressman) {

@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@ToString
 public class Congressman extends DateEntity {
 
     @Id
@@ -45,7 +47,7 @@ public class Congressman extends DateEntity {
     private String electoralType;
 
     // 선거구 구분
-    @ElementCollection
+    @ElementCollection // 기본적으로 지연 로딩 적용
     @Column(name = "assembly_sessions")
     @CollectionTable(name = "assembly_session", joinColumns = @JoinColumn(name = "congressman_id"))
     private List<Integer> assemblySessions;
@@ -53,16 +55,6 @@ public class Congressman extends DateEntity {
     private String sex;
 
     private String imageUrl;
-
-    @Override
-    public String toString() {
-        return "Congressman{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", party='" + party + '\'' +
-                ", timesElected=" + timesElected +
-                '}';
-    }
 
     public static Congressman of(JsonNode row, List<Integer> assemblySessions) {
         return Congressman.builder()
