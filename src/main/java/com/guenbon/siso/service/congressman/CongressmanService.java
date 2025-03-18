@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,9 +100,10 @@ public class CongressmanService {
         return congressmanRepository.batchDelete(idList);
     }
 
-    public List<Congressman> batchInsertAndUpdateCongressman(List<Congressman> toInsertAndUpdate) {
-        if (toInsertAndUpdate.isEmpty()) return Collections.emptyList();
-        return congressmanRepository.saveAll(toInsertAndUpdate);  // Batch Insert 실행
+    public List<Congressman> batchInsertCongressman(List<Congressman> toInsertAndUpdate) {
+        if (toInsertAndUpdate.isEmpty()) return new ArrayList<>();
+        List<Congressman> congressmen = congressmanRepository.saveAll(toInsertAndUpdate);
+        return congressmen;
     }
 
     public List<Congressman> getCongressmanList() {
@@ -115,39 +115,36 @@ public class CongressmanService {
      */
     @Transactional(readOnly = false)
     public CongressmanBatchResultDTO syncCongressman(List<Congressman> recentCongressmanList) {
-        // congressman 테이블에서 국회의원 목록 가져오기
         List<Congressman> dbCongressmanList = getCongressmanList();
-
         Map<String, Congressman> dbCongressmanMap = dbCongressmanList.stream()
                 .collect(Collectors.toMap(Congressman::getCode, congressman -> congressman));
-
-        List<Congressman> toInsertAndUpdate = new ArrayList<>();
+        List<Congressman> toInsert = new ArrayList<>();
         List<Congressman> toDelete = new ArrayList<>(dbCongressmanList);
+        int updateCount = 0;
 
         for (Congressman recentCongressman : recentCongressmanList) {
-
             Congressman dbCongressman = dbCongressmanMap.get(recentCongressman.getCode());
-
             if (dbCongressman == null) {
-                toInsertAndUpdate.add(recentCongressman);
+                toInsert.add(recentCongressman);
             } else {
                 if (!equalsWithoutId(recentCongressman, dbCongressman)) {
-                    toInsertAndUpdate.add(dbCongressman.updateFieldsFrom(recentCongressman));
+                    // 변경감지에 의해 update 됨
+                    dbCongressman.updateFieldsFrom(recentCongressman);
+                    updateCount++;
                 }
                 toDelete.remove(dbCongressman);
             }
         }
 
-        // 삽입, 수정
-        List<Congressman> bathInsertAndUpdateResult = batchInsertAndUpdateCongressman(toInsertAndUpdate);
-        // 삭제
+        List<Congressman> batchInsertResult = batchInsertCongressman(toInsert);
         int batchRemoveResultCount = batchRemoveCongressman(toDelete);
 
         log.info("syncCongressman 국회의원 정보 동기화 정상 처리 완료");
-        log.info(" 삽입 & 수정 수 : " + bathInsertAndUpdateResult.size());
+        log.info(" 삽입 수 : " + batchInsertResult.size());
+        log.info(" 수정 수 : " + updateCount);
         log.info(" 삭제 수 : " + batchRemoveResultCount);
 
-        return CongressmanBatchResultDTO.of(LocalDateTime.now(), bathInsertAndUpdateResult.stream().map(this::from).toList(), batchRemoveResultCount);
+        return CongressmanBatchResultDTO.of(LocalDateTime.now(), batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
     }
 
     public CongressmanBatchResultDTO.CongressmanDTO from(Congressman congressman) {

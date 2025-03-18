@@ -75,7 +75,6 @@ public class Congressman extends DateEntity {
         if (other == null) {
             return this;  // 다른 객체가 null이면 자기 자신을 그대로 반환
         }
-
         this.name = other.getName();
         this.party = other.getParty();
         this.timesElected = other.getTimesElected();
@@ -86,7 +85,6 @@ public class Congressman extends DateEntity {
         this.assemblySessions = other.getAssemblySessions();
         this.sex = other.getSex();
         this.imageUrl = other.getImageUrl();
-
         return this;  // 자기 자신을 반환
     }
 }

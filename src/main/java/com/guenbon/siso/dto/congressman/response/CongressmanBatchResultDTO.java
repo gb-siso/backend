@@ -13,8 +13,9 @@ import java.util.List;
 public class CongressmanBatchResultDTO {
 
     private LocalDateTime time;
-    private List<CongressmanDTO> bathInsertAndUpdateResult;
+    private List<CongressmanDTO> batchInsertResult;
     private int batchRemoveResultCount;
+    private int batchRemoveUpdateCount;
 
     @AllArgsConstructor
     @Getter
@@ -24,7 +25,7 @@ public class CongressmanBatchResultDTO {
         private String name;
     }
 
-    public static CongressmanBatchResultDTO of(LocalDateTime time, List<CongressmanDTO> bathInsertAndUpdateResult, int batchRemoveResultCount) {
-        return new CongressmanBatchResultDTO(time, bathInsertAndUpdateResult, batchRemoveResultCount);
+    public static CongressmanBatchResultDTO of(LocalDateTime time, List<CongressmanDTO> batchInsertResult, int batchRemoveUpdateCount, int batchRemoveResultCount) {
+        return new CongressmanBatchResultDTO(time, batchInsertResult, batchRemoveUpdateCount, batchRemoveResultCount);
     }
 }
