@@ -1,11 +1,7 @@
 package com.guenbon.siso.dto.congressman.projection;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,7 +12,7 @@ public class CongressmanGetListDTO {
     private Long id;
     private String name;
     private Double rate;
-    private Integer timesElected;
+    private String timesElected;
     private String party;
 
     @Override

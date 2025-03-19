@@ -2,13 +2,10 @@ package com.guenbon.siso.dto.congressman.response;
 
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
 import java.util.Collections;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Builder
 @AllArgsConstructor
@@ -45,7 +42,7 @@ public class CongressmanListDTO {
         private String id;
         private String name;
         private String party;
-        private Integer timesElected;
+        private String timesElected;
         private Double rate;
         @Schema(description = "해당 의원 최근에 평가한 회원 4명 이미지")
         private List<String> ratedMemberImages;

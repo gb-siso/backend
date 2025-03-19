@@ -1,5 +1,12 @@
 package com.guenbon.siso.service.congressman;
 
+import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -14,6 +21,10 @@ import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.util.AESUtil;
+
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -26,26 +37,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @SpringBootTest
 class CongressmanApiServiceTest {
 
     @Autowired
     CongressmanApiService congressmanApiService;
-    @MockitoBean
+
+    @MockitoBean(name = "congressmanService")
     CongressmanService congressmanService;
-    @MockitoBean
-    CongressmanRepository congressmanRepository;
-    @MockitoBean
-    AESUtil aesUtil;
 
     @DisplayName("findNewsList에 복호화에 실패하는 congressmanId를 전달하면 AESErrorCode.INVALID_INPUT 에러코드인 BadRequestException을 던진다")
     @Test
@@ -68,7 +67,6 @@ class CongressmanApiServiceTest {
         final String encryptedCongressmanId = "notExist";
         final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
 
         // when, then
@@ -87,7 +85,6 @@ class CongressmanApiServiceTest {
         final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
         final PageRequest pageable = PageRequest.of(0, 2);
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         // when
@@ -118,8 +115,6 @@ class CongressmanApiServiceTest {
         final Long decryptedCongressmanId = 1L;
         final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
-//        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         assertThatThrownBy(() -> congressmanApiService.findNewsList(encryptedCongressmanId, pageable))
@@ -130,7 +125,7 @@ class CongressmanApiServiceTest {
     public static Stream<Arguments> provideApiExceptionParameters() {
         return Stream.of(
                 Arguments.of(Named.named("1000을 넘는 pagesize", PageRequest.of(0, 10000)),
-                        CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED),
+                        MAX_REQUEST_LIMIT_EXCEEDED),
                 Arguments.of(Named.named("마지막 페이지를 넘는 pagenumber", PageRequest.of(9999999, 2)),
                         CongressApiErrorCode.NO_DATA_FOUND)
         );
@@ -158,7 +153,6 @@ class CongressmanApiServiceTest {
         final String encryptedCongressmanId = "notExist";
         final ErrorCode errorCode = CongressmanErrorCode.NOT_EXISTS;
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(1L);
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenThrow(new CustomException(errorCode));
 
         // when, then
@@ -179,8 +173,6 @@ class CongressmanApiServiceTest {
         final Long decryptedCongressmanId = 1L;
         final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
-//        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));;
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         assertThatThrownBy(() -> congressmanApiService.findBillList(encryptedCongressmanId, pageable))
@@ -197,8 +189,6 @@ class CongressmanApiServiceTest {
         final Congressman congressman = CongressmanFixture.builder().setId(decryptedCongressmanId).build();
         final PageRequest pageable = PageRequest.of(0, 2);
 
-//        when(aesUtil.decrypt(encryptedCongressmanId)).thenReturn(decryptedCongressmanId);
-//        when(congressmanRepository.findById(decryptedCongressmanId)).thenReturn(Optional.of(congressman));
         when(congressmanService.getCongressman(encryptedCongressmanId)).thenReturn(congressman);
 
         // when

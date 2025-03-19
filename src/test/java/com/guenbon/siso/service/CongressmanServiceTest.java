@@ -1,5 +1,12 @@
 package com.guenbon.siso.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -12,6 +19,11 @@ import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.congressman.CongressmanGetListDTOFixture;
 import com.guenbon.siso.util.AESUtil;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,18 +31,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -63,7 +63,6 @@ class CongressmanServiceTest {
         // given
         final Long 존재하지_않는_ID = 1L;
         when(congressmanRepository.findById(존재하지_않는_ID)).thenReturn(Optional.empty());
-
         // when then
         assertThatThrownBy(
                 () -> congressmanService.findById(존재하지_않는_ID))

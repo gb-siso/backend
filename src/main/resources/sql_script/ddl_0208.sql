@@ -4,7 +4,27 @@ drop table if exists rating;
 drop table if exists congressman;
 drop table if exists member;
 
-create table congressman (times_elected integer not null, created_date datetime(6), id bigint not null auto_increment, modified_date datetime(6), name varchar(255) not null, party varchar(255) not null, primary key (id)) engine=InnoDB;
+create table congressman (
+                             created_date datetime(6),
+                             id bigint not null auto_increment,
+                             modified_date datetime(6),
+                             code varchar(255) not null,
+                             electoral_district varchar(255),
+                             electoral_type varchar(255),
+                             image_url varchar(255),
+                             name varchar(255) not null,
+                             party varchar(255) not null,
+                             position varchar(255),
+                             sex varchar(255),
+                             times_elected varchar(255) not null,
+                             primary key (id)
+) engine=InnoDB;
+
+create table assembly_session (
+                                  assembly_sessions integer,
+                                  congressman_id bigint not null
+) engine=InnoDB;
+
 
 create table dislike (congressman_id bigint, id bigint not null auto_increment, member_id bigint, rating_id bigint, dtype varchar(31) not null, primary key (id)) engine=InnoDB;
 
@@ -33,3 +53,23 @@ alter table `like` add constraint fk_like_rating foreign key (rating_id) referen
 alter table rating add constraint fk_rating_congressman foreign key (congressman_id) references congressman (id);
 
 alter table rating add constraint fk_rating_member foreign key (member_id) references member (id);
+
+
+alter table congressman
+    add constraint unique_congressman_code unique (code);
+
+alter table assembly_session
+    add constraint fk_assembly_session_congressman
+        foreign key (congressman_id)
+            references congressman (id);
+
+
+alter table assembly_session
+    drop
+        foreign key fk_assembly_session_congressman;
+
+alter table rating
+    drop
+        foreign key fk_rating_congressman;
+
+
