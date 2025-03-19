@@ -1,11 +1,14 @@
 package com.guenbon.siso.repository.congressman;
 
 import com.guenbon.siso.entity.Congressman;
-import java.util.List;
-import java.util.Optional;
+import io.micrometer.common.lang.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface CongressmanRepository extends JpaRepository<Congressman, Long>, QuerydslCongressmanRepository {
     Optional<Congressman> findById(Long id);
@@ -15,4 +18,11 @@ public interface CongressmanRepository extends JpaRepository<Congressman, Long>,
 
     boolean existsById(Long id);
 
+    @Override
+    @NonNull
+    List<Congressman> findAll();
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Congressman c WHERE c.id IN :idList")
+    int batchDelete(@Param("idList") List<Long> idList);
 }

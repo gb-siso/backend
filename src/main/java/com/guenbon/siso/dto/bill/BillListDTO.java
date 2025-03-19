@@ -1,20 +1,16 @@
 package com.guenbon.siso.dto.bill;
 
-import static com.guenbon.siso.support.constants.ApiConstants.BILL_NAME;
-import static com.guenbon.siso.support.constants.ApiConstants.DETAIL_LINK;
-import static com.guenbon.siso.support.constants.ApiConstants.PROPOSER;
-import static com.guenbon.siso.support.constants.ApiConstants.PROPOSE_DT;
-import static com.guenbon.siso.support.constants.ApiConstants.PUBL_PROPOSER;
-import static com.guenbon.siso.support.constants.ApiConstants.RST_PROPOSER;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.guenbon.siso.support.constants.ApiConstants.*;
 
 @NoArgsConstructor
 @AllArgsConstructor

@@ -42,7 +42,6 @@ public class AuthController {
                 .body(LoginDTO.from(issueTokenResult));
     }
 
-    // todo
     @GetMapping("/login/naver")
     public ResponseEntity<LoginDTO> naverLogin(@RequestParam(required = false) String code,
                                                @RequestParam(required = false) String state,
