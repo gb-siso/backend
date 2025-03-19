@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -107,7 +104,10 @@ public class CongressmanService {
     }
 
     private List<Congressman> batchInsertCongressman(List<Congressman> toInsertAndUpdate) {
-        if (toInsertAndUpdate.isEmpty()) return new ArrayList<>();
+        if (toInsertAndUpdate.isEmpty()) {
+            log.info("no congressman to insert");
+            return new ArrayList<>();
+        }
         List<Congressman> congressmen = congressmanRepository.saveAll(toInsertAndUpdate);
         return congressmen;
     }
@@ -124,98 +124,130 @@ public class CongressmanService {
     public CongressmanBatchResultDTO syncCongressman(List<SyncCongressmanDTO> recentSyncList) {
 
         List<Congressman> dbCongressmanList = getCongressmanList();
-        List<AssemblySession> dbAssemblySessionList = getAssemblySessionList();
-
-        Map<Long, List<Integer>> idAssemblySessionMap = new HashMap<>();
-        dbAssemblySessionList.forEach(assemblySession -> {
-            final Long congressmanId = assemblySession.getCongressman().getId();
-
-            // 리스트를 가져오거나 없으면 새로 생성
-            List<Integer> sessionList = idAssemblySessionMap.getOrDefault(congressmanId, new ArrayList<>());
-
-            // 리스트에 세션 추가
-            sessionList.add(assemblySession.getSession());
-
-            // 맵에 리스트를 다시 넣어줌 (이미 존재하는 키라면 덮어쓰기)
-            idAssemblySessionMap.put(congressmanId, sessionList);
-        });
+        Map<Long, Set<Integer>> idAssemblySessionMap = getIdAssemblySessionMap();
 
         // db 국회의원+대수 데이터
-        List<SyncCongressmanDTO> dbSyncList = dbCongressmanList
-                .stream()
-                .map(congressman -> SyncCongressmanDTO.of(congressman, idAssemblySessionMap.get(congressman.getId()))).toList();
-        Map<String, SyncCongressmanDTO> dbSyncMap = dbSyncList.stream()
-                .collect(Collectors.toMap(
-                        dto -> dto.getCongressman().getCode(), // 키: SyncCongressmanDTO의 의원 코드
-                        dto -> dto // 값: SyncCongressmanDTO 자체
-                ));
+        List<SyncCongressmanDTO> dbSyncList = getDbSyncList(dbCongressmanList, idAssemblySessionMap);
+        Map<String, SyncCongressmanDTO> dbSyncMap = getDbSyncMap(dbSyncList);
 
         List<Congressman> toInsert = new ArrayList<>();
         List<Congressman> toDelete = new ArrayList<>(dbCongressmanList);
-        Map<String, List<Integer>> codeSessionMapToInsert = new HashMap<>();
-        List<AssemblySession> assemblySessionToUpdate = new ArrayList<>();
+        Map<String, Set<Integer>> codeSessionMapToInsert = new HashMap<>();
 
         int updateCount = 0;
 
         for (SyncCongressmanDTO recentSyncDTO : recentSyncList) {
 
             Congressman recentCongressman = recentSyncDTO.getCongressman();
-            List<Integer> recentAssemblySessions = recentSyncDTO.getAssemblySessions();
+            Set<Integer> recentAssemblySessions = recentSyncDTO.getAssemblySessions();
 
             SyncCongressmanDTO dbSyncDTO = dbSyncMap.get(recentCongressman.getCode());
-            Congressman dbCongressman = dbSyncDTO.getCongressman();
-            List<Integer> dbAssemblySessions = dbSyncDTO.getAssemblySessions();
 
-            if (dbCongressman == null) {
+
+            if (dbSyncDTO == null) {
                 toInsert.add(recentCongressman);
                 codeSessionMapToInsert.put(recentCongressman.getCode(), recentAssemblySessions);
             } else {
+                Congressman dbCongressman = dbSyncDTO.getCongressman();
+
+                Set<Integer> dbAssemblySessions = dbSyncDTO.getAssemblySessions();
+
                 if (!equalsWithoutId(recentCongressman, dbCongressman)) {
                     // 변경감지에 의해 update 됨
                     dbCongressman.updateFieldsFrom(recentCongressman);
                     updateCount++;
                 }
 
-                if (dbAssemblySessions.equals(recentAssemblySessions)) {
-                    // todo 대수가 다를 경우 어떻게 처리 ?
+                // 대수 로직이 이상함
+                if (!dbAssemblySessions.equals(recentAssemblySessions)) {
+                    // 대수 update, delete 처리 --> 여기가 문제인거 같음
+                    syncAssemblySessions(recentAssemblySessions, dbAssemblySessions, dbCongressman);
                 }
-
                 toDelete.remove(dbCongressman);
             }
         }
 
         List<Congressman> batchInsertResult = batchInsertCongressman(toInsert);
         int batchRemoveResultCount = batchRemoveCongressman(toDelete);
+        assemblySessionRepository.batchDeleteByCongressmanIdList(toDelete.stream().map(Congressman::getId).collect(Collectors.toList()));
 
-
-        // AssemblySession 배치 처리
-        // delete : cascade.all로 congressman 삭제되면 삭제됨
+        // saveAll 은 영속성 컨텍스트에 영속되지 않아서 대수 삽입 시 fk 문제 발생
+        // findById 로 영속성 컨텍스트에 영속시킨 엔티티로 대수 삽입 해야한다.
+        ArrayList<Congressman> insertedCongressmanList = new ArrayList<>();
+        for (Congressman insertedCongressman : batchInsertResult) {
+            insertedCongressmanList.add(congressmanRepository.findById(insertedCongressman.getId()).get());
+        }
 
         // 대수 배치 insert 처리
         List<AssemblySession> assemblySessionsToInsert = new ArrayList<>();
-        batchInsertResult.forEach(insertedCongressman -> {
-                    List<Integer> sessionListToInsert = codeSessionMapToInsert.get(insertedCongressman.getCode());
-                    for (Integer session : sessionListToInsert) {
-                        assemblySessionsToInsert.add(AssemblySession.of(insertedCongressman, session));
-                    }
-                }
-        );
+        insertedCongressmanList.forEach(insertedCongressman -> setAssemblySessionsToInsert(insertedCongressman, codeSessionMapToInsert, assemblySessionsToInsert));
         List<AssemblySession> batchAssemblySessionInsertResult = batchInsertAssemblySession(assemblySessionsToInsert);
-
-        // 대수 배치 update 처리
-
-
-
-
-        log.info("syncCongressman 국회의원 정보 동기화 정상 처리 완료");
-        log.info(" 삽입 수 : " + batchInsertResult.size());
-        log.info(" 수정 수 : " + updateCount);
-        log.info(" 삭제 수 : " + batchRemoveResultCount);
 
         return CongressmanBatchResultDTO.of(LocalDateTime.now(), batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
     }
 
+    private Map<Long, Set<Integer>> getIdAssemblySessionMap() {
+        List<AssemblySession> dbAssemblySessionList = getAssemblySessionList();
+
+        Map<Long, Set<Integer>> idAssemblySessionMap = new HashMap<>();
+        dbAssemblySessionList.forEach(assemblySession -> {
+            final Long congressmanId = assemblySession.getCongressman().getId();
+
+            // 리스트를 가져오거나 없으면 새로 생성
+            Set<Integer> sessionSet = idAssemblySessionMap.getOrDefault(congressmanId, new HashSet<>());
+
+            // 리스트에 세션 추가
+            sessionSet.add(assemblySession.getSession());
+
+            // 맵에 리스트를 다시 넣어줌 (이미 존재하는 키라면 덮어쓰기)
+            idAssemblySessionMap.put(congressmanId, sessionSet);
+        });
+        return idAssemblySessionMap;
+    }
+
+    private void setAssemblySessionsToInsert(Congressman insertedCongressman, Map<String, Set<Integer>> codeSessionMapToInsert, List<AssemblySession> assemblySessionsToInsert) {
+        Set<Integer> sessionMapToInsert = codeSessionMapToInsert.get(insertedCongressman.getCode());
+        for (Integer session : sessionMapToInsert) {
+            log.info("대수 삽입 국회의원 fk : {}", insertedCongressman.getId());
+            assemblySessionsToInsert.add(AssemblySession.of(insertedCongressman, session));
+        }
+    }
+
+    private List<SyncCongressmanDTO> getDbSyncList(List<Congressman> dbCongressmanList, Map<Long, Set<Integer>> idAssemblySessionMap) {
+        return dbCongressmanList
+                .stream()
+                .map(congressman -> SyncCongressmanDTO.of(congressman, idAssemblySessionMap.get(congressman.getId()))).toList();
+    }
+
+    private Map<String, SyncCongressmanDTO> getDbSyncMap(List<SyncCongressmanDTO> dbSyncList) {
+        return dbSyncList.stream()
+                .collect(Collectors.toMap(
+                        dto -> dto.getCongressman().getCode(), // 키: SyncCongressmanDTO의 의원 코드
+                        dto -> dto // 값: SyncCongressmanDTO 자체
+                ));
+    }
+
+    private void syncAssemblySessions(Set<Integer> recentAssemblySessions, Set<Integer> dbAssemblySessions, Congressman dbCongressman) {
+
+        HashSet<Integer> sessionsToInsert = new HashSet<>(recentAssemblySessions);
+        sessionsToInsert.removeAll(dbAssemblySessions);
+
+        HashSet<Integer> sessionsToRemove = new HashSet<>(dbAssemblySessions);
+        sessionsToRemove.removeAll(recentAssemblySessions);
+
+        assemblySessionRepository.saveAll(sessionsToInsert.stream().map(session -> AssemblySession.of(dbCongressman, session)).toList());
+
+
+        List<AssemblySession> assemblySessionsToDelete = assemblySessionRepository.findAllByCongressmanIdAndSessionIn(dbCongressman.getId(), sessionsToRemove);
+        List<Long> assemblySessionIdListToDelete = assemblySessionsToDelete.stream().map(AssemblySession::getId).toList();
+        assemblySessionRepository.batchDelete(assemblySessionIdListToDelete);
+    }
+
     private List<AssemblySession> batchInsertAssemblySession(List<AssemblySession> assemblySessionsToInsert) {
+        log.info("check batchInsertAssemblySession");
+        for (AssemblySession assemblySession : assemblySessionsToInsert) {
+            log.info("assembly session : {}", assemblySession);
+        }
         return assemblySessionRepository.saveAll(assemblySessionsToInsert);
     }
 

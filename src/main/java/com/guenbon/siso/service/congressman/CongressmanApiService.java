@@ -20,9 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,8 +134,8 @@ public class CongressmanApiService {
         }
     }
 
-    public List<Integer> parseAssemblySessions(String assemblySessions) {
-        List<Integer> sessions = new ArrayList<>();
+    public Set<Integer> parseAssemblySessions(String assemblySessions) {
+        Set<Integer> sessions = new HashSet<>();
 
         // 정규표현식으로 "제XX대" 형식의 문자열을 찾음
         Pattern pattern = Pattern.compile("제(\\d+)대");
