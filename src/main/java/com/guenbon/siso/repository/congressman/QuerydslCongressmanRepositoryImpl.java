@@ -1,17 +1,18 @@
 package com.guenbon.siso.repository.congressman;
 
-import static com.guenbon.siso.entity.QCongressman.congressman;
-import static com.guenbon.siso.entity.QRating.rating;
-
 import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.guenbon.siso.entity.QCongressman.congressman;
+import static com.guenbon.siso.entity.QRating.rating;
 
 @RequiredArgsConstructor
 public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRepository {
@@ -30,7 +31,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                                 congressman.party,
                                 rating.rate.avg().as("rate")))
                 .from(congressman)
-                .join(rating)
+                .leftJoin(rating)
                 .on(congressman.id.eq(rating.congressman.id))
                 .groupBy(congressman.id)
                 .distinct()
