@@ -1,6 +1,6 @@
 package com.guenbon.siso.repository.rating;
 
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import java.util.Optional;

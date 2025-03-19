@@ -1,6 +1,6 @@
 package com.guenbon.siso.repository.congressman;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 

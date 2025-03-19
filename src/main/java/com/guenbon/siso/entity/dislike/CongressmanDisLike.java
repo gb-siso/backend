@@ -1,6 +1,6 @@
 package com.guenbon.siso.entity.dislike;
 
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CongressmanDisLike extends DisLike {
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "congressman_id")
     private Congressman congressman;
 }

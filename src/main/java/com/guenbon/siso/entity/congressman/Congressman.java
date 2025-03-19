@@ -1,4 +1,4 @@
-package com.guenbon.siso.entity;
+package com.guenbon.siso.entity.congressman;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Entity
 @Getter
@@ -37,26 +35,17 @@ public class Congressman extends DateEntity {
     @Column(nullable = false, unique = true)
     private String code;
 
-    // 직책
     private String position;
 
-    // 소속 정당
     private String electoralDistrict;
 
-    // 선거구
     private String electoralType;
-
-    // 선거구 구분
-    @ElementCollection // 기본적으로 지연 로딩 적용
-    @Column(name = "assembly_sessions")
-    @CollectionTable(name = "assembly_session", joinColumns = @JoinColumn(name = "congressman_id"))
-    private List<Integer> assemblySessions;
 
     private String sex;
 
     private String imageUrl;
 
-    public static Congressman of(JsonNode row, List<Integer> assemblySessions) {
+    public static Congressman of(JsonNode row) {
         return Congressman.builder()
                 .code(row.path("NAAS_CD").asText())
                 .name(row.path("NAAS_NM").asText())
@@ -65,15 +54,14 @@ public class Congressman extends DateEntity {
                 .electoralDistrict(row.path("ELECD_NM").asText(null))
                 .electoralType(row.path("ELECD_DIV_NM").asText(null))
                 .timesElected(row.path("RLCT_DIV_NM").asText(null))
-                .assemblySessions(assemblySessions)
                 .sex(row.path("NTR_DIV").asText(null))
                 .imageUrl(row.path("NAAS_PIC").asText(null))
                 .build();
     }
 
-    public Congressman updateFieldsFrom(Congressman other) {
+    public void updateFieldsFrom(Congressman other) {
         if (other == null) {
-            return this;  // 다른 객체가 null이면 자기 자신을 그대로 반환
+            return;  // 다른 객체가 null이면 자기 자신을 그대로 반환
         }
         this.name = other.getName();
         this.party = other.getParty();
@@ -82,9 +70,8 @@ public class Congressman extends DateEntity {
         this.position = other.getPosition();
         this.electoralDistrict = other.getElectoralDistrict();
         this.electoralType = other.getElectoralType();
-        this.assemblySessions = other.getAssemblySessions();
+//        this.assemblySessions = other.getAssemblySessions();
         this.sex = other.getSex();
         this.imageUrl = other.getImageUrl();
-        return this;  // 자기 자신을 반환
     }
 }

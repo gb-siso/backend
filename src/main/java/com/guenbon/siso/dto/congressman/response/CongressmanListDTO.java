@@ -1,6 +1,6 @@
 package com.guenbon.siso.dto.congressman.response;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -44,8 +44,17 @@ public class CongressmanListDTO {
         private String party;
         private String timesElected;
         private Double rate;
+        private String code;
+        private String position;
+        private String electoralDistrict;
+        private String electoralType;
+        private List<Integer> assemblySessions;
+        private String sex;
+        private String imageUrl;
         @Schema(description = "해당 의원 최근에 평가한 회원 4명 이미지")
         private List<String> ratedMemberImages;
+
+
 
         public static CongressmanDTO of(String encryptedCongressmanId, CongressmanGetListDTO congressmanGetListDTO,
                                         List<String> memberImages) {
@@ -56,6 +65,13 @@ public class CongressmanListDTO {
                     .party(congressmanGetListDTO.getParty())
                     .timesElected(congressmanGetListDTO.getTimesElected())
                     .ratedMemberImages(memberImages == null ? Collections.emptyList() : memberImages)
+                    .code(congressmanGetListDTO.getCode())
+                    .position(congressmanGetListDTO.getPosition())
+                    .electoralDistrict(congressmanGetListDTO.getElectoralDistrict())
+                    .electoralType(congressmanGetListDTO.getElectoralType())
+                    .assemblySessions(congressmanGetListDTO.getAssemblySessions())
+                    .sex(congressmanGetListDTO.getSex())
+                    .imageUrl(congressmanGetListDTO.getImageUrl())
                     .build();
         }
     }

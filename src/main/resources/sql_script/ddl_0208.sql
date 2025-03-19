@@ -21,10 +21,13 @@ create table congressman (
 ) engine=InnoDB;
 
 create table assembly_session (
-                                  assembly_sessions integer,
-                                  congressman_id bigint not null
+                                  session integer not null,
+                                  congressman_id bigint not null,
+                                  created_date datetime(6),
+                                  id bigint not null auto_increment,
+                                  modified_date datetime(6),
+                                  primary key (id)
 ) engine=InnoDB;
-
 
 create table dislike (congressman_id bigint, id bigint not null auto_increment, member_id bigint, rating_id bigint, dtype varchar(31) not null, primary key (id)) engine=InnoDB;
 
@@ -62,7 +65,6 @@ alter table assembly_session
     add constraint fk_assembly_session_congressman
         foreign key (congressman_id)
             references congressman (id);
-
 
 alter table assembly_session
     drop

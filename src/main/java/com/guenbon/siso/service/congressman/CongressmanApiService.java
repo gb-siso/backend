@@ -3,9 +3,10 @@ package com.guenbon.siso.service.congressman;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillListDTO;
+import com.guenbon.siso.dto.congressman.SyncCongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
@@ -84,13 +85,18 @@ public class CongressmanApiService {
         return jsonNode;
     }
 
-    public List<Congressman> fetchRecentCongressmanList() {
+    // todo 반환형 변경 필요
+
+    /**
+     * @return
+     */
+    public List<SyncCongressmanDTO> fetchRecentCongressmanList() {
         int call = 1;
         int page = 0;
         final int SIZE = 1000;
         final int CALL_LIMIT = 5;
 
-        List<Congressman> recentCongressmanList = new ArrayList<>();
+        List<SyncCongressmanDTO> recentSyncList = new ArrayList<>();
 
         while (true) {
             if (call > CALL_LIMIT) {
@@ -111,20 +117,20 @@ public class CongressmanApiService {
             }
 
             // 22대 국회의원 데이터(현재)만 리스트에 추가
-            filterAndAddCongressman(jsonNode, recentCongressmanList);
+            filterAndAddCongressman(jsonNode, recentSyncList);
             page++;
             call++;
         }
-        return recentCongressmanList;
+        return recentSyncList;
     }
 
-    public void filterAndAddCongressman(JsonNode jsonNode, List<Congressman> recentCongressmanList) {
+    public void filterAndAddCongressman(JsonNode jsonNode, List<SyncCongressmanDTO> recentSyncList) {
         JsonNode rows = getContent(jsonNode, CONGRESSMAN_INFO_API_PATH);
         if (rows.isArray()) {
             for (JsonNode row : rows) {
                 String assemblySessions = row.path(ASSEMBLY_SESSIONS_PATH).asText();
                 if (assemblySessions.contains(ASSEMBLY_SESSION_NOW)) { // "제22대" 포함 여부 확인
-                    recentCongressmanList.add(Congressman.of(row, parseAssemblySessions(assemblySessions)));
+                    recentSyncList.add(SyncCongressmanDTO.of(Congressman.of(row), parseAssemblySessions(assemblySessions)));
                 }
             }
         }
@@ -176,7 +182,8 @@ public class CongressmanApiService {
     @Scheduled(cron = "0 0 5 * * *")
     public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
         log.info("fetchAndSyncCongressmen 호출 : {}", LocalDateTime.now());
-        List<Congressman> recentCongressmanList = fetchRecentCongressmanList();
-        return congressmanService.syncCongressman(recentCongressmanList);
+        // todo assembly session 별도 insert 필요
+        List<SyncCongressmanDTO> recentSyncList = fetchRecentCongressmanList();
+        return congressmanService.syncCongressman(recentSyncList);
     }
 }

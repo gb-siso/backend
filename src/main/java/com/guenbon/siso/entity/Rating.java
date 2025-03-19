@@ -1,6 +1,7 @@
 package com.guenbon.siso.entity;
 
 import com.guenbon.siso.entity.common.DateEntity;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.dislike.RatingDislike;
 import com.guenbon.siso.entity.like.RatingLike;
 import jakarta.persistence.*;
@@ -23,11 +24,11 @@ public class Rating extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "congressman_id", nullable = false)
     private Congressman congressman;
 

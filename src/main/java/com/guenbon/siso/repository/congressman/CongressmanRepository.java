@@ -1,6 +1,6 @@
 package com.guenbon.siso.repository.congressman;
 
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import io.micrometer.common.lang.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

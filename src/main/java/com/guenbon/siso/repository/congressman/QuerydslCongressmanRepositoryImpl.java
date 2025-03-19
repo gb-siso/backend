@@ -1,9 +1,11 @@
 package com.guenbon.siso.repository.congressman;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.projection.CongressmanListProjectionDTO;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +13,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.guenbon.siso.entity.QCongressman.congressman;
 import static com.guenbon.siso.entity.QRating.rating;
+import static com.guenbon.siso.entity.congressman.QAssemblySession.assemblySession;
+import static com.guenbon.siso.entity.congressman.QCongressman.congressman;
 
 @RequiredArgsConstructor
 public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRepository {
@@ -22,27 +25,38 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
     @Override
     public List<CongressmanGetListDTO> getList(Pageable pageable, Long cursorId, Double cursorRating, String party,
                                                String search) {
-        List<CongressmanGetListDTO> fetch = jpaQueryFactory.select(
+        List<CongressmanListProjectionDTO> fetch = jpaQueryFactory.select(
                         Projections.fields(
-                                CongressmanGetListDTO.class,
+                                CongressmanListProjectionDTO.class,
                                 congressman.id,
                                 congressman.name,
                                 congressman.timesElected,
                                 congressman.party,
-                                rating.rate.avg().as("rate")))
+                                congressman.code,
+                                congressman.position,
+                                congressman.electoralDistrict,
+                                congressman.electoralType,
+                                congressman.sex,
+                                congressman.imageUrl,
+                                rating.rate.avg().as("rate"),
+                                Expressions.stringTemplate("GROUP_CONCAT({0})", assemblySession.session)
+                                        .as("assemblySessions")  // 문자열로 변환 후 DTO에서 파싱 필요
+                        ))
                 .from(congressman)
                 .leftJoin(rating)
                 .on(congressman.id.eq(rating.congressman.id))
+                .leftJoin(assemblySession)
+                .on(congressman.id.eq(assemblySession.congressman.id))
                 .groupBy(congressman.id)
                 .distinct()
                 .having(cursorCondition(cursorId, cursorRating, pageable))
                 .where(party != null ? congressman.party.eq(party) : null)
                 .where(search != null ? congressman.name.like("%" + search + "%") : null)
-                // rating에 따라 정렬, rating 같을 경우 id 낮은 순
                 .orderBy(createOrderBy(pageable))
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
-        return fetch;
+
+        return fetch.stream().map(CongressmanGetListDTO::from).toList();
     }
 
     private BooleanExpression cursorCondition(Long cursorId, Double cursorRating, Pageable pageable) {

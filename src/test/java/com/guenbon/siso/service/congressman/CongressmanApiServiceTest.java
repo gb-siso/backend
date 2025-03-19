@@ -11,16 +11,14 @@ import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AESErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
-import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
-import com.guenbon.siso.util.AESUtil;
 
 import java.util.List;
 import java.util.stream.Stream;

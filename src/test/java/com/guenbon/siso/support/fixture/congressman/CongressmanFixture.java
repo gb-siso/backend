@@ -1,6 +1,6 @@
 package com.guenbon.siso.support.fixture.congressman;
 
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -93,7 +93,7 @@ public class CongressmanFixture {
                 .position(position)
                 .electoralDistrict(electoralDistrict)
                 .electoralType(electoralType)
-                .assemblySessions(assemblySessions)
+//                .assemblySessions(assemblySessions)
                 .sex(sex)
                 .imageUrl(imageUrl)
                 .build();

@@ -1,6 +1,6 @@
 package com.guenbon.siso.dto.congressman.common;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;

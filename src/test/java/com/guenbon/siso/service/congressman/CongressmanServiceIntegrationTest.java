@@ -1,7 +1,7 @@
 package com.guenbon.siso.service.congressman;
 
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import org.junit.jupiter.api.DisplayName;

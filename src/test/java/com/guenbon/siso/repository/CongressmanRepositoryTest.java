@@ -1,8 +1,8 @@
 package com.guenbon.siso.repository;
 
 import com.guenbon.siso.config.QuerydslConfig;
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
@@ -318,7 +318,7 @@ class CongressmanRepositoryTest {
     }
 
     @Test
-    @DisplayName("rating 이 작성되지 않은 congressman 도 getList 의 결과에 포함되어야 한다. 이 때 rating 이 없는 congressman 도 알맞게 정렬된다.")
+    @DisplayName("rating 이 작성되지 않은 congressman 도 getList 의 결과에 포함되어야 한다. 이 때 rating 이 없는 congressman 도 알맞게 정렬된다. 국회의원은 리스트에 중복되지 않는다.")
     void noRating_getList_orderedList() {
         /**
          * 정렬 기준
@@ -332,16 +332,21 @@ class CongressmanRepositoryTest {
 
 
         final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
+        final Member jangmong00 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
+        final Member jangmong10 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
 
+        // 중복되지 않는지 확인하기 위해 maxRatingCongressman에 대해 평가 3개 작성
         saveRating(jangmong99, maxRatingCongressman, 10.0);
+        saveRating(jangmong00, maxRatingCongressman, 10.0);
+        saveRating(jangmong10, maxRatingCongressman, 10.0);
         saveRating(jangmong99, minRatingCongressman, 0.0);
 
         List<Congressman> ratingDescExpected = List.of(maxRatingCongressman, minRatingCongressman, noRatingCongressman);
         List<Congressman> ratingAscExpected = List.of(noRatingCongressman, minRatingCongressman, maxRatingCongressman);
 
         // 평점 내림차순
-        PageRequest ratingDesc = PageRequest.of(0, 3, Sort.by("rate").descending());
-        PageRequest ratingAsc = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest ratingDesc = PageRequest.of(0, 10, Sort.by("rate").descending());
+        PageRequest ratingAsc = PageRequest.of(0, 10, Sort.by("rate").ascending());
 
         // when
         List<CongressmanGetListDTO> ratingDescActual = congressmanRepository.getList(ratingDesc, Long.

@@ -1,6 +1,6 @@
 package com.guenbon.siso.support.fixture.congressman;
 
-import com.guenbon.siso.dto.congressman.projection.CongressmanGetListDTO;
+import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

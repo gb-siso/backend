@@ -4,7 +4,7 @@ import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.cursor.count.DecryptedCountCursor;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.exception.CustomException;

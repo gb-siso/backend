@@ -1,7 +1,7 @@
 package com.guenbon.siso.repository;
 
 import com.guenbon.siso.config.QuerydslConfig;
-import com.guenbon.siso.entity.Congressman;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.dislike.RatingDislike;
