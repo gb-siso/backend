@@ -316,4 +316,42 @@ class CongressmanRepositoryTest {
     private Congressman saveCongressman(Congressman congressman) {
         return congressmanRepository.save(congressman);
     }
+
+    @Test
+    @DisplayName("rating 이 작성되지 않은 congressman 도 getList 의 결과에 포함되어야 한다. 이 때 rating 이 없는 congressman 도 알맞게 정렬된다.")
+    void noRating_getList_orderedList() {
+        /**
+         * 정렬 기준
+         * desc : 10, 0, null
+         * asc : null, 0, 10
+         */
+        // given
+        final Congressman minRatingCongressman = saveCongressman(CongressmanFixture.builder().setName("평점이 0인 국회의원").setCode("cc").build());
+        final Congressman noRatingCongressman = saveCongressman(CongressmanFixture.builder().setName("아무도 평가 작성 안한 국회의원").setCode("aa").build());
+        final Congressman maxRatingCongressman = saveCongressman(CongressmanFixture.builder().setName("평점이 10인 국회의원").setCode("bb").build());
+
+
+        final Member jangmong99 = saveMember(MemberFixture.builder().setNickname("jangmong99").build());
+
+        saveRating(jangmong99, maxRatingCongressman, 10.0);
+        saveRating(jangmong99, minRatingCongressman, 0.0);
+
+        List<Congressman> ratingDescExpected = List.of(maxRatingCongressman, minRatingCongressman, noRatingCongressman);
+        List<Congressman> ratingAscExpected = List.of(noRatingCongressman, minRatingCongressman, maxRatingCongressman);
+
+        // 평점 내림차순
+        PageRequest ratingDesc = PageRequest.of(0, 3, Sort.by("rate").descending());
+        PageRequest ratingAsc = PageRequest.of(0, 3, Sort.by("rate").ascending());
+
+        // when
+        List<CongressmanGetListDTO> ratingDescActual = congressmanRepository.getList(ratingDesc, Long.
+                MAX_VALUE, null, null, null);
+        List<CongressmanGetListDTO> ratingAscActual = congressmanRepository.getList(ratingAsc, Long.
+                MAX_VALUE, null, null, null);
+
+        // then
+        // todo code 로 변경 필요 (unique)
+        assertThat(ratingDescActual.stream().map(CongressmanGetListDTO::getName).toList()).isEqualTo(ratingDescExpected.stream().map(Congressman::getName).toList());
+        assertThat(ratingAscActual.stream().map(CongressmanGetListDTO::getName).toList()).isEqualTo(ratingAscExpected.stream().map(Congressman::getName).toList());
+    }
 }
