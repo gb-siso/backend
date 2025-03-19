@@ -3,6 +3,7 @@ package com.guenbon.siso.service.congressman;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
 import com.guenbon.siso.dto.bill.BillListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.entity.Congressman;
 import com.guenbon.siso.exception.ApiException;
@@ -86,18 +87,18 @@ public class CongressmanApiService {
     public List<Congressman> fetchRecentCongressmanList() {
         int call = 1;
         int page = 0;
-        int size = 1000;
-        int callLimit = 5;
+        final int SIZE = 1000;
+        final int CALL_LIMIT = 5;
 
         List<Congressman> recentCongressmanList = new ArrayList<>();
 
         while (true) {
-            if (call > callLimit) {
+            if (call > CALL_LIMIT) {
                 // 외부 api 에 의한 예외가 아니라 내가 정한 최대 횟수 초과 예외이므로 CustomException 처리
                 throw new CustomException(MAX_REQUEST_LIMIT_EXCEEDED);
             }
 
-            String apiResponse = congressApiClient.getApiResponse(PageRequest.of(page, size), API_CONGRESSMAN_INFO_URL, infoApikey, null);
+            String apiResponse = congressApiClient.getApiResponse(PageRequest.of(page, SIZE), API_CONGRESSMAN_INFO_URL, infoApikey, null);
             JsonNode jsonNode = JsonParserUtil.parseJson(apiResponse);
 
             if (isApiResponseError(jsonNode)) {
@@ -173,9 +174,9 @@ public class CongressmanApiService {
 
     // 매일 05 시 스프링 스케쥴러로 호출
     @Scheduled(cron = "0 0 5 * * *")
-    public void fetchAndSyncCongressmen() {
+    public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
         log.info("fetchAndSyncCongressmen 호출 : {}", LocalDateTime.now());
         List<Congressman> recentCongressmanList = fetchRecentCongressmanList();
-        congressmanService.syncCongressman(recentCongressmanList);
+        return congressmanService.syncCongressman(recentCongressmanList);
     }
 }

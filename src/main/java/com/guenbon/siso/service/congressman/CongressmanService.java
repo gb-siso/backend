@@ -95,12 +95,12 @@ public class CongressmanService {
         }
     }
 
-    public int batchRemoveCongressman(List<Congressman> toDelete) {
+    private int batchRemoveCongressman(List<Congressman> toDelete) {
         List<Long> idList = toDelete.stream().map(Congressman::getId).collect(Collectors.toList());
         return congressmanRepository.batchDelete(idList);
     }
 
-    public List<Congressman> batchInsertCongressman(List<Congressman> toInsertAndUpdate) {
+    private List<Congressman> batchInsertCongressman(List<Congressman> toInsertAndUpdate) {
         if (toInsertAndUpdate.isEmpty()) return new ArrayList<>();
         List<Congressman> congressmen = congressmanRepository.saveAll(toInsertAndUpdate);
         return congressmen;
@@ -151,7 +151,7 @@ public class CongressmanService {
         return new CongressmanBatchResultDTO.CongressmanDTO(aesUtil.encrypt(congressman.getId()), congressman.getCode(), congressman.getName());
     }
 
-    public boolean equalsWithoutId(Congressman recentCongressman, Congressman dbCongressman) {
+    private boolean equalsWithoutId(Congressman recentCongressman, Congressman dbCongressman) {
         if (recentCongressman == dbCongressman) {
             return true;  // 두 객체가 동일한 경우
         }
