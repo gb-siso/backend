@@ -2,9 +2,9 @@ package com.guenbon.siso.repository;
 
 import com.guenbon.siso.config.QuerydslConfig;
 import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
-import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
@@ -297,6 +297,13 @@ class CongressmanRepositoryTest {
                 .rate(rate)
                 .timesElected(congressman.getTimesElected())
                 .party(congressman.getParty())
+                // 추가된 필드 매핑
+                .code(congressman.getCode())
+                .position(congressman.getPosition())
+                .electoralDistrict(congressman.getElectoralDistrict())
+                .electoralType(congressman.getElectoralType())
+                .sex(congressman.getSex())
+                .imageUrl(congressman.getImageUrl())
                 .build();
     }
 

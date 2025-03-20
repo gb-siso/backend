@@ -1,12 +1,5 @@
 package com.guenbon.siso.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.congressman.CongressmanGetListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
@@ -19,11 +12,6 @@ import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.congressman.CongressmanGetListDTOFixture;
 import com.guenbon.siso.util.AESUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +19,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -189,8 +189,16 @@ class CongressmanServiceTest {
                 .id(encryptedId)
                 .name(congressmanGetListDTO.getName())
                 .rate(congressmanGetListDTO.getRate())
-                .party(congressmanGetListDTO.getParty())
                 .timesElected(congressmanGetListDTO.getTimesElected())
+                .party(congressmanGetListDTO.getParty())
+                // 추가된 필드 매핑
+                .code(congressmanGetListDTO.getCode())
+                .position(congressmanGetListDTO.getPosition())
+                .electoralDistrict(congressmanGetListDTO.getElectoralDistrict())
+                .electoralType(congressmanGetListDTO.getElectoralType())
+                .assemblySessions(congressmanGetListDTO.getAssemblySessions())
+                .sex(congressmanGetListDTO.getSex())
+                .imageUrl(congressmanGetListDTO.getImageUrl())
                 .ratedMemberImages(ratedMemberImages)
                 .build();
     }
