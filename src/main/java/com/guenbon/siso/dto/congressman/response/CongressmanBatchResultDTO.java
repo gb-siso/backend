@@ -28,9 +28,9 @@ public class CongressmanBatchResultDTO {
         private String name;
     }
 
-    public static CongressmanBatchResultDTO of(LocalDateTime time, List<CongressmanDTO> batchInsertResult, int batchUpdateCount, int batchRemoveCount) {
+    public static CongressmanBatchResultDTO of(List<CongressmanDTO> batchInsertResult, int batchUpdateCount, int batchRemoveCount) {
         return CongressmanBatchResultDTO.builder()
-                .time(time)
+                .time(LocalDateTime.now())
                 .batchInsertResult(batchInsertResult)
                 .batchInsertCount(batchInsertResult.size())
                 .batchUpdateCount(batchUpdateCount)

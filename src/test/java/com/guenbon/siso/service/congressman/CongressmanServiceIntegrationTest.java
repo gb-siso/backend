@@ -1,31 +1,40 @@
 package com.guenbon.siso.service.congressman;
 
+import com.guenbon.siso.dto.congressman.SyncCongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
+import com.guenbon.siso.entity.congressman.AssemblySession;
 import com.guenbon.siso.entity.congressman.Congressman;
+import com.guenbon.siso.repository.assemblysession.AssemblySessionRepository;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
+import com.guenbon.siso.support.fixture.congressman.SyncCongressmanDTOFixture;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 
 @SpringBootTest
 @Transactional
+@Slf4j
 public class CongressmanServiceIntegrationTest {
 
     @Autowired
     CongressmanService congressmanService;
 
-    @MockitoSpyBean(name = "congressmanRepository")
+    //    @MockitoSpyBean(name = "congressmanRepository")
+    @Autowired
     CongressmanRepository congressmanRepository;
+
+    @Autowired
+    AssemblySessionRepository assemblySessionRepository;
 
 
     @Test
@@ -35,31 +44,56 @@ public class CongressmanServiceIntegrationTest {
         // 삽입 : 최신에 있고 db에 없음
         Congressman son = CongressmanFixture.builder().setName("son").setCode("abc123").build();
         // 수정 : 최신, db에 있는데 상태가 다름
-        Congressman leeDatabase = CongressmanFixture.builder().setName("lee lee").setCode("abc456").build();
+        Congressman leeDatabase = CongressmanFixture.builder().setName("lee").setCode("abc456").build();
         // 삭제 : db에 있고  최신에 없음
         Congressman kim = CongressmanFixture.builder().setName("kim").setCode("abc789").build();
 
         // db에 저장
         Congressman leeSaved = congressmanRepository.save(leeDatabase);
-        congressmanRepository.save(kim);
+        Congressman kimSaved = congressmanRepository.save(kim);
+
+
+        AssemblySession lee21 = assemblySessionRepository.save(AssemblySession.builder().congressman(leeSaved).session(21).build());
+        AssemblySession lee22 = assemblySessionRepository.save(AssemblySession.builder().congressman(leeSaved).session(22).build());
+        AssemblySession kim22 = assemblySessionRepository.save(AssemblySession.builder().congressman(kimSaved).session(22).build());
+
+//        congressmanRepository.flush();
+//        assemblySessionRepository.flush();
+
+
+        Congressman leeRecentEntity = CongressmanFixture.builder().setName("lee new").setCode("abc456").build();
 
         // lee 는 최신 데이터가 업데이트됨
-        Congressman leeRecent = CongressmanFixture.builder().setId(leeSaved.getId()).setName("lee").setCode("abc456").build();
-        List<Congressman> recent = List.of(son, leeRecent);
+        SyncCongressmanDTO sonRecent = SyncCongressmanDTOFixture.builder().setCongressman(son).build();
+        SyncCongressmanDTO leeRecent = SyncCongressmanDTOFixture.builder().setCongressman(leeRecentEntity).setAssemblySessions(Set.of(22, 23)).build();
+
+        List<SyncCongressmanDTO> recent = List.of(sonRecent, leeRecent);
 
         // when
         CongressmanBatchResultDTO congressmanBatchResultDTO = congressmanService.syncCongressman(recent);
+        log.info("반환");
 
         // then
+        List<Congressman> result = congressmanRepository.findAll();
+        Congressman leeResult = congressmanRepository.findById(leeSaved.getId()).get();
+        boolean kimPresent = congressmanRepository.findById(kim.getId()).isPresent();
 
-        Congressman leeUpdated = congressmanRepository.findById(leeSaved.getId()).get();
-        assertThat(leeUpdated.getName()).isEqualTo(leeRecent.getName());
+        boolean lee21Present = assemblySessionRepository.findById(lee21.getId()).isPresent();
+        boolean lee22Present = assemblySessionRepository.findById(lee22.getId()).isPresent();
+        boolean kim22Present = assemblySessionRepository.findById(kim22.getId()).isPresent();
 
-        assertAll(
-                () -> assertThat(congressmanBatchResultDTO.getBatchRemoveResultCount()).isEqualTo(1),
-                () -> assertThat(congressmanBatchResultDTO.getBatchInsertResult().stream().map(CongressmanBatchResultDTO.CongressmanDTO::getCode))
-                        .containsExactly(son.getCode()),
-                () -> assertThat(leeUpdated.getName()).isEqualTo(leeRecent.getName())  // 수정해야할 국회의원이 제대로 업데이트 되었는지
-        );
+        log.info("결과 확인");
+        log.info(leeResult.toString());
+
+        assertThat(lee21Present).isFalse();
+        assertThat(lee22Present).isTrue();
+        assertThat(kim22Present).isFalse();
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(leeResult.getName()).isEqualTo(leeRecentEntity.getName());
+        assertThat(kimPresent).isFalse();
+        assertThat(congressmanBatchResultDTO.getBatchInsertResult().size()).isEqualTo(1);
+        assertThat(congressmanBatchResultDTO.getBatchRemoveCount()).isEqualTo(1);
+        assertThat(congressmanBatchResultDTO.getBatchUpdateCount()).isEqualTo(1);
+
     }
 }

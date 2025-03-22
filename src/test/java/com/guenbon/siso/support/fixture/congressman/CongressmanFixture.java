@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.List;
-
 @Getter
 @NoArgsConstructor
 @ToString
@@ -20,7 +18,6 @@ public class CongressmanFixture {
     private String position = "국회의원";
     private String electoralDistrict = "서울 강남구";
     private String electoralType = "지역구";
-    private List<Integer> assemblySessions = List.of(22);
     private String sex = "남성";
     private String imageUrl = "https://example.com/profile.jpg";
 
@@ -68,11 +65,6 @@ public class CongressmanFixture {
         return this;
     }
 
-    public CongressmanFixture setAssemblySessions(List<Integer> assemblySessions) {
-        this.assemblySessions = assemblySessions;
-        return this;
-    }
-
     public CongressmanFixture setSex(String sex) {
         this.sex = sex;
         return this;
@@ -93,7 +85,6 @@ public class CongressmanFixture {
                 .position(position)
                 .electoralDistrict(electoralDistrict)
                 .electoralType(electoralType)
-//                .assemblySessions(assemblySessions)
                 .sex(sex)
                 .imageUrl(imageUrl)
                 .build();

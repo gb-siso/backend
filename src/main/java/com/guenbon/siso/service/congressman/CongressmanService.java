@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -154,15 +153,16 @@ public class CongressmanService {
 
                 if (!equalsWithoutId(recentCongressman, dbCongressman)) {
                     // 변경감지에 의해 update 됨
+                    log.info("{} 를 {} 토대로 업데이트", dbCongressman.getName(), recentCongressman.getName());
+                    // todo 변경감지가 왜안되지 .. ? --> 서버 돌려서 하면 되는데 왜 테스트에서 안되지 ....?????
                     dbCongressman.updateFieldsFrom(recentCongressman);
                     updateCount++;
                 }
 
-                // 대수 로직이 이상함
                 if (!dbAssemblySessions.equals(recentAssemblySessions)) {
-                    // 대수 update, delete 처리 --> 여기가 문제인거 같음
                     syncAssemblySessions(recentAssemblySessions, dbAssemblySessions, dbCongressman);
                 }
+
                 toDelete.remove(dbCongressman);
             }
         }
@@ -183,7 +183,8 @@ public class CongressmanService {
         insertedCongressmanList.forEach(insertedCongressman -> setAssemblySessionsToInsert(insertedCongressman, codeSessionMapToInsert, assemblySessionsToInsert));
         List<AssemblySession> batchAssemblySessionInsertResult = batchInsertAssemblySession(assemblySessionsToInsert);
 
-        return CongressmanBatchResultDTO.of(LocalDateTime.now(), batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
+        log.info("끝나는시점");
+        return CongressmanBatchResultDTO.of(batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
     }
 
     private Map<Long, Set<Integer>> getIdAssemblySessionMap() {
@@ -237,7 +238,6 @@ public class CongressmanService {
 
         assemblySessionRepository.saveAll(sessionsToInsert.stream().map(session -> AssemblySession.of(dbCongressman, session)).toList());
 
-
         List<AssemblySession> assemblySessionsToDelete = assemblySessionRepository.findAllByCongressmanIdAndSessionIn(dbCongressman.getId(), sessionsToRemove);
         List<Long> assemblySessionIdListToDelete = assemblySessionsToDelete.stream().map(AssemblySession::getId).toList();
         assemblySessionRepository.batchDelete(assemblySessionIdListToDelete);
@@ -275,7 +275,6 @@ public class CongressmanService {
                 (recentCongressman.getPosition() == null ? dbCongressman.getPosition() == null : recentCongressman.getPosition().equals(dbCongressman.getPosition())) &&
                 (recentCongressman.getElectoralDistrict() == null ? dbCongressman.getElectoralDistrict() == null : recentCongressman.getElectoralDistrict().equals(dbCongressman.getElectoralDistrict())) &&
                 (recentCongressman.getElectoralType() == null ? dbCongressman.getElectoralType() == null : recentCongressman.getElectoralType().equals(dbCongressman.getElectoralType())) &&
-//                (recentCongressman.getAssemblySessions() == null ? dbCongressman.getAssemblySessions() == null : recentCongressman.getAssemblySessions().equals(dbCongressman.getAssemblySessions())) &&
                 (recentCongressman.getSex() == null ? dbCongressman.getSex() == null : recentCongressman.getSex().equals(dbCongressman.getSex())) &&
                 (recentCongressman.getImageUrl() == null ? dbCongressman.getImageUrl() == null : recentCongressman.getImageUrl().equals(dbCongressman.getImageUrl()));
     }
