@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,7 +62,7 @@ public class CongressmanApiService {
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
 
         Map<String, String> params = Map.of(
-                AGE, "22", // todo 대수 : 만약 22대 말고 다른 국회의원도 다룰 거면 변경 필요
+                AGE, "22",
                 PROPOSER, congressman.getName() + "의원"
         );
 
@@ -82,8 +81,6 @@ public class CongressmanApiService {
         }
         return jsonNode;
     }
-
-    // todo 반환형 변경 필요
 
     /**
      * @return
@@ -179,8 +176,6 @@ public class CongressmanApiService {
     // 매일 05 시 스프링 스케쥴러로 호출
     @Scheduled(cron = "0 0 5 * * *")
     public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
-        log.info("fetchAndSyncCongressmen 호출 : {}", LocalDateTime.now());
-        // todo assembly session 별도 insert 필요
         List<SyncCongressmanDTO> recentSyncList = fetchRecentCongressmanList();
         return congressmanService.syncCongressman(recentSyncList);
     }

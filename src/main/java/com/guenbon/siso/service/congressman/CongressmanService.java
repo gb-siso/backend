@@ -9,8 +9,8 @@ import com.guenbon.siso.entity.congressman.AssemblySession;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
-import com.guenbon.siso.repository.assemblysession.AssemblySessionRepository;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
+import com.guenbon.siso.service.assemblysession.AssemblySessionService;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class CongressmanService {
     private final AESUtil aesUtil;
     private final CongressmanRepository congressmanRepository;
-    private final AssemblySessionRepository assemblySessionRepository;
+    private final AssemblySessionService assemblySessionService;
 
     public Congressman findById(final Long id) {
         return congressmanRepository.findById(id)
@@ -107,8 +107,7 @@ public class CongressmanService {
             log.info("no congressman to insert");
             return new ArrayList<>();
         }
-        List<Congressman> congressmen = congressmanRepository.saveAll(toInsertAndUpdate);
-        return congressmen;
+        return congressmanRepository.saveAll(toInsertAndUpdate);
     }
 
     public List<Congressman> getCongressmanList() {
@@ -153,8 +152,6 @@ public class CongressmanService {
 
                 if (!equalsWithoutId(recentCongressman, dbCongressman)) {
                     // 변경감지에 의해 update 됨
-                    log.info("{} 를 {} 토대로 업데이트", dbCongressman.getName(), recentCongressman.getName());
-                    // todo 변경감지가 왜안되지 .. ? --> 서버 돌려서 하면 되는데 왜 테스트에서 안되지 ....?????
                     dbCongressman.updateFieldsFrom(recentCongressman);
                     updateCount++;
                 }
@@ -162,33 +159,33 @@ public class CongressmanService {
                 if (!dbAssemblySessions.equals(recentAssemblySessions)) {
                     syncAssemblySessions(recentAssemblySessions, dbAssemblySessions, dbCongressman);
                 }
-
                 toDelete.remove(dbCongressman);
             }
         }
 
         List<Congressman> batchInsertResult = batchInsertCongressman(toInsert);
         int batchRemoveResultCount = batchRemoveCongressman(toDelete);
-        assemblySessionRepository.batchDeleteByCongressmanIdList(toDelete.stream().map(Congressman::getId).collect(Collectors.toList()));
+        assemblySessionService.deleteByCongressmanId(toDelete.stream().map(Congressman::getId).collect(Collectors.toList()));
 
         // saveAll 은 영속성 컨텍스트에 영속되지 않아서 대수 삽입 시 fk 문제 발생
         // findById 로 영속성 컨텍스트에 영속시킨 엔티티로 대수 삽입 해야한다.
         ArrayList<Congressman> insertedCongressmanList = new ArrayList<>();
         for (Congressman insertedCongressman : batchInsertResult) {
-            insertedCongressmanList.add(congressmanRepository.findById(insertedCongressman.getId()).get());
+            insertedCongressmanList.add(findById(insertedCongressman.getId()));
         }
 
         // 대수 배치 insert 처리
         List<AssemblySession> assemblySessionsToInsert = new ArrayList<>();
         insertedCongressmanList.forEach(insertedCongressman -> setAssemblySessionsToInsert(insertedCongressman, codeSessionMapToInsert, assemblySessionsToInsert));
-        List<AssemblySession> batchAssemblySessionInsertResult = batchInsertAssemblySession(assemblySessionsToInsert);
+        List<AssemblySession> batchAssemblySessionInsertResult = assemblySessionService.saveAll(assemblySessionsToInsert);
 
-        log.info("끝나는시점");
+        // todo 로그 작성 필요
+
         return CongressmanBatchResultDTO.of(batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
     }
 
     private Map<Long, Set<Integer>> getIdAssemblySessionMap() {
-        List<AssemblySession> dbAssemblySessionList = getAssemblySessionList();
+        List<AssemblySession> dbAssemblySessionList = assemblySessionService.findAll();
 
         Map<Long, Set<Integer>> idAssemblySessionMap = new HashMap<>();
         dbAssemblySessionList.forEach(assemblySession -> {
@@ -209,7 +206,6 @@ public class CongressmanService {
     private void setAssemblySessionsToInsert(Congressman insertedCongressman, Map<String, Set<Integer>> codeSessionMapToInsert, List<AssemblySession> assemblySessionsToInsert) {
         Set<Integer> sessionMapToInsert = codeSessionMapToInsert.get(insertedCongressman.getCode());
         for (Integer session : sessionMapToInsert) {
-            log.info("대수 삽입 국회의원 fk : {}", insertedCongressman.getId());
             assemblySessionsToInsert.add(AssemblySession.of(insertedCongressman, session));
         }
     }
@@ -229,30 +225,17 @@ public class CongressmanService {
     }
 
     private void syncAssemblySessions(Set<Integer> recentAssemblySessions, Set<Integer> dbAssemblySessions, Congressman dbCongressman) {
-
         HashSet<Integer> sessionsToInsert = new HashSet<>(recentAssemblySessions);
         sessionsToInsert.removeAll(dbAssemblySessions);
 
         HashSet<Integer> sessionsToRemove = new HashSet<>(dbAssemblySessions);
         sessionsToRemove.removeAll(recentAssemblySessions);
 
-        assemblySessionRepository.saveAll(sessionsToInsert.stream().map(session -> AssemblySession.of(dbCongressman, session)).toList());
+        assemblySessionService.saveAll(sessionsToInsert.stream().map(session -> AssemblySession.of(dbCongressman, session)).toList());
 
-        List<AssemblySession> assemblySessionsToDelete = assemblySessionRepository.findAllByCongressmanIdAndSessionIn(dbCongressman.getId(), sessionsToRemove);
+        List<AssemblySession> assemblySessionsToDelete = assemblySessionService.findAllByCongressmanIdAndSession(dbCongressman.getId(), sessionsToRemove);
         List<Long> assemblySessionIdListToDelete = assemblySessionsToDelete.stream().map(AssemblySession::getId).toList();
-        assemblySessionRepository.batchDelete(assemblySessionIdListToDelete);
-    }
-
-    private List<AssemblySession> batchInsertAssemblySession(List<AssemblySession> assemblySessionsToInsert) {
-        log.info("check batchInsertAssemblySession");
-        for (AssemblySession assemblySession : assemblySessionsToInsert) {
-            log.info("assembly session : {}", assemblySession);
-        }
-        return assemblySessionRepository.saveAll(assemblySessionsToInsert);
-    }
-
-    private List<AssemblySession> getAssemblySessionList() {
-        return assemblySessionRepository.findAll();
+        assemblySessionService.deleteAllById(assemblySessionIdListToDelete);
     }
 
     public CongressmanBatchResultDTO.CongressmanDTO from(Congressman congressman) {

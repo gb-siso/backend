@@ -4,10 +4,7 @@ package com.guenbon.siso.entity.congressman;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.entity.common.DateEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -70,7 +67,6 @@ public class Congressman extends DateEntity {
         this.position = other.getPosition();
         this.electoralDistrict = other.getElectoralDistrict();
         this.electoralType = other.getElectoralType();
-//        this.assemblySessions = other.getAssemblySessions();
         this.sex = other.getSex();
         this.imageUrl = other.getImageUrl();
     }
