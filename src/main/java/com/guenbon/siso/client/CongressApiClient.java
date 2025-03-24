@@ -31,7 +31,7 @@ public class CongressApiClient {
                 .uri(uriString)
                 .retrieve()
                 .bodyToMono(String.class)
-                .doOnNext(this::logResponse) // ✅ 응답 바디 로깅
+//                .doOnNext(this::logResponse) // ✅ 응답 바디 로깅
                 .block();
     }
 

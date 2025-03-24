@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +49,6 @@ public class CongressmanApiService {
     private final CongressApiClient congressApiClient;
 
     public NewsListDTO findNewsList(final String encryptedCongressmanId, final Pageable pageable) {
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
 
         Map<String, String> params = Map.of(COMP_MAIN_TITLE, congressman.getName());
@@ -176,7 +176,10 @@ public class CongressmanApiService {
     // 매일 05 시 스프링 스케쥴러로 호출
     @Scheduled(cron = "0 0 5 * * *")
     public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
+        log.info("국회의원 동기화 fetchAndSyncCongressmen 메서드 호출 -> {}", LocalDateTime.now());
         List<SyncCongressmanDTO> recentSyncList = fetchRecentCongressmanList();
-        return congressmanService.syncCongressman(recentSyncList);
+        CongressmanBatchResultDTO congressmanBatchResultDTO = congressmanService.syncCongressman(recentSyncList);
+        log.info("국회의원 동기화 fetchAndSyncCongressmen 메서드 완료 -> {}", congressmanBatchResultDTO.getTime());
+        return congressmanBatchResultDTO;
     }
 }

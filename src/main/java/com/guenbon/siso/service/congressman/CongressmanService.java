@@ -179,8 +179,6 @@ public class CongressmanService {
         insertedCongressmanList.forEach(insertedCongressman -> setAssemblySessionsToInsert(insertedCongressman, codeSessionMapToInsert, assemblySessionsToInsert));
         List<AssemblySession> batchAssemblySessionInsertResult = assemblySessionService.saveAll(assemblySessionsToInsert);
 
-        // todo 로그 작성 필요
-
         return CongressmanBatchResultDTO.of(batchInsertResult.stream().map(this::from).toList(), updateCount, batchRemoveResultCount);
     }
 
