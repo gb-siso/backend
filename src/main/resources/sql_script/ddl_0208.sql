@@ -3,6 +3,7 @@ drop table if exists `like`;
 drop table if exists rating;
 drop table if exists congressman;
 drop table if exists member;
+drop table if exists assembly_session;
 
 create table congressman (
                              created_date datetime(6),
