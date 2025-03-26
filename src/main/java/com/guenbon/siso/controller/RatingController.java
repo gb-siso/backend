@@ -4,6 +4,7 @@ import com.guenbon.siso.dto.cursor.count.CountCursor;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
 import com.guenbon.siso.service.rating.RatingService;
+import com.guenbon.siso.support.annotation.Login;
 import com.guenbon.siso.support.annotation.LoginId;
 import com.guenbon.siso.support.annotation.page.PageConfig;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import static com.guenbon.siso.support.constants.SortProperty.*;
 public class RatingController {
     private final RatingService ratingService;
 
+    @Login
     @PostMapping
     public void ratingSave(@LoginId Long loginId, @Validated @RequestBody RatingWriteDTO ratingWriteDTO,
                            HttpServletResponse response)

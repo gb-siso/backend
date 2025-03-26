@@ -50,7 +50,7 @@ class AuthServiceTest {
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
-        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+        when(jwtTokenProvider.createAccessToken(member)).thenReturn(accessToken);
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithKakaoId(kakaoId);
 
@@ -72,7 +72,7 @@ class AuthServiceTest {
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByKakaoIdOrCreateMember(kakaoId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
-        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+        when(jwtTokenProvider.createAccessToken(member)).thenReturn(accessToken);
 
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithKakaoId(kakaoId);
@@ -95,7 +95,7 @@ class AuthServiceTest {
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
-        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+        when(jwtTokenProvider.createAccessToken(member)).thenReturn(accessToken);
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
         // then
@@ -116,7 +116,7 @@ class AuthServiceTest {
         Member member = MemberFixture.builder().setKakaoId(1L).setId(1L).build();
         when(memberService.findByNaverIdOrCreateMember(naverId)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(refreshToken);
-        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(accessToken);
+        when(jwtTokenProvider.createAccessToken(member)).thenReturn(accessToken);
         // when
         IssueTokenResult issueTokenResult = authService.issueTokenWithNaverId(naverId);
         // then
@@ -165,7 +165,7 @@ class AuthServiceTest {
         final String expectedRefreshTokenCookie = createRefreshTokenCookie(reissueRefreshToken).toString();
         when(memberService.findByRefreshToken(refreshToken)).thenReturn(member);
         when(jwtTokenProvider.createRefreshToken()).thenReturn(reissueRefreshToken);
-        when(jwtTokenProvider.createAccessToken(member.getId())).thenReturn(reissueAccessToken);
+        when(jwtTokenProvider.createAccessToken(member)).thenReturn(reissueAccessToken);
         // when
         IssueTokenResult issueTokenResult = authService.reissue(refreshToken);
         // then

@@ -6,8 +6,10 @@ import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
 import com.guenbon.siso.service.congressman.CongressmanApiService;
 import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.support.annotation.Login;
 import com.guenbon.siso.support.annotation.LoginId;
 import com.guenbon.siso.support.annotation.page.PageConfig;
+import com.guenbon.siso.support.constants.MemberRole;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +64,7 @@ public class CongressmanController {
         return ResponseEntity.ok(congressmanApiService.findBillList(congressmanId, pageable));
     }
 
-    // todo 관리자 권한
+    @Login(role = MemberRole.ADMIN)
     @PostMapping("/sync")
     public ResponseEntity<CongressmanBatchResultDTO> congressmanSync(@LoginId String encryptedId) {
         return ResponseEntity.ok(congressmanApiService.fetchAndSyncCongressmen());

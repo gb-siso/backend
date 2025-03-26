@@ -1,7 +1,9 @@
 package com.guenbon.siso.service.auth;
 
+import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
+import com.guenbon.siso.support.constants.MemberRole;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import java.util.*;
 public class JwtTokenProvider {
     private final String ISSUER = "siso";
     private final String ID = "id";
+    private final String ROLE = "role";
     private final String encodedKey;
 
     private final Long accessTokenValidTime = 1800000L;
@@ -25,10 +28,11 @@ public class JwtTokenProvider {
     }
 
     // JWT access 토큰 생성
-    public String createAccessToken(Long memberId) {
+    public String createAccessToken(Member member) {
         // claim : id
         Map<String, Object> claims = new HashMap<>();
-        claims.put(ID, memberId);
+        claims.put(ID, member.getId());
+        claims.put(ROLE, member.getRole());
 
         // 발행시간
         Date now = new Date();
@@ -80,5 +84,9 @@ public class JwtTokenProvider {
 
     public Long getMemberId(String token) {
         return verifySignature(token).getBody().get(ID, Long.class);
+    }
+
+    public MemberRole getRole(String token) {
+        return verifySignature(token).getBody().get(ROLE, MemberRole.class);
     }
 }

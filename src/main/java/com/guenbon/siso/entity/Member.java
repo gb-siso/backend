@@ -1,6 +1,7 @@
 package com.guenbon.siso.entity;
 
 import com.guenbon.siso.entity.common.DateEntity;
+import com.guenbon.siso.support.constants.MemberRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +29,8 @@ public class Member extends DateEntity {
     private String imageUrl;
     @Column(name = "refresh_token")
     private String refreshToken;
+    @Enumerated(EnumType.STRING)
+    private MemberRole role = MemberRole.MEMBER;
 
     public void storeRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;

@@ -61,7 +61,7 @@ public class AuthService {
 
     private IssueTokenResult issueTokens(Member member) {
         final String reIssuedRefreshToken = jwtTokenProvider.createRefreshToken();
-        final String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+        final String accessToken = jwtTokenProvider.createAccessToken(member);
         member.storeRefreshToken(reIssuedRefreshToken);
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(reIssuedRefreshToken), member);
     }

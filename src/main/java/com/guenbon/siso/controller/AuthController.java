@@ -7,6 +7,7 @@ import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
 import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
 import com.guenbon.siso.service.auth.AuthService;
+import com.guenbon.siso.support.annotation.Login;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -80,6 +81,7 @@ public class AuthController {
                 .body(LoginDTO.from(issueTokenResult));
     }
 
+    @Login
     @DeleteMapping
     public ResponseEntity<Void> logout(Long memberId) {
         return null;
