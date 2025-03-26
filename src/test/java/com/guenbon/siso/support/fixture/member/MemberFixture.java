@@ -1,6 +1,7 @@
 package com.guenbon.siso.support.fixture.member;
 
 import com.guenbon.siso.entity.Member;
+import com.guenbon.siso.support.constants.MemberRole;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ public class MemberFixture {
     private String nickname = "장몽이";
     private String imageUrl = "myProfileImage";
     private String refreshToken = null;
+    private MemberRole role = MemberRole.MEMBER;
 
     public static MemberFixture builder() {
         return new MemberFixture();
@@ -49,6 +51,11 @@ public class MemberFixture {
         return this;
     }
 
+    public MemberFixture setRole(MemberRole role) {
+        this.role = role;
+        return this;
+    }
+
     public Member build() {
         return Member.builder()
                 .id(id)
@@ -57,6 +64,7 @@ public class MemberFixture {
                 .nickname(nickname)
                 .imageUrl(imageUrl)
                 .refreshToken(refreshToken)
+                .role(role)
                 .build();
     }
 
