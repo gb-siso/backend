@@ -88,4 +88,11 @@ public class AuthController {
         authService.logout(memberId);
         return ResponseEntity.ok().build();
     }
+
+    @Login
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<Void> withdraw(@LoginId Long memberId) {
+        authService.withdraw(memberId);
+        return ResponseEntity.ok().build();
+    }
 }

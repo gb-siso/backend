@@ -78,4 +78,7 @@ public class AuthService {
     private void deleteRefreshToken(Member member) {
         member.deleteRefreshToken();
     }
+
+    public void withdraw(Long memberId) {
+    }
 }
