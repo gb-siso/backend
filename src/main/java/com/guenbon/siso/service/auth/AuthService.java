@@ -80,5 +80,7 @@ public class AuthService {
     }
 
     public void withdraw(Long memberId) {
+        Member member = memberService.findById(memberId);
+        memberService.withdraw(member);
     }
 }

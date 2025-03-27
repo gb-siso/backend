@@ -68,4 +68,8 @@ public class MemberService {
     public Member findByRefreshToken(String refreshToken) {
         return memberRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new CustomException(AuthErrorCode.NOT_EXISTS_IN_DATABASE));
     }
+
+    public void withdraw(Member member) {
+        memberRepository.delete(member);
+    }
 }
