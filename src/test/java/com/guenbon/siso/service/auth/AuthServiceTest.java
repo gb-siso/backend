@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -216,5 +216,31 @@ class AuthServiceTest {
 
         // then
         assertNull(member.getRefreshToken());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 memberId로 withdraw 호출 시 member 존재하지 않음 예외를 던진다")
+    void notExistsMember_withdraw_Exception() {
+        // given
+        final Long memberId = 1L;
+        when(memberService.findById(memberId)).thenThrow(new CustomException(MemberErrorCode.NOT_EXISTS));
+
+        // when, then
+        assertThatThrownBy(() -> authService.withdraw(memberId),
+                MemberErrorCode.NOT_EXISTS.getMessage(),
+                CustomException.class);
+    }
+
+    @Test
+    @DisplayName("유효한 memberId로 withdraw 호출 시 성공한다.")
+    void validMemberId_withdraw_success() {
+        // given
+        final Long memberId = 1L;
+        Member member = MemberFixture.builder().setId(memberId).build();
+        when(memberService.findById(memberId)).thenReturn(member);
+        // when
+        authService.withdraw(memberId);
+        // then
+        verify(memberService, times(1)).withdraw(member);
     }
 }
