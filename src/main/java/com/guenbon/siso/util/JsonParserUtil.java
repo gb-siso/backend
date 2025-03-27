@@ -12,7 +12,6 @@ import static com.guenbon.siso.exception.errorCode.CommonErrorCode.JSON_PARSE_ER
 @Slf4j
 public class JsonParserUtil {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    public static final String ERROR_CODE = "error_code";
     public static final String ERROR = "error";
 
     public static JsonNode parseJson(final String response) {
@@ -37,7 +36,7 @@ public class JsonParserUtil {
         return rootNode.has(ERROR);
     }
 
-    public static String extractErrorCode(JsonNode rootNode) {
-        return rootNode.path(ERROR_CODE).asText();
+    public static String extractErrorCode(JsonNode rootNode, String errorCodePath) {
+        return rootNode.path(errorCodePath).asText();
     }
 }
