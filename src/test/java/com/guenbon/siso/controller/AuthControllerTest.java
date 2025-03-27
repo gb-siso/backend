@@ -4,10 +4,7 @@ import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.dto.error.ApiErrorResponse;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
-import com.guenbon.siso.exception.errorCode.AuthErrorCode;
-import com.guenbon.siso.exception.errorCode.CommonErrorCode;
-import com.guenbon.siso.exception.errorCode.KakaoApiErrorCode;
-import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
+import com.guenbon.siso.exception.errorCode.*;
 import com.guenbon.siso.service.auth.AuthApiService;
 import com.guenbon.siso.service.auth.AuthService;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
@@ -240,5 +237,54 @@ class AuthControllerTest {
                 .accessToken("accessToken")
                 .image("image")
                 .nickname("nickname").build();
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 accessToken 으로 로그아웃 요청 시 예외처리한다.")
+    void invalidAccessToken_logout_exceptionResponse() throws Exception {
+        // given
+        final String invalidAccessToken = "invalid";
+        when(jwtTokenProvider.getMemberId(invalidAccessToken)).thenThrow(new CustomException(AuthErrorCode.SIGNATURE));
+
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value(AuthErrorCode.SIGNATURE.getMessage()))
+                .andExpect(jsonPath("$.code").value(AuthErrorCode.SIGNATURE.getCode()));
+    }
+
+    @Test
+    @DisplayName("accessToken 파싱한 id에 해당하는 member 가 db에 존재하지 않는 토큰으로 로그아웃 요청 시 예외처리한다.")
+    void notExistsMember_logout_exceptionResponse() throws Exception {
+        // given
+        final String invalidAccessToken = "invalid";
+        final Long notExistsMemberId = 1L;
+        when(jwtTokenProvider.getMemberId(invalidAccessToken)).thenReturn(notExistsMemberId);
+        when(authService.logout(notExistsMemberId)).thenThrow(new CustomException(MemberErrorCode.NOT_EXISTS));
+
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value(MemberErrorCode.NOT_EXISTS.getMessage()))
+                .andExpect(jsonPath("$.code").value(MemberErrorCode.NOT_EXISTS.getCode()));
+    }
+
+    @Test
+    @DisplayName("유효한 accessToken 토큰으로 로그아웃 요청 시 상태코드 200 응답한다.")
+    void validAccessToken_logout_200StatusCode() throws Exception {
+        // given
+        final String accessToken = "valid";
+        final Long memberId = 1L;
+        when(jwtTokenProvider.getMemberId(accessToken)).thenReturn(memberId);
+
+        // when, then
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().is2xxSuccessful());
     }
 }
