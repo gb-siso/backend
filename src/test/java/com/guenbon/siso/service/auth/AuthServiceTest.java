@@ -4,6 +4,7 @@ import com.guenbon.siso.dto.auth.IssueTokenResult;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.AuthErrorCode;
+import com.guenbon.siso.exception.errorCode.MemberErrorCode;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.support.fixture.member.MemberFixture;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import static com.guenbon.siso.exception.errorCode.AuthErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -136,8 +138,9 @@ class AuthServiceTest {
         when(jwtTokenProvider.verifySignature(refreshToken)).thenThrow(new CustomException(authErrorCode));
         // when, then
         assertThatThrownBy(() -> authService.reissue(refreshToken))
-    .isInstanceOf(CustomException.class)
-    .hasMessage(authErrorCode.getMessage());;
+                .isInstanceOf(CustomException.class)
+                .hasMessage(authErrorCode.getMessage());
+        ;
     }
 
     private static Stream<AuthErrorCode> provideInvalidRefreshTokenErrorCode() {
@@ -151,8 +154,9 @@ class AuthServiceTest {
         when(memberService.findByRefreshToken(refreshToken)).thenThrow(new CustomException(NOT_EXISTS_IN_DATABASE));
         // when, then
         assertThatThrownBy(() -> authService.reissue(refreshToken))
-    .isInstanceOf(CustomException.class)
-    .hasMessage(NOT_EXISTS_IN_DATABASE.getMessage());;
+                .isInstanceOf(CustomException.class)
+                .hasMessage(NOT_EXISTS_IN_DATABASE.getMessage());
+        ;
     }
 
     @DisplayName("reissue 파라미터로 데이터베이스에 존재하는 유효한 refreshToken 전달 시 IssueTokenResult를 응답한다.")
@@ -184,5 +188,33 @@ class AuthServiceTest {
                 .path("/")
                 .sameSite("None")
                 .build();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 memberId로 logout 호출 시 member 존재하지 않음 예외를 던진다")
+    void notExistsMember_logout_Exception() {
+        // given
+        final Long memberId = 1L;
+        when(memberService.findById(memberId)).thenThrow(new CustomException(MemberErrorCode.NOT_EXISTS));
+
+        // when, then
+        assertThatThrownBy(() -> authService.logout(memberId),
+                MemberErrorCode.NOT_EXISTS.getMessage(),
+                CustomException.class);
+    }
+
+    @Test
+    @DisplayName("유효한 memberId로 logout 호출 시 성공한다.")
+    void validMemberId_logout_success() {
+        // given
+        final Long memberId = 1L;
+        Member member = MemberFixture.builder().setId(memberId).build();
+        when(memberService.findById(memberId)).thenReturn(member);
+
+        // when
+        authService.logout(memberId);
+
+        // then
+        assertNull(member.getRefreshToken());
     }
 }
