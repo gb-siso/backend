@@ -87,6 +87,6 @@ public class JwtTokenProvider {
     }
 
     public MemberRole getRole(String token) {
-        return verifySignature(token).getBody().get(ROLE, MemberRole.class);
+        return MemberRole.from(verifySignature(token).getBody().get(ROLE, String.class));
     }
 }

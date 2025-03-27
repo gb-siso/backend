@@ -14,6 +14,7 @@ public enum AuthErrorCode implements ErrorCode {
     NOT_EXISTS_IN_DATABASE(HttpStatus.NOT_FOUND, "ATH005", "데이터베이스에 존재하지 않는 리프레시 토큰"),
     NULL_OR_BLANK_TOKEN(HttpStatus.BAD_REQUEST, "ATH007", "토큰 값이 비어있거나 null"),
     NOT_ADMIN_ROLE(HttpStatus.BAD_REQUEST, "ATH008", "ADMIN 권한만 접근할 수 있습니다."),
+    INVALID_ROLE(HttpStatus.BAD_REQUEST, "ATH009", "토큰의 권한이 유효하지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;
