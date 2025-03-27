@@ -3,10 +3,7 @@ package com.guenbon.siso.entity;
 import com.guenbon.siso.entity.common.DateEntity;
 import com.guenbon.siso.support.constants.MemberRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -30,6 +27,7 @@ public class Member extends DateEntity {
     @Column(name = "refresh_token")
     private String refreshToken;
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private MemberRole role = MemberRole.MEMBER;
 
     public void storeRefreshToken(String refreshToken) {
