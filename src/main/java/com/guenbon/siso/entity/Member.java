@@ -49,4 +49,8 @@ public class Member extends DateEntity {
                 .nickname(nickname)
                 .imageUrl(imageUrl).build();
     }
+
+    public void deleteRefreshToken() {
+        this.refreshToken = null;
+    }
 }

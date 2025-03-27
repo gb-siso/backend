@@ -183,7 +183,7 @@ class AuthServiceTest {
 
     private static ResponseCookie createRefreshTokenCookie(String value) {
         return ResponseCookie.from("refreshToken", value)
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(true)
                 .path("/")
                 .sameSite("None")

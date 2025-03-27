@@ -40,9 +40,10 @@ public class AuthService {
         return issueTokens(member);
     }
 
+    // todo 추후에 httpOnly true 로 수정 필요
     private ResponseCookie buildRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_TOKEN, refreshToken)
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(true)
                 .path(PATH)
                 .sameSite(SameSite.NONE.attributeValue())
@@ -66,7 +67,15 @@ public class AuthService {
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(reIssuedRefreshToken), member);
     }
 
+    @Transactional(readOnly = false)
     public void logout(Long memberId) {
+        // 멤버 찾기
+        Member member = memberService.findById(memberId);
+        // 멤버 refreshToken 삭제
+        deleteRefreshToken(member);
+    }
 
+    private void deleteRefreshToken(Member member) {
+        member.deleteRefreshToken();
     }
 }
