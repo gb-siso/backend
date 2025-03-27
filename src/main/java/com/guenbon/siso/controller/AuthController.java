@@ -8,6 +8,7 @@ import com.guenbon.siso.exception.errorCode.NaverApiErrorCode;
 import com.guenbon.siso.service.auth.AuthApiService;
 import com.guenbon.siso.service.auth.AuthService;
 import com.guenbon.siso.support.annotation.Login;
+import com.guenbon.siso.support.annotation.LoginId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -82,8 +83,9 @@ public class AuthController {
     }
 
     @Login
-    @DeleteMapping
-    public ResponseEntity<Void> logout(Long memberId) {
-        return null;
+    @DeleteMapping("/logout")
+    public ResponseEntity<Void> logout(@LoginId Long memberId) {
+        authService.logout(memberId);
+        return ResponseEntity.ok().build();
     }
 }

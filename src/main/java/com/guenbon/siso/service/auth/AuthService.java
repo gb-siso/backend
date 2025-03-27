@@ -65,4 +65,8 @@ public class AuthService {
         member.storeRefreshToken(reIssuedRefreshToken);
         return IssueTokenResult.of(accessToken, buildRefreshTokenCookie(reIssuedRefreshToken), member);
     }
+
+    public void logout(Long memberId) {
+
+    }
 }

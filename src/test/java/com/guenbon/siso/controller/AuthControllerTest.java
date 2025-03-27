@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -247,7 +248,7 @@ class AuthControllerTest {
         when(jwtTokenProvider.getMemberId(invalidAccessToken)).thenThrow(new CustomException(AuthErrorCode.SIGNATURE));
 
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", invalidAccessToken))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().is4xxClientError())
@@ -262,10 +263,9 @@ class AuthControllerTest {
         final String invalidAccessToken = "invalid";
         final Long notExistsMemberId = 1L;
         when(jwtTokenProvider.getMemberId(invalidAccessToken)).thenReturn(notExistsMemberId);
-        when(authService.logout(notExistsMemberId)).thenThrow(new CustomException(MemberErrorCode.NOT_EXISTS));
-
+        doThrow(new CustomException(MemberErrorCode.NOT_EXISTS)).when(authService).logout(notExistsMemberId);
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", invalidAccessToken))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().is4xxClientError())
@@ -282,9 +282,8 @@ class AuthControllerTest {
         when(jwtTokenProvider.getMemberId(accessToken)).thenReturn(memberId);
 
         // when, then
-        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", "invalid"))
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/logout").header("accessToken", accessToken))
                 .andDo(print())
-                .andExpect(content().contentType("application/json"))
                 .andExpect(status().is2xxSuccessful());
     }
 }
