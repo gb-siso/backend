@@ -53,11 +53,10 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                 .where(party != null ? congressman.party.eq(party) : null)
                 .where(search != null ? congressman.name.like("%" + search + "%") : null)
                 .orderBy(createOrderBy(pageable))
-                // todo : 여기서 + 1 을 지우고 서비스단에서 해줘야함
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return fetch.stream().map(CongressmanGetListDTO::from).toList();
+        return new ArrayList<>(fetch.stream().map(CongressmanGetListDTO::from).toList());
     }
 
     private BooleanExpression cursorCondition(Long cursorId, Double cursorRating, Pageable pageable) {
