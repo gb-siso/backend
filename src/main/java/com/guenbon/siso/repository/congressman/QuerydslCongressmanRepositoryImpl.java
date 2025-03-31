@@ -73,7 +73,7 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                                             : rating.rate.avg().goe(cursorRating)));
         }
         // 마지막 원소 rating 값이 null 이라는 뜻은 rating 있는 국회의원은 이미 다 표시했다는 뜻. 즉 id 기준으로만 정렬해야함
-        return congressman.id.goe(cursorId);
+        return congressman.id.goe(cursorId).and(rating.rate.avg().isNull());
     }
 
     private OrderSpecifier<?>[] createOrderBy(Pageable pageable) {
