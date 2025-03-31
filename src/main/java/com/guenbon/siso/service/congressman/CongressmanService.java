@@ -65,22 +65,28 @@ public class CongressmanService {
         List<CongressmanGetListDTO> initialList = congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
         int pageSize = pageable.getPageSize();
 
-        if (isAdditionalFetchNeeded(initialList, pageSize)) {
-            List<CongressmanGetListDTO> additionalList = fetchAdditionalCongressmen(initialList, pageable, party, search);
+        int initialListSize = initialList.size();
+
+        if (isAdditionalFetchNeeded(initialListSize, pageSize)) {
+            Long initialListCursorId = cursorId;
+            if (!initialList.isEmpty()) {
+                initialListCursorId = initialList.get(initialListSize - 1).getId();
+            }
+            List<CongressmanGetListDTO> additionalList = fetchAdditionalCongressmen(initialListSize, pageable, party, search, initialListCursorId);
             initialList.addAll(additionalList);
         }
         return initialList;
     }
 
-    private boolean isAdditionalFetchNeeded(List<CongressmanGetListDTO> list, int pageSize) {
-        return !list.isEmpty() && list.size() < pageSize;
+    private boolean isAdditionalFetchNeeded(int initialListSize, int pageSize) {
+        return initialListSize < pageSize;
     }
 
-    private List<CongressmanGetListDTO> fetchAdditionalCongressmen(List<CongressmanGetListDTO> currentList, Pageable pageable, String party, String search) {
-        int remainingSize = pageable.getPageSize() - currentList.size() + 1;
+    private List<CongressmanGetListDTO> fetchAdditionalCongressmen(int initialListSize, Pageable pageable, String party, String search, Long cursorId) {
+        int remainingSize = pageable.getPageSize() - initialListSize;
+        log.info("fetchAdditionalCongressmen 호출 , remainingSize : {}", remainingSize);
         PageRequest additionalPageRequest = PageRequest.of(pageable.getPageNumber(), remainingSize, pageable.getSort());
-        Long lastId = currentList.get(currentList.size() - 1).getId();
-        return congressmanRepository.getList(additionalPageRequest, lastId, null, party, search);
+        return congressmanRepository.getList(additionalPageRequest, cursorId, null, party, search);
     }
 
     private List<String> getRatedMemberImageList(final Long id) {
