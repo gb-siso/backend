@@ -29,15 +29,15 @@ public class RatingDisLikeService {
         final Member member = memberService.findById(memberId);
         final Rating rating = ratingService.findById(ratingId);
 
-        // 중복 좋아요 예외처리
+        // 중복 싫어요 예외처리
         if (ratingDislikeRepository.existsByRatingIdAndMemberId(ratingId, memberId)) {
             throw new CustomException(RatingDisLikeErrorCode.DUPLICATED);
         }
 
-        // 좋아요 생성
+        // 싫어요 생성
         RatingDislike ratingDislike = ratingDislikeRepository.save(RatingDislike.builder().rating(rating).member(member).build());
 
-        // 싫어요 있으면 삭제
+        // 좋아요 있으면 삭제
         return ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)
                 .map(ratingLike -> {
                     ratingLikeRepository.delete(ratingLike);

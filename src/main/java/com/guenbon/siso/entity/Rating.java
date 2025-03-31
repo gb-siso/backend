@@ -24,11 +24,11 @@ public class Rating extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "congressman_id", nullable = false)
     private Congressman congressman;
 
@@ -66,6 +66,14 @@ public class Rating extends DateEntity {
     public void addDislike(RatingDislike ratingDislike) {
         ratingDislikeList.add(ratingDislike);
         ratingDislike.setRating(this);
+    }
+
+    public void removeLike(RatingLike ratingLike) {
+        ratingLikeList.remove(ratingLike);
+    }
+
+    public void removeDislike(RatingDislike ratingDislike) {
+        ratingDislikeList.remove(ratingDislike);
     }
 
     @Override
