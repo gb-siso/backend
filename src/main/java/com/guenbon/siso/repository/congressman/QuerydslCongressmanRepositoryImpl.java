@@ -63,12 +63,17 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
         if (cursorId == Long.MAX_VALUE) {
             return null; // 첫 페이지
         }
+
         boolean isDescending = pageable.getSort().getOrderFor("rate").isDescending();
-        return rating.rate.avg().eq(cursorRating).and(congressman.id.goe(cursorId))
-                .or(
-                        rating.rate.avg().ne(cursorRating)
-                                .and(isDescending ? rating.rate.avg().loe(cursorRating)
-                                        : rating.rate.avg().goe(cursorRating)));
+        if (cursorRating != null) {
+            return rating.rate.avg().eq(cursorRating).and(congressman.id.goe(cursorId))
+                    .or(
+                            rating.rate.avg().ne(cursorRating)
+                                    .and(isDescending ? rating.rate.avg().loe(cursorRating)
+                                            : rating.rate.avg().goe(cursorRating)));
+        }
+        // 마지막 원소 rating 값이 null 이라는 뜻은 rating 있는 국회의원은 이미 다 표시했다는 뜻. 즉 id 기준으로만 정렬해야함
+        return congressman.id.goe(cursorId);
     }
 
     private OrderSpecifier<?>[] createOrderBy(Pageable pageable) {

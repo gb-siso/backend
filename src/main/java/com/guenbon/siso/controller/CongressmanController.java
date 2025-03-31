@@ -36,6 +36,14 @@ public class CongressmanController {
             @RequestParam(required = false) Double cursorRate,
             @RequestParam(required = false) String party,
             @RequestParam(required = false) String search) {
+
+        log.info("국회의원 목록 컨트롤러 파라미터 로깅");
+        log.info("cursorId : {}", cursorId);
+        log.info("cursorRate : {}", cursorRate);
+        log.info("party : {}", party);
+        log.info("search : {}", search);
+        log.info("pageable : {}", pageable);
+
         return ResponseEntity.ok(
                 congressmanService.getCongressmanListDTO(pageable, setCursorIdIfEmpty(cursorId),
                         cursorRate, party,
