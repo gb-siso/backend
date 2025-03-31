@@ -64,9 +64,7 @@ public class CongressmanService {
                                                                      String search) {
         List<CongressmanGetListDTO> initialList = congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
         int pageSize = pageable.getPageSize();
-
         int initialListSize = initialList.size();
-
         if (isAdditionalFetchNeeded(initialListSize, pageSize)) {
             Long initialListCursorId = cursorId;
             if (!initialList.isEmpty()) {
@@ -79,7 +77,7 @@ public class CongressmanService {
     }
 
     private boolean isAdditionalFetchNeeded(int initialListSize, int pageSize) {
-        return initialListSize < pageSize;
+        return initialListSize < (pageSize + 1);
     }
 
     private List<CongressmanGetListDTO> fetchAdditionalCongressmen(int initialListSize, Pageable pageable, String party, String search, Long cursorId) {
