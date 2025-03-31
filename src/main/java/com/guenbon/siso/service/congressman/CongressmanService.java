@@ -55,7 +55,6 @@ public class CongressmanService {
     }
 
     public Congressman getCongressman(String encryptedCongressmanId) {
-        log.info("!! getCongressman 실제 호출됨 !!");
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         return findById(congressmanId);
     }
@@ -78,7 +77,7 @@ public class CongressmanService {
     }
 
     private List<CongressmanGetListDTO> fetchAdditionalCongressmen(List<CongressmanGetListDTO> currentList, Pageable pageable, String party, String search) {
-        int remainingSize = pageable.getPageSize() - currentList.size();
+        int remainingSize = pageable.getPageSize() - currentList.size() + 1;
         PageRequest additionalPageRequest = PageRequest.of(pageable.getPageNumber(), remainingSize, pageable.getSort());
         Long lastId = currentList.get(currentList.size() - 1).getId();
         return congressmanRepository.getList(additionalPageRequest, lastId, null, party, search);
@@ -103,7 +102,6 @@ public class CongressmanService {
         final CongressmanListDTO congressmanListDTO = CongressmanListDTO.builder()
                 .congressmanList(congressmanDTOList)
                 .build();
-
         if (congressmanDTOList.size() <= pageSize) {
             congressmanListDTO.setLastPage(true);
         } else {
