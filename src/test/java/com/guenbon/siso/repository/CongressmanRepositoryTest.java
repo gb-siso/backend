@@ -101,9 +101,9 @@ class CongressmanRepositoryTest {
         CongressmanGetListDTO 송효근_DTO = toDTO(송효근, 3.5);
         CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
 
-        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rate").descending());
-        PageRequest pageRequest2 = PageRequest.of(1, 2, Sort.by("rate").descending());
-        PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rate").descending());
+        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("rate").descending());
+        PageRequest pageRequest2 = PageRequest.of(1, 3, Sort.by("rate").descending());
+        PageRequest pageRequest3 = PageRequest.of(2, 3, Sort.by("rate").descending());
 
         // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
@@ -145,9 +145,9 @@ class CongressmanRepositoryTest {
         CongressmanGetListDTO 송효근_DTO = toDTO(송효근, 3.5);
         CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
 
-        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest2 = PageRequest.of(1, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest3 = PageRequest.of(2, 2, Sort.by("rate").ascending());
+        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest2 = PageRequest.of(1, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest3 = PageRequest.of(2, 3, Sort.by("rate").ascending());
 
         // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
@@ -189,9 +189,9 @@ class CongressmanRepositoryTest {
         CongressmanGetListDTO 장몽이_DTO = toDTO(장몽이, 3.5);
         CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
 
-        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest2 = PageRequest.of(0, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rate").ascending());
+        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest3 = PageRequest.of(0, 3, Sort.by("rate").ascending());
 
         // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, null,
@@ -235,9 +235,9 @@ class CongressmanRepositoryTest {
         CongressmanGetListDTO 송효근_DTO = toDTO(송효근, 3.5);
         CongressmanGetListDTO 장지담_DTO = toDTO(장지담, 3.5);
 
-        PageRequest pageRequest1 = PageRequest.of(0, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest2 = PageRequest.of(0, 2, Sort.by("rate").ascending());
-        PageRequest pageRequest3 = PageRequest.of(0, 2, Sort.by("rate").ascending());
+        PageRequest pageRequest1 = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest2 = PageRequest.of(0, 3, Sort.by("rate").ascending());
+        PageRequest pageRequest3 = PageRequest.of(0, 3, Sort.by("rate").ascending());
 
         // when
         List<CongressmanGetListDTO> list1 = congressmanRepository.getList(pageRequest1, Long.MAX_VALUE, null, "더불어민주당",

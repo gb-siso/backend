@@ -19,7 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 
@@ -114,8 +117,9 @@ class CongressmanServiceTest {
 
         when(congressmanRepository.existsById(any(Long.class))).thenReturn(true);
         when(aesUtil.decrypt(encryptedLongMax)).thenReturn(Long.MAX_VALUE);
-        when(congressmanRepository.getList(pageable, Long.MAX_VALUE, null, null, null)).thenReturn(
-                congressmanGetListDTOList);
+        when(congressmanRepository.getList(any(Pageable.class), eq(Long.MAX_VALUE), eq(null), eq(null), eq(null)))
+                .thenReturn(congressmanGetListDTOList);
+
 
         IntStream.range(0, size).forEach(i -> {
             final Long congressmanId = congressmanGetListDTOList.get(i).getId();
@@ -139,49 +143,52 @@ class CongressmanServiceTest {
         );
     }
 
-//    @DisplayName("getCongressmanListDTO가 마지막 스크롤인 경우 lastPage값이 true인 CongressmanListDTO를 반환한다")
-//    @Test
-//    void getCongressmanListDTO_lastScroll_CongressmanListDTO() {
-//
-//        final PageRequest pageable = PageRequest.of(0, 2);
-//        final String encryptedLongMax = ENCRYPTED_LONG_MAX;
-//
-//        final List<CongressmanGetListDTO> congressmanGetListDTOList = List.of(
-//                CongressmanGetListDTOFixture.builder().setId(3L).setRate(3.0).build(),
-//                CongressmanGetListDTOFixture.builder().setId(2L).setRate(2.0).build());
-//
-//        final List<String> encryptedIdList = List.of("encrypted1", "encrypted2", "encrypted3");
-//        final int size = congressmanGetListDTOList.size();
-//        final List<List<String>> recentRatedImagesList = List.of(List.of("image1", "image2"), Collections.emptyList());
-//
-//        List<CongressmanDTO> congressmanDTOListExpected = IntStream.range(0, size).mapToObj(
-//                i -> getCongressmanDTO(encryptedIdList.get(i), congressmanGetListDTOList.get(i),
-//                        recentRatedImagesList.get(i))).collect(Collectors.toList());
-//
-//        when(congressmanRepository.existsById(any(Long.class))).thenReturn(true);
-//        when(aesUtil.decrypt(encryptedLongMax)).thenReturn(Long.MAX_VALUE);
-//        when(congressmanRepository.getList(pageable, Long.MAX_VALUE, null, null, null)).thenReturn(
-//                congressmanGetListDTOList);
-//
-//        IntStream.range(0, size).forEach(i -> {
-//            final Long congressmanId = congressmanGetListDTOList.get(i).getId();
-//            when(congressmanRepository.getRecentMemberImagesByCongressmanId(congressmanId)).thenReturn(
-//                    recentRatedImagesList.get(i));
-//            when(aesUtil.encrypt(congressmanId)).thenReturn(encryptedIdList.get(i));
-//        });
-//
-//        // when
-//        CongressmanListDTO congressmanListDTO = congressmanService.getCongressmanListDTO(pageable, encryptedLongMax,
-//                null, null, null);
-//
-//        assertAll(
-//                () -> assertThat(congressmanListDTO.getLastPage()).isTrue(),
-//                () -> assertThat(congressmanListDTO.getIdCursor()).isNull(),
-//                () -> assertThat(congressmanListDTO.getRateCursor()).isNull(),
-//                () -> assertThat(congressmanListDTO.getCongressmanList()).usingRecursiveComparison()
-//                        .isEqualTo(congressmanDTOListExpected)
-//        );
-//    }
+    @DisplayName("getCongressmanListDTO가 마지막 스크롤인 경우 lastPage값이 true인 CongressmanListDTO를 반환한다")
+    @Test
+    void getCongressmanListDTO_lastScroll_CongressmanListDTO() {
+
+        final PageRequest pageable = PageRequest.of(0, 2);
+        final String encryptedLongMax = ENCRYPTED_LONG_MAX;
+
+        final List<CongressmanGetListDTO> congressmanGetListDTOList = new ArrayList<>(List.of(
+                CongressmanGetListDTOFixture.builder().setId(3L).setRate(3.0).build(),
+                CongressmanGetListDTOFixture.builder().setId(2L).setRate(2.0).build()
+        ));
+
+
+        final List<String> encryptedIdList = List.of("encrypted1", "encrypted2", "encrypted3");
+        final int size = congressmanGetListDTOList.size();
+        final List<List<String>> recentRatedImagesList = List.of(List.of("image1", "image2"), Collections.emptyList());
+
+        List<CongressmanDTO> congressmanDTOListExpected = IntStream.range(0, size).mapToObj(
+                i -> getCongressmanDTO(encryptedIdList.get(i), congressmanGetListDTOList.get(i),
+                        recentRatedImagesList.get(i))).collect(Collectors.toList());
+
+        when(congressmanRepository.existsById(any(Long.class))).thenReturn(true);
+        when(aesUtil.decrypt(encryptedLongMax)).thenReturn(Long.MAX_VALUE);
+        when(congressmanRepository.getList(any(Pageable.class), eq(Long.MAX_VALUE), eq(null), eq(null), eq(null)))
+                .thenReturn(congressmanGetListDTOList);
+
+
+        IntStream.range(0, size).forEach(i -> {
+            final Long congressmanId = congressmanGetListDTOList.get(i).getId();
+            when(congressmanRepository.getRecentMemberImagesByCongressmanId(congressmanId)).thenReturn(
+                    recentRatedImagesList.get(i));
+            when(aesUtil.encrypt(congressmanId)).thenReturn(encryptedIdList.get(i));
+        });
+
+        // when
+        CongressmanListDTO congressmanListDTO = congressmanService.getCongressmanListDTO(pageable, encryptedLongMax,
+                null, null, null);
+
+        assertAll(
+                () -> assertThat(congressmanListDTO.getLastPage()).isTrue(),
+                () -> assertThat(congressmanListDTO.getIdCursor()).isNull(),
+                () -> assertThat(congressmanListDTO.getRateCursor()).isNull(),
+                () -> assertThat(congressmanListDTO.getCongressmanList()).usingRecursiveComparison()
+                        .isEqualTo(congressmanDTOListExpected)
+        );
+    }
 
     private static CongressmanDTO getCongressmanDTO(String encryptedId, CongressmanGetListDTO congressmanGetListDTO,
                                                     List<String> ratedMemberImages) {

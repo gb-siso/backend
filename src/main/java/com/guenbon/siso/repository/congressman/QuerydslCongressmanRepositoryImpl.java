@@ -53,7 +53,8 @@ public class QuerydslCongressmanRepositoryImpl implements QuerydslCongressmanRep
                 .where(party != null ? congressman.party.eq(party) : null)
                 .where(search != null ? congressman.name.like("%" + search + "%") : null)
                 .orderBy(createOrderBy(pageable))
-                .limit(pageable.getPageSize() + 1)
+                // todo : 여기서 + 1 을 지우고 서비스단에서 해줘야함
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return fetch.stream().map(CongressmanGetListDTO::from).toList();

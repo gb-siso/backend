@@ -62,8 +62,8 @@ public class CongressmanService {
     private List<CongressmanGetListDTO> getCongressmanGetListDTOList(Pageable pageable, Long cursorId,
                                                                      Double cursorRating, String party,
                                                                      String search) {
-        List<CongressmanGetListDTO> initialList = congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
         int pageSize = pageable.getPageSize();
+        List<CongressmanGetListDTO> initialList = congressmanRepository.getList(PageRequest.of(pageable.getPageNumber(), pageSize + 1, pageable.getSort()), cursorId, cursorRating, party, search);
         int initialListSize = initialList.size();
         if (isAdditionalFetchNeeded(initialListSize, pageSize)) {
             Long initialListCursorId = cursorId;
@@ -81,7 +81,7 @@ public class CongressmanService {
     }
 
     private List<CongressmanGetListDTO> fetchAdditionalCongressmen(int initialListSize, Pageable pageable, String party, String search, Long cursorId) {
-        int remainingSize = pageable.getPageSize() - initialListSize;
+        int remainingSize = pageable.getPageSize() - initialListSize + 1;
         log.info("fetchAdditionalCongressmen 호출 , remainingSize : {}", remainingSize);
         PageRequest additionalPageRequest = PageRequest.of(pageable.getPageNumber(), remainingSize, pageable.getSort());
         return congressmanRepository.getList(additionalPageRequest, cursorId, null, party, search);
