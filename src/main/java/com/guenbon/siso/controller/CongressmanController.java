@@ -32,21 +32,21 @@ public class CongressmanController {
     @GetMapping
     public ResponseEntity<CongressmanListDTO> congressmanList(
             @PageConfig(allowedSorts = {RATE}, defaultSort = "rate, DESC") Pageable pageable,
-            @RequestParam(defaultValue = "") String cursorId,
-            @RequestParam(required = false) Double cursorRate,
+            @RequestParam(defaultValue = "") String idCursor,
+            @RequestParam(required = false) Double rateCursor,
             @RequestParam(required = false) String party,
             @RequestParam(required = false) String search) {
 
         log.info("국회의원 목록 컨트롤러 파라미터 로깅");
-        log.info("cursorId : {}", cursorId);
-        log.info("cursorRate : {}", cursorRate);
+        log.info("cursorId : {}", idCursor);
+        log.info("cursorRate : {}", rateCursor);
         log.info("party : {}", party);
         log.info("search : {}", search);
         log.info("pageable : {}", pageable);
 
         return ResponseEntity.ok(
-                congressmanService.getCongressmanListDTO(pageable, setCursorIdIfEmpty(cursorId),
-                        cursorRate, party,
+                congressmanService.getCongressmanListDTO(pageable, setCursorIdIfEmpty(idCursor),
+                        rateCursor, party,
                         search));
     }
 

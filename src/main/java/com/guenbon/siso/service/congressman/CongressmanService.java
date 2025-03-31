@@ -50,10 +50,7 @@ public class CongressmanService {
 
         final List<CongressmanGetListDTO> congressmanGetListDTOList = getCongressmanGetListDTOList(
                 pageable, decryptedCursorId, cursorRate, party, search);
-
         final List<CongressmanDTO> congressmanDTOList = convertToCongressmanDTOList(congressmanGetListDTOList);
-
-
         return buildCongressmanListDTO(pageable, congressmanDTOList);
     }
 
