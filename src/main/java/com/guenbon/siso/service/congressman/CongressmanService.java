@@ -14,6 +14,7 @@ import com.guenbon.siso.service.assemblysession.AssemblySessionService;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ public class CongressmanService {
 
         final List<CongressmanDTO> congressmanDTOList = convertToCongressmanDTOList(congressmanGetListDTOList);
 
+
         return buildCongressmanListDTO(pageable, congressmanDTOList);
     }
 
@@ -64,7 +66,25 @@ public class CongressmanService {
     private List<CongressmanGetListDTO> getCongressmanGetListDTOList(Pageable pageable, Long cursorId,
                                                                      Double cursorRating, String party,
                                                                      String search) {
-        return congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
+        List<CongressmanGetListDTO> initialList = congressmanRepository.getList(pageable, cursorId, cursorRating, party, search);
+        int pageSize = pageable.getPageSize();
+
+        if (isAdditionalFetchNeeded(initialList, pageSize)) {
+            List<CongressmanGetListDTO> additionalList = fetchAdditionalCongressmen(initialList, pageable, party, search);
+            initialList.addAll(additionalList);
+        }
+        return initialList;
+    }
+
+    private boolean isAdditionalFetchNeeded(List<CongressmanGetListDTO> list, int pageSize) {
+        return !list.isEmpty() && list.size() < pageSize;
+    }
+
+    private List<CongressmanGetListDTO> fetchAdditionalCongressmen(List<CongressmanGetListDTO> currentList, Pageable pageable, String party, String search) {
+        int remainingSize = pageable.getPageSize() - currentList.size();
+        PageRequest additionalPageRequest = PageRequest.of(pageable.getPageNumber(), remainingSize, pageable.getSort());
+        Long lastId = currentList.get(currentList.size() - 1).getId();
+        return congressmanRepository.getList(additionalPageRequest, lastId, null, party, search);
     }
 
     private List<String> getRatedMemberImageList(final Long id) {
