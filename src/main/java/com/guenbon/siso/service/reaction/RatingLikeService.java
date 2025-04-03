@@ -14,9 +14,11 @@ import com.guenbon.siso.support.constants.ReactionStatus;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class RatingLikeService {
 
     private final RatingLikeRepository ratingLikeRepository;
@@ -41,6 +43,7 @@ public class RatingLikeService {
         // 싫어요 있으면 삭제
         return ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)
                 .map(ratingDislike -> {
+                    rating.removeDislike(ratingDislike);
                     ratingDislikeRepository.delete(ratingDislike);
                     return RatingReactionDTO.of(aesUtil.encrypt(ratingId),
                             RatingReactionDTO.Reaction.of(aesUtil.encrypt(ratingLike.getId()), ReactionStatus.CREATED),
