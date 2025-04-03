@@ -6,6 +6,7 @@ import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.dislike.RatingDislike;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.reaction.RatingDisLikeErrorCode;
+import com.guenbon.siso.repository.MemberRepository;
 import com.guenbon.siso.repository.dislike.RatingDislikeRepository;
 import com.guenbon.siso.repository.like.RatingLikeRepository;
 import com.guenbon.siso.service.member.MemberService;
@@ -23,6 +24,7 @@ public class RatingDisLikeService {
     private final AESUtil aesUtil;
     private final RatingService ratingService;
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     public RatingReactionDTO create(String encryptedRatingId, Long memberId) {
         final Long ratingId = aesUtil.decrypt(encryptedRatingId);
@@ -43,7 +45,7 @@ public class RatingDisLikeService {
                     ratingLikeRepository.delete(ratingLike);
                     return RatingReactionDTO.of(aesUtil.encrypt(ratingId),
                             RatingReactionDTO.Reaction.of(aesUtil.encrypt(ratingLike.getId()), ReactionStatus.DELETED),
-                            RatingReactionDTO.Reaction.of(aesUtil.encrypt(ratingDislike.getId()), ReactionStatus.CREATED)
+                              RatingReactionDTO.Reaction.of(aesUtil.encrypt(ratingDislike.getId()), ReactionStatus.CREATED)
                     );
                 })
                 .orElseGet(() -> RatingReactionDTO.of(aesUtil.encrypt(ratingId),

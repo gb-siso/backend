@@ -39,7 +39,11 @@ create table dislike
     member_id      bigint,
     rating_id      bigint,
     dtype          varchar(31) not null,
-    primary key (id)
+    created_date   datetime(6),
+    modified_date  datetime(6),
+    primary key (id),
+    check ((dtype = 'RatingDisLike' AND rating_id IS NOT NULL AND congressman_id IS NULL) OR
+           (dtype = 'CongressmanDisLike' AND congressman_id IS NOT NULL AND rating_id IS NULL))
 ) engine = InnoDB;
 
 create table `like`
