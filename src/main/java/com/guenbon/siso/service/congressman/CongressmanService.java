@@ -71,7 +71,6 @@ public class CongressmanService {
         return initialListSize < (pageSize + 1);
     }
 
-    // todo 이때는 평점이 null 이라는 조건을 붙여야 평점을 포함하면서 넣은 국회의원이 중복으로 포함되지 않음
     private List<CongressmanGetListDTO> fetchAdditionalCongressmen(int initialListSize, Pageable pageable, String party, String search, Long cursorId) {
         int remainingSize = pageable.getPageSize() - initialListSize + 1;
         log.info("fetchAdditionalCongressmen 호출 , remainingSize : {}", remainingSize);

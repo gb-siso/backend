@@ -45,7 +45,7 @@ public class QuerydslRatingRepositoryImpl implements QuerydslRatingRepository {
                 .filter(sortProperty -> sortProperty != null)
                 .map(QuerydslRatingRepositoryImpl::getOrderSpecifier)
                 .findFirst()
-                .orElseThrow(()->new CustomException(UNSUPPORTED_SORT_PROPERTY));
+                .orElseThrow(() -> new CustomException(UNSUPPORTED_SORT_PROPERTY));
     }
 
     private static OrderSpecifier<?> getDefaultOrderSpecifier() {

@@ -1,7 +1,10 @@
 package com.guenbon.siso.entity.dislike;
 
 import com.guenbon.siso.entity.Rating;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

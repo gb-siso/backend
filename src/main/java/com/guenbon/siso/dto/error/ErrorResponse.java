@@ -1,12 +1,13 @@
 package com.guenbon.siso.dto.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.FieldError;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Getter

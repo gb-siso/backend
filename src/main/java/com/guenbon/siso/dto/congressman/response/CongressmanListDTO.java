@@ -55,7 +55,6 @@ public class CongressmanListDTO {
         private List<String> ratedMemberImages;
 
 
-
         public static CongressmanDTO of(String encryptedCongressmanId, CongressmanGetListDTO congressmanGetListDTO,
                                         List<String> memberImages) {
             return CongressmanDTO.builder()

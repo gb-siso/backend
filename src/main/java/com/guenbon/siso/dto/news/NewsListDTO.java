@@ -1,18 +1,17 @@
 package com.guenbon.siso.dto.news;
 
-import static com.guenbon.siso.support.constants.ApiConstants.COMP_MAN_TITLE;
-import static com.guenbon.siso.support.constants.ApiConstants.LINK_URL;
-import static com.guenbon.siso.support.constants.ApiConstants.REG_DATE;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.guenbon.siso.support.constants.ApiConstants.*;
 
 @NoArgsConstructor
 @AllArgsConstructor

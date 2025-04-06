@@ -9,5 +9,4 @@ public enum ReactionStatus {
     CREATED,
     DELETED,
     NONE,
-    ;
 }

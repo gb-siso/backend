@@ -2,9 +2,10 @@ package com.guenbon.siso.util;
 
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.PageableErrorCode;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+
+import java.util.List;
 
 @Slf4j
 public class SortValidator {

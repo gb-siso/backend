@@ -89,8 +89,8 @@ public class RatingService {
                 rating,
                 MemberDTO.of(rating.getMember(), aesUtil.encrypt(rating.getMember().getId())),
                 aesUtil.encrypt(rating.getId()),
-                memberId == null ? false : ratingLikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId),
-                memberId == null ? false : ratingDislikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId)
+                memberId != null && ratingLikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId),
+                memberId != null && ratingDislikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId)
         );
     }
 

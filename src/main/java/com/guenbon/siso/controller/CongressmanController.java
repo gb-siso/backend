@@ -36,14 +36,6 @@ public class CongressmanController {
             @RequestParam(required = false) Double rateCursor,
             @RequestParam(required = false) String party,
             @RequestParam(required = false) String search) {
-
-        log.info("국회의원 목록 컨트롤러 파라미터 로깅");
-        log.info("cursorId : {}", idCursor);
-        log.info("cursorRate : {}", rateCursor);
-        log.info("party : {}", party);
-        log.info("search : {}", search);
-        log.info("pageable : {}", pageable);
-
         return ResponseEntity.ok(
                 congressmanService.getCongressmanListDTO(pageable, setCursorIdIfEmpty(idCursor),
                         rateCursor, party,
@@ -52,12 +44,6 @@ public class CongressmanController {
 
     private String setCursorIdIfEmpty(String cursorId) {
         return cursorId.isEmpty() ? aesUtil.encrypt(Long.MAX_VALUE) : cursorId;
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<String> congressmanDetail(Pageable pageable, Long cursor,
-                                                    @PathVariable(name = "id") String congressmanId, Long loginId) {
-        return ResponseEntity.ok("평가 작성 성공 후 리다이렉트됨");
     }
 
     @GetMapping("/news/{congressmanId}")

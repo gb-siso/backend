@@ -1,11 +1,12 @@
 package com.guenbon.siso.dto.rating.response;
 
 import com.guenbon.siso.dto.cursor.count.CountCursor;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor

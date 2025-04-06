@@ -4,7 +4,10 @@ package com.guenbon.siso.entity.congressman;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.entity.common.DateEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity

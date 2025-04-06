@@ -1,9 +1,6 @@
 package com.guenbon.siso.controller;
 
 
-import static com.guenbon.siso.exception.errorCode.CommonErrorCode.*;
-import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
-
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ApiErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse;
@@ -12,10 +9,6 @@ import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +23,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.guenbon.siso.exception.errorCode.CommonErrorCode.*;
+import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
 @Slf4j

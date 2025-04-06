@@ -48,7 +48,7 @@ public class RatingDisLikeService {
                     ratingLikeRepository.delete(ratingLike);
                     return ReactionDTO.of(aesUtil.encrypt(ratingId),
                             ReactionDTO.Reaction.of(aesUtil.encrypt(ratingLike.getId()), ReactionStatus.DELETED),
-                              ReactionDTO.Reaction.of(aesUtil.encrypt(ratingDislike.getId()), ReactionStatus.CREATED)
+                            ReactionDTO.Reaction.of(aesUtil.encrypt(ratingDislike.getId()), ReactionStatus.CREATED)
                     );
                 })
                 .orElseGet(() -> ReactionDTO.of(aesUtil.encrypt(ratingId),
