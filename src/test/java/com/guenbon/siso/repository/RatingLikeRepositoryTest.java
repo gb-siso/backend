@@ -6,7 +6,7 @@ import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
-import com.guenbon.siso.repository.like.RatingLikeRepository;
+import com.guenbon.siso.repository.like.rating.RatingLikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
 import com.guenbon.siso.support.fixture.member.MemberFixture;

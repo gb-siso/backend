@@ -39,15 +39,6 @@ public class CongressmanService {
     public CongressmanListDTO getCongressmanListDTO(final Pageable pageable, final String cursorId,
                                                     final Double cursorRate, final String party, final String search) {
         final long decryptedCursorId = aesUtil.decrypt(cursorId);
-
-
-        log.info("국회의원 목록 서비스단 파라미터 로깅");
-        log.info("decryptedCursorId : {}", decryptedCursorId);
-        log.info("cursorRate : {}", cursorRate);
-        log.info("party : {}", party);
-        log.info("search : {}", search);
-        log.info("pageable : {}", pageable);
-
         final List<CongressmanGetListDTO> congressmanGetListDTOList = getCongressmanGetListDTOList(
                 pageable, decryptedCursorId, cursorRate, party, search);
         final List<CongressmanDTO> congressmanDTOList = convertToCongressmanDTOList(congressmanGetListDTOList);
@@ -125,7 +116,6 @@ public class CongressmanService {
         }
     }
 
-    // Assembly session : cascade all 에 의해 자동 삭제
     private int batchRemoveCongressman(List<Congressman> toDelete) {
         List<Long> idList = toDelete.stream().map(Congressman::getId).collect(Collectors.toList());
         return congressmanRepository.batchDelete(idList);

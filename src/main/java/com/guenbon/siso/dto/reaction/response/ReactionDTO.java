@@ -6,8 +6,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class RatingReactionDTO {
-    private String ratingId;
+public class ReactionDTO {
+    private String targetId;
     private Reaction like;
     private Reaction dislike;
 
@@ -26,7 +26,7 @@ public class RatingReactionDTO {
         }
     }
 
-    public static RatingReactionDTO of(String ratingId, Reaction like, Reaction dislike) {
-        return new RatingReactionDTO(ratingId, like, dislike);
+    public static ReactionDTO of(String targetId, Reaction like, Reaction dislike) {
+        return new ReactionDTO(targetId, like, dislike);
     }
 }

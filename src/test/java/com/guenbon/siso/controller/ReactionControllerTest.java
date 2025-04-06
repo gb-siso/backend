@@ -1,10 +1,12 @@
 package com.guenbon.siso.controller;
 
-import com.guenbon.siso.dto.reaction.response.RatingReactionDTO;
+import com.guenbon.siso.dto.reaction.response.ReactionDTO;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.reaction.RatingDisLikeErrorCode;
 import com.guenbon.siso.exception.errorCode.reaction.RatingLikeErrorCode;
 import com.guenbon.siso.service.auth.JwtTokenProvider;
+import com.guenbon.siso.service.reaction.CongressmanDisLikeService;
+import com.guenbon.siso.service.reaction.CongressmanLikeService;
 import com.guenbon.siso.service.reaction.RatingDisLikeService;
 import com.guenbon.siso.service.reaction.RatingLikeService;
 import com.guenbon.siso.support.constants.ReactionStatus;
@@ -38,6 +40,10 @@ class ReactionControllerTest {
     protected RatingLikeService ratingLikeService;
     @MockitoBean
     protected RatingDisLikeService ratingDisLikeService;
+    @MockitoBean
+    protected CongressmanLikeService congressmanLikeService;
+    @MockitoBean
+    protected CongressmanDisLikeService congressmanDisLikeService;
 
     @Test
     @DisplayName("빈 주입 확인")
@@ -83,9 +89,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.CREATED),
-                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.DELETED)
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.of("likeId", ReactionStatus.CREATED),
+                ReactionDTO.Reaction.of("dislikeId", ReactionStatus.DELETED)
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -113,9 +119,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.CREATED),
-                RatingReactionDTO.Reaction.none()
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.of("likeId", ReactionStatus.CREATED),
+                ReactionDTO.Reaction.none()
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -195,9 +201,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
-                RatingReactionDTO.Reaction.of(null, ReactionStatus.NONE)
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
+                ReactionDTO.Reaction.of(null, ReactionStatus.NONE)
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -252,9 +258,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
-                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.of("likeId", ReactionStatus.DELETED),
+                ReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -282,9 +288,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.none(),
-                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.none(),
+                ReactionDTO.Reaction.of("dislikeId", ReactionStatus.CREATED)
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);
@@ -365,9 +371,9 @@ class ReactionControllerTest {
         final Long memberId = 1L;
         final String encryptedRatingId = "encryptedRatingId";
 
-        final RatingReactionDTO expected = RatingReactionDTO.of(encryptedRatingId,
-                RatingReactionDTO.Reaction.none(),
-                RatingReactionDTO.Reaction.of("dislikeId", ReactionStatus.DELETED)
+        final ReactionDTO expected = ReactionDTO.of(encryptedRatingId,
+                ReactionDTO.Reaction.none(),
+                ReactionDTO.Reaction.of("dislikeId", ReactionStatus.DELETED)
         );
 
         when(jwtTokenProvider.getMemberId(ACCESS_TOKEN)).thenReturn(memberId);

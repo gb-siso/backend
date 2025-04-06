@@ -1,4 +1,4 @@
-package com.guenbon.siso.repository.dislike;
+package com.guenbon.siso.repository.dislike.rating;
 
 import com.guenbon.siso.entity.dislike.RatingDislike;
 import org.springframework.data.jpa.repository.JpaRepository;

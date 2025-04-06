@@ -1,14 +1,14 @@
 package com.guenbon.siso.service.reaction;
 
-import com.guenbon.siso.dto.reaction.response.RatingReactionDTO;
+import com.guenbon.siso.dto.reaction.response.ReactionDTO;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
 import com.guenbon.siso.entity.dislike.RatingDislike;
 import com.guenbon.siso.entity.like.RatingLike;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.reaction.RatingDisLikeErrorCode;
-import com.guenbon.siso.repository.dislike.RatingDislikeRepository;
-import com.guenbon.siso.repository.like.RatingLikeRepository;
+import com.guenbon.siso.repository.dislike.rating.RatingDislikeRepository;
+import com.guenbon.siso.repository.like.rating.RatingLikeRepository;
 import com.guenbon.siso.service.member.MemberService;
 import com.guenbon.siso.service.rating.RatingService;
 import com.guenbon.siso.support.constants.ReactionStatus;
@@ -86,7 +86,7 @@ class RatingDisLikeServiceTest {
         when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(ratingLike));
 
         // when
-        RatingReactionDTO actual = ratingDisLikeService.create(encryptedRatingId, memberId);
+        ReactionDTO actual = ratingDisLikeService.create(encryptedRatingId, memberId);
 
         // then
         assertAll(
@@ -113,7 +113,7 @@ class RatingDisLikeServiceTest {
         when(ratingDislikeRepository.save(any(RatingDislike.class))).thenReturn(ratingDislike);
         when(ratingLikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.empty());
         // when
-        RatingReactionDTO actual = ratingDisLikeService.create(encryptedRatingId, memberId);
+        ReactionDTO actual = ratingDisLikeService.create(encryptedRatingId, memberId);
         // then
         assertAll(
                 () -> assertThat(actual.getLike().getStatus()).isEqualTo(ReactionStatus.NONE),
@@ -155,7 +155,7 @@ class RatingDisLikeServiceTest {
         when(ratingDislikeRepository.findByRatingIdAndMemberId(ratingId, memberId)).thenReturn(Optional.of(ratingLike));
 
         // when
-        RatingReactionDTO actual = ratingDisLikeService.delete(encryptedRatingId, memberId);
+        ReactionDTO actual = ratingDisLikeService.delete(encryptedRatingId, memberId);
         // then
         assertAll(
                 () -> assertThat(actual.getLike().getStatus()).isEqualTo(ReactionStatus.NONE),
