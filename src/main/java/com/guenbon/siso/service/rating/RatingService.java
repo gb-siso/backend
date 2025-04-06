@@ -6,11 +6,13 @@ import com.guenbon.siso.dto.member.common.MemberDTO;
 import com.guenbon.siso.dto.rating.request.RatingWriteDTO;
 import com.guenbon.siso.dto.rating.response.RatingDetailDTO;
 import com.guenbon.siso.dto.rating.response.RatingListDTO;
-import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.Member;
 import com.guenbon.siso.entity.Rating;
+import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.RatingErrorCode;
+import com.guenbon.siso.repository.dislike.rating.RatingDislikeRepository;
+import com.guenbon.siso.repository.like.rating.RatingLikeRepository;
 import com.guenbon.siso.repository.rating.RatingRepository;
 import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.service.member.MemberService;
@@ -37,6 +39,8 @@ public class RatingService {
     private final MemberService memberService;
     private final CongressmanService congressmanService;
     private final AESUtil aesUtil;
+    private final RatingLikeRepository ratingLikeRepository;
+    private final RatingDislikeRepository ratingDislikeRepository;
 
     @Transactional(readOnly = false)
     public String create(final Long memberId, RatingWriteDTO ratingWriteDTO) {
@@ -59,13 +63,13 @@ public class RatingService {
     }
 
     public RatingListDTO validateAndGetRecentRatings(final String encryptedCongressmanId, final Pageable pageable,
-                                                     final CountCursor countCursor) {
+                                                     final CountCursor countCursor, final Long memberId) {
         final Long congressmanId = aesUtil.decrypt(encryptedCongressmanId);
         final DecryptedCountCursor decryptedCountCursor = getDecryptedCountCursor(countCursor);
 
         final List<Rating> recentRatingByCongressmanId = ratingRepository.getSortedRatingsByCongressmanId(congressmanId,
                 pageable, decryptedCountCursor);
-        final List<RatingDetailDTO> ratingDetailDTOList = toRatingDetailDTOList(recentRatingByCongressmanId);
+        final List<RatingDetailDTO> ratingDetailDTOList = toRatingDetailDTOList(recentRatingByCongressmanId, memberId);
         return RatingListDTO.of(ratingDetailDTOList, getCountCursor(pageable, ratingDetailDTOList));
     }
 
@@ -74,17 +78,19 @@ public class RatingService {
                 : DecryptedCountCursor.of(aesUtil.decrypt(countCursor.getIdCursor()), countCursor.getCountCursor());
     }
 
-    private List<RatingDetailDTO> toRatingDetailDTOList(final List<Rating> recentRatingByCongressmanId) {
+    private List<RatingDetailDTO> toRatingDetailDTOList(final List<Rating> recentRatingByCongressmanId, Long memberId) {
         return recentRatingByCongressmanId.stream()
-                .map(this::toRatingDetailDTO)
+                .map(rating -> toRatingDetailDTO(rating, memberId))
                 .toList();
     }
 
-    private RatingDetailDTO toRatingDetailDTO(final Rating rating) {
+    private RatingDetailDTO toRatingDetailDTO(final Rating rating, Long memberId) {
         return RatingDetailDTO.from(
                 rating,
                 MemberDTO.of(rating.getMember(), aesUtil.encrypt(rating.getMember().getId())),
-                aesUtil.encrypt(rating.getId())
+                aesUtil.encrypt(rating.getId()),
+                memberId == null ? false : ratingLikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId),
+                memberId == null ? false : ratingDislikeRepository.existsByRatingIdAndMemberId(rating.getId(), memberId)
         );
     }
 
@@ -107,7 +113,6 @@ public class RatingService {
         return null;
     }
 
-    // todo 테스트 작성 필요
     public Rating findById(Long id) {
         return ratingRepository.findById(id).orElseThrow(() -> new CustomException(RatingErrorCode.NOT_EXISTS));
     }

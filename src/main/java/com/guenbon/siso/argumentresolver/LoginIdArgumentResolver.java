@@ -29,10 +29,17 @@ public class LoginIdArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+        final LoginId loginId = parameter.getParameterAnnotation(LoginId.class);
+        final boolean required = loginId.required();
+
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
         String accessToken = request.getHeader(ACCESS_TOKEN);
+
         if (accessToken == null || accessToken.isBlank()) {
-            throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            if (required) {
+                throw new CustomException(AuthErrorCode.NULL_OR_BLANK_TOKEN);
+            }
+            return null;
         }
         return jwtTokenProvider.getMemberId(accessToken);
     }

@@ -33,7 +33,8 @@ public class RatingController {
             throws IOException {
         final String encryptedCongressmanId = ratingWriteDTO.getCongressmanId();
         ratingService.create(loginId, ratingWriteDTO);
-        response.sendRedirect("/api/v1/congressman/" + encryptedCongressmanId);
+        // 평가 목록 api 로 리다이렉트
+        response.sendRedirect("/api/v1/ratings/" + encryptedCongressmanId);
     }
 
     @GetMapping("/{encryptedCongressmanId}")
@@ -41,9 +42,9 @@ public class RatingController {
             @PathVariable String encryptedCongressmanId,
             @PageConfig(allowedSorts = {LIKE, DISLIKE, TOPICALITY, REG_DATE},
                     defaultSort = "topicality, DESC", defaultSize = 20) Pageable pageable,
-            @Validated @ModelAttribute CountCursor cursor) {
+            @Validated @ModelAttribute CountCursor cursor, @LoginId(required = false) Long loginId) {
         return ResponseEntity.ok(
-                ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageable, cursor)
+                ratingService.validateAndGetRecentRatings(encryptedCongressmanId, pageable, cursor, loginId)
         );
     }
 }

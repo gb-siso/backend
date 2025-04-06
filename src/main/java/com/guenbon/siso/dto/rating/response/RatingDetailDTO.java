@@ -21,10 +21,12 @@ public class RatingDetailDTO {
     private Integer likeCount;
     private Integer dislikeCount;
     private LocalDateTime createdAt;
+    private Boolean pushedLike;
+    private Boolean pushedDislike;
 
-    public static RatingDetailDTO from(Rating rating, MemberDTO member, String encryptedId) {
+    public static RatingDetailDTO from(Rating rating, MemberDTO member, String encryptedId, Boolean pushedLike, Boolean pushedDislike) {
         return new RatingDetailDTO(encryptedId, member, rating.getContent(), rating.getRate(), rating.getLikeCount(),
-                rating.getDislikeCount(), rating.getCreatedDate());
+                rating.getDislikeCount(), rating.getCreatedDate(), pushedLike, pushedDislike);
     }
 
     public Integer getTopicality() {

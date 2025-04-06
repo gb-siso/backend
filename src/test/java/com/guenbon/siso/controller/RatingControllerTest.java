@@ -281,7 +281,7 @@ class RatingControllerTest {
                         .content(json))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/api/v1/congressman/" + encryptedCongressmanId))
+                .andExpect(redirectedUrl("/api/v1/ratings/" + encryptedCongressmanId))
                 .andReturn();
 
         verify(ratingService, times(1)).create(eq(member.getId()), any(RatingWriteDTO.class));
@@ -361,7 +361,7 @@ class RatingControllerTest {
         final CountCursor countCursor = new CountCursor("3", 12);
 
         when(ratingService.validateAndGetRecentRatings(eq(ENCRYPTED_CONGRESSMAN_ID),
-                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class)))
+                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class), any()))
                 .thenReturn(RatingListDTO.of(ratingDetailDTOList, countCursor));
 
         // when, then
@@ -377,6 +377,6 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$.countCursor.countCursor").value(12));
 
         verify(ratingService, times(1)).validateAndGetRecentRatings(eq(ENCRYPTED_CONGRESSMAN_ID),
-                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class));
+                eq(PageRequest.of(0, 2, Sort.by("topicality").descending())), any(CountCursor.class), any());
     }
 }

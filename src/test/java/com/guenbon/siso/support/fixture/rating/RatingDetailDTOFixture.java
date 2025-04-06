@@ -20,6 +20,8 @@ public class RatingDetailDTOFixture {
     private Integer likeCount = 10;
     private Integer dislikeCount = 2;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private Boolean pushedLike = false;
+    private Boolean pushedDislike = false;
 
     public static RatingDetailDTOFixture builder() {
         return new RatingDetailDTOFixture();
@@ -60,6 +62,6 @@ public class RatingDetailDTOFixture {
     }
 
     public RatingDetailDTO build() {
-        return new RatingDetailDTO(id, member, content, rate, likeCount, dislikeCount, createdAt);
+        return new RatingDetailDTO(id, member, content, rate, likeCount, dislikeCount, createdAt, pushedLike, pushedDislike);
     }
 }

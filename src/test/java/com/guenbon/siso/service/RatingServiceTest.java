@@ -103,7 +103,7 @@ class RatingServiceTest {
         final PageRequest pageable = createPageRequest("topicality", 0);
         when(aesUtil.decrypt(null)).thenThrow(new CustomException(AESErrorCode.NULL_VALUE));
         // when, then
-        assertThatThrownBy(() -> ratingService.validateAndGetRecentRatings(null, pageable, null))
+        assertThatThrownBy(() -> ratingService.validateAndGetRecentRatings(null, pageable, null, null))
                 .isInstanceOf(CustomException.class)
                 .hasMessage(AESErrorCode.NULL_VALUE.getMessage());
     }
@@ -122,10 +122,10 @@ class RatingServiceTest {
         // when
         // page1 : 다음 페이지 O -> 커서값 O
         final RatingListDTO resultPage1 = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, page1,
-                null);
+                null, null);
         // page2 : 다음 페이지 X -> 커서값 null
         final RatingListDTO resultPage2 = ratingService.validateAndGetRecentRatings(encryptedCongressmanId, page2,
-                new CountCursor("4L", 4));
+                new CountCursor("4L", 4), null);
 
         // then
         assertAll(
