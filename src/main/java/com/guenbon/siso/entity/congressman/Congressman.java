@@ -43,11 +43,13 @@ public class Congressman extends DateEntity {
     private String imageUrl;
 
     public static Congressman of(JsonNode row) {
+        String party = row.path("PLPT_NM").asText(null);
+        String[] split = party.split("/");
         return Congressman.builder()
                 .code(row.path("NAAS_CD").asText())
                 .name(row.path("NAAS_NM").asText())
                 .position(row.path("DTY_NM").asText(null))
-                .party(row.path("PLPT_NM").asText(null))
+                .party(split[split.length - 1])
                 .electoralDistrict(row.path("ELECD_NM").asText(null))
                 .electoralType(row.path("ELECD_DIV_NM").asText(null))
                 .timesElected(row.path("RLCT_DIV_NM").asText(null))
