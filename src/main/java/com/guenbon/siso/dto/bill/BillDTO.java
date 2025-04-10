@@ -1,9 +1,6 @@
 package com.guenbon.siso.dto.bill;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 @Setter
 @Getter
+@ToString
 public class BillDTO {
     private String title;
     // 제안자
@@ -22,6 +20,7 @@ public class BillDTO {
     private String rstProposer;
     private String link;
     private LocalDate proposeDate; // LocalDate로 변경
+    private BillSummaryDTO billSummary;
 
     public static BillDTO of(String title,
                              String proposer, String publProposer, String rstProposer,
@@ -29,16 +28,6 @@ public class BillDTO {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // String -> LocalDate 변환
         LocalDate localDate = LocalDate.parse(proposeDate, formatter);
-        return new BillDTO(title, proposer, publProposer, rstProposer, link, localDate); // LocalDate 사용
-    }
-
-    @Override
-    public String toString() {
-        return "BillDTO{" +
-                "title='" + title + '\'' +
-                ", proposer='" + proposer + '\'' +
-                ", link='" + link + '\'' +
-                ", proposeDate=" + proposeDate +
-                '}';
+        return new BillDTO(title, proposer, publProposer, rstProposer, link, localDate, null); // LocalDate 사용
     }
 }

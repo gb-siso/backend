@@ -1,12 +1,5 @@
 package com.guenbon.siso.service.congressman;
 
-import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -19,10 +12,6 @@ import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
 import com.guenbon.siso.support.fixture.congressman.CongressmanFixture;
-
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -34,6 +23,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.MAX_REQUEST_LIMIT_EXCEEDED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class CongressmanApiServiceTest {
@@ -180,7 +180,7 @@ class CongressmanApiServiceTest {
 
     @DisplayName("findBillList 메서드에 유효한 파라미터를 전달하면 congressmanName이 발의자에 포함된 BillDTO가 제안날짜 내림차순으로 구성된 BillListDTO를 반환한다")
     @Test
-    void findBillList_validParameters_BillList() {
+    void findBillList_validParameters_BillList() throws IOException {
         // given
         final String encryptedCongressmanId = "encryptedCongressmanId";
         final Long decryptedCongressmanId = 1L;

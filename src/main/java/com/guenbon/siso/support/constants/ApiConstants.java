@@ -55,4 +55,7 @@ public final class ApiConstants {
     public static final String BEARER = "Bearer ";
     public static final String NAVER_CODE_PARAMETER = "code";
 
+    // perplexity
+    public static final String SUMMARY_URL = "https://api.perplexity.ai/chat/completions";
+
 }

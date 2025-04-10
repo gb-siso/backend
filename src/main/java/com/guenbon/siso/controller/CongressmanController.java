@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 import static com.guenbon.siso.support.constants.SortProperty.*;
 
 @Slf4j
@@ -54,7 +56,7 @@ public class CongressmanController {
 
     @GetMapping("/bills/{congressmanId}")
     public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
-                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC") Pageable pageable) {
+                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC") Pageable pageable) throws IOException {
         return ResponseEntity.ok(congressmanApiService.findBillList(congressmanId, pageable));
     }
 
