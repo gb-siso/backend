@@ -86,4 +86,9 @@ public class CongressApiClient {
 
         return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
     }
+
+    // todo :  반환형 수정필요
+    public Object getBillResponse(int page) {
+        UriComponentsBuilder.fromHttpUrl()
+    }
 }

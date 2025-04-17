@@ -3,12 +3,16 @@ package com.guenbon.siso.entity.congressman;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.entity.common.DateEntity;
+import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -44,6 +48,9 @@ public class Congressman extends DateEntity {
     private String sex;
 
     private String imageUrl;
+
+    @OneToMany(mappedBy = "congressman")
+    private List<CongressmanBill> congressmanBills = new ArrayList<>(); // 중간 엔티티를 통한 연관관계
 
     public static Congressman of(JsonNode row) {
         String party = row.path("PLPT_NM").asText(null);

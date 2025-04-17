@@ -110,6 +110,7 @@ public class CongressmanApiService {
         if (isApiResponseError(jsonNode)) {
             handleApiError(jsonNode);
         }
+
         return jsonNode;
     }
 
