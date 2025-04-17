@@ -6,6 +6,7 @@ import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.util.JsonParserUtil;
 import com.guenbon.siso.util.PromptBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,11 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @Slf4j
 @Component
 public class CongressApiClient {
+
+    public static final int PAGE_MAX_SIZE = 1000;
+    @Value("${api.bill.key}")
+    private String billApikey;
+
     private static final WebClient webClient = WebClient.builder()
             .exchangeStrategies(ExchangeStrategies.builder()
                     .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)) // 10MB로 증가
@@ -87,8 +93,24 @@ public class CongressApiClient {
         return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
     }
 
-    // todo :  반환형 수정필요
-    public Object getBillResponse(int page) {
-        UriComponentsBuilder.fromHttpUrl()
+    public JsonNode getBillResponse(int page) {
+        final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(API_BILL_URL)
+                .queryParam(AGE, "22") // 22 대만
+                .queryParam(KEY, billApikey)
+                .queryParam(TYPE, "json")
+                .queryParam(P_INDEX, page)
+                .queryParam(P_SIZE, PAGE_MAX_SIZE);
+
+        String uriString = uriBuilder.build(false).toUriString();
+
+        String response = webClient.get()
+                .uri(uriString)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        JsonNode jsonNode = JsonParserUtil.parseJson(response);
+
+        return jsonNode;
     }
 }

@@ -38,9 +38,6 @@ public class Bill {
 
     private String detailLink; // DETAIL_LINK (링크 주소)
 
-    @Lob
-    private String detailContent; // DETAIL_LINK에 들어가서 가져온 실제 내용
-
     private LocalDateTime lawProcDt; // LAW_PROC_DT
 
     private LocalDateTime lawPresentDt; // LAW_PRESENT_DT
