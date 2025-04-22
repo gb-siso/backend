@@ -4,13 +4,12 @@ import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,7 +29,7 @@ public class Bill {
 
     private String committee; // COMMITTEE
 
-    private LocalDateTime proposeDt; // PROPOSE_DT
+    private LocalDate proposeDt; // PROPOSE_DT
 
     private String procResult; // PROC_RESULT (null 허용)
 
@@ -38,28 +37,51 @@ public class Bill {
 
     private String detailLink; // DETAIL_LINK (링크 주소)
 
-    private LocalDateTime lawProcDt; // LAW_PROC_DT
+    private LocalDate lawProcDt; // LAW_PROC_DT
 
-    private LocalDateTime lawPresentDt; // LAW_PRESENT_DT
+    private LocalDate lawPresentDt; // LAW_PRESENT_DT
 
-    private LocalDateTime lawSubmitDt; // LAW_SUBMIT_DT
+    private LocalDate lawSubmitDt; // LAW_SUBMIT_DT
 
-    private LocalDateTime cmtProcResultCd; // CMT_PROC_RESULT_CD
+    private String cmtProcResultCd; // CMT_PROC_RESULT_CD
 
-    private LocalDateTime cmtProcDt; // CMT_PROC_DT
+    private LocalDate cmtProcDt; // CMT_PROC_DT
 
-    private LocalDateTime cmtPresentDt; // CMT_PRESENT_DT
+    private LocalDate cmtPresentDt; // CMT_PRESENT_DT
 
-    private LocalDateTime committeeDt; // COMMITTEE_DT
+    private LocalDate committeeDt; // COMMITTEE_DT
 
-    private LocalDateTime procDt; // PROC_DT
+    private LocalDate procDt; // PROC_DT
 
     private String committeeId; // COMMITTEE_ID
 
     private String lawProcResultCd; // LAW_PROC_RESULT_CD
 
     // 발의자 (메인 발의자 + 공동 발의자)
-    @OneToMany(mappedBy = "congressman")
+    @Setter
+    @OneToMany(mappedBy = "bill", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    @Builder.Default
     private List<CongressmanBill> congressmanBills = new ArrayList<>();
+
+    public void updateFrom(Bill from) {
+        this.billId = from.billId; // BILL_ID 업데이트
+        this.billNo = from.billNo; // BILL_NO 업데이트
+        this.billName = from.billName; // BILL_NAME 업데이트
+        this.committee = from.committee; // COMMITTEE 업데이트
+        this.proposeDt = from.proposeDt; // PROPOSE_DT 업데이트
+        this.procResult = from.procResult; // PROC_RESULT 업데이트
+        this.age = from.age; // AGE 업데이트
+        this.detailLink = from.detailLink; // DETAIL_LINK 업데이트
+        this.lawProcDt = from.lawProcDt; // LAW_PROC_DT 업데이트
+        this.lawPresentDt = from.lawPresentDt; // LAW_PRESENT_DT 업데이트
+        this.lawSubmitDt = from.lawSubmitDt; // LAW_SUBMIT_DT 업데이트
+        this.cmtProcResultCd = from.cmtProcResultCd; // CMT_PROC_RESULT_CD 업데이트
+        this.cmtProcDt = from.cmtProcDt; // CMT_PROC_DT 업데이트
+        this.cmtPresentDt = from.cmtPresentDt; // CMT_PRESENT_DT 업데이트
+        this.committeeDt = from.committeeDt; // COMMITTEE_DT 업데이트
+        this.procDt = from.procDt; // PROC_DT 업데이트
+        this.committeeId = from.committeeId; // COMMITTEE_ID 업데이트
+        this.lawProcResultCd = from.lawProcResultCd; // LAW_PROC_RESULT_CD 업데이트
+    }
 }
 
