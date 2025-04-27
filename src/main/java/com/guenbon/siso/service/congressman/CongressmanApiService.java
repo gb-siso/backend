@@ -70,8 +70,8 @@ public class CongressmanApiService {
         Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
         // 발의안 목록 api 요청 및 파싱
         BillListDTO billListDTO = fetchBillList(pageable, congressman);
-        // 발의안 스크랩 + 요약 및 파싱
-        scrapAndSummaryBillContent(billListDTO);
+//        // 발의안 스크랩 + 요약 및 파싱
+//        scrapAndSummaryBillContent(billListDTO);
         return billListDTO;
     }
 
@@ -86,14 +86,14 @@ public class CongressmanApiService {
         return billListDTO;
     }
 
-    private void scrapAndSummaryBillContent(BillListDTO billListDTO) throws IOException {
-        for (BillDTO billDTO : billListDTO.getBillList()) {
-            // 스크랩
-            String text = scrapBillContent(billDTO);
-            // 요약 - api 요청
-            billDTO.setBillSummary(congressApiClient.getBillSummaryResponse(SUMMARY_URL, perplexityApikey, text));
-        }
-    }
+//    private void scrapAndSummaryBillContent(BillListDTO billListDTO) throws IOException {
+//        for (BillDTO billDTO : billListDTO.getBillList()) {
+//            // 스크랩
+//            String text = scrapBillContent(billDTO);
+//            // 요약 - api 요청
+//            billDTO.setBillSummary(congressApiClient.getBillSummaryResponse(SUMMARY_URL, perplexityApikey, text));
+//        }
+//    }
 
     private static String scrapBillContent(BillDTO billDTO) throws IOException {
         String link = billDTO.getLink();

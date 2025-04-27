@@ -54,6 +54,17 @@ public class AuthApiService {
         return processResponse(response, KAKAO_ERROR_PATH, KakaoApiErrorCode.class, KakaoToken.class);
     }
 
+    /**
+     * 외부 api 요청 결과 에러 여부를 확인해 예외처리하거나 responseType으로 파싱한다.
+     *
+     * @param response 외부 api 요청 결과
+     * @param errorCodePath 외부 api 예외처리 json path (에러코드 찾기 위함)
+     * @param errorCodeEnum 외부 api 에러코드 매핑한 enum class
+     * @param responseType 정상 응답일 경우 파싱해서 반환할 타입
+     * @return
+     * @param <T>
+     * @param <E>
+     */
     private <T, E extends Enum<E> & ErrorCode> T processResponse(
             String response,
             String errorCodePath,

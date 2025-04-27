@@ -1,14 +1,12 @@
 package com.guenbon.siso.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.guenbon.siso.dto.bill.BillSummaryDTO;
+import com.guenbon.siso.exception.ApiException;
+import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
-import com.guenbon.siso.util.PromptBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +14,9 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 import java.util.Map;
 
+import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.NO_DATA_FOUND;
 import static com.guenbon.siso.support.constants.ApiConstants.*;
 
 @Slf4j
@@ -46,25 +44,25 @@ public class CongressApiClient {
                 .block();
     }
 
-    @Transactional(propagation = Propagation.NEVER)
-    public BillSummaryDTO getBillSummaryResponse(final String baseUrl, final String apiKey, final String userContent) throws JsonProcessingException {
-        String stringResponse = webClient.post()
-                .uri(baseUrl)
-                .header("Authorization", "Bearer " + apiKey)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of(
-                        "model", "sonar",
-                        "messages", List.of(
-                                Map.of("role", "system", "content", PromptBuilder.getBillSummaryPrompt()),
-                                Map.of("role", "user", "content", userContent)
-                        ),
-                        "max_tokens", 500
-                ))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();// 응답 JSON을 문자열로 받음
-        return JsonParserUtil.parseBillSummary(stringResponse);
-    }
+//    @Transactional(propagation = Propagation.NEVER)
+//    public BillSummaryDTO getBillSummaryResponse(final String baseUrl, final String apiKey, final String userContent) throws JsonProcessingException {
+//        String stringResponse = webClient.post()
+//                .uri(baseUrl)
+//                .header("Authorization", "Bearer " + apiKey)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .bodyValue(Map.of(
+//                        "model", "sonar",
+//                        "messages", List.of(
+//                                Map.of("role", "system", "content", PromptBuilder.getBillSummaryPrompt()),
+//                                Map.of("role", "user", "content", userContent)
+//                        ),
+//                        "max_tokens", 500
+//                ))
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                .block();// 응답 JSON을 문자열로 받음
+//        return JsonParserUtil.parseBillSummary(stringResponse);
+//    }
 
     private void logResponse(final String responseBody) {
         log.info("API Response Body: {}", responseBody);
@@ -93,7 +91,17 @@ public class CongressApiClient {
         return uriBuilder.build(false).toUriString(); // 인코딩 비활성화
     }
 
+    /**
+     * 국회 api에 22대 발의안 목록 page에 해당하는 데이터를 요청함
+     *
+     * @param page
+     * @return
+     */
+    @Transactional(propagation = Propagation.NEVER)
     public JsonNode getBillResponse(int page) {
+
+        log.info("## getBillResponse 메서드 page : {}", page);
+
         final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(API_BILL_URL)
                 .queryParam(AGE, "22") // 22 대만
                 .queryParam(KEY, billApikey)
@@ -109,8 +117,23 @@ public class CongressApiClient {
                 .bodyToMono(String.class)
                 .block();
 
-        JsonNode jsonNode = JsonParserUtil.parseJson(response);
+        return JsonParserUtil.parseJson(response);
+    }
 
-        return jsonNode;
+    public boolean isLastPage(JsonNode jsonNode) {
+        return NO_DATA_FOUND.equals(CongressApiErrorCode.from(getFieldValue(jsonNode, RESULT, CODE).split("-")[1]));
+    }
+
+    public boolean isApiResponseError(final JsonNode rootNode) {
+        return getFieldValue(rootNode, RESULT, CODE).contains("-");
+    }
+
+    public void handleApiError(final JsonNode rootNode) {
+        String errorCode = getFieldValue(rootNode, RESULT, CODE).split("-")[1];
+        throw new ApiException(CongressApiErrorCode.from(errorCode));
+    }
+
+    public JsonNode getContent(final JsonNode jsonNode, final String apiPath) {
+        return jsonNode.path(apiPath).get(1).path("row");
     }
 }
