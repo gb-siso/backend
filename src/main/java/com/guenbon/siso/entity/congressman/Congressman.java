@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.entity.common.DateEntity;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -49,6 +46,7 @@ public class Congressman extends DateEntity {
 
     private String imageUrl;
 
+    @Builder.Default
     @OneToMany(mappedBy = "congressman")
     private List<CongressmanBill> congressmanBills = new ArrayList<>(); // 중간 엔티티를 통한 연관관계
 

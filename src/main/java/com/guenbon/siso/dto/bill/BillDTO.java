@@ -20,7 +20,6 @@ public class BillDTO {
     private String rstProposer;
     private String link;
     private LocalDate proposeDate; // LocalDate로 변경
-    private BillSummaryDTO billSummary;
 
     public static BillDTO of(String title,
                              String proposer, String publProposer, String rstProposer,
@@ -28,6 +27,6 @@ public class BillDTO {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // String -> LocalDate 변환
         LocalDate localDate = LocalDate.parse(proposeDate, formatter);
-        return new BillDTO(title, proposer, publProposer, rstProposer, link, localDate, null); // LocalDate 사용
+        return null;
     }
 }

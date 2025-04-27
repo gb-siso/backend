@@ -134,3 +134,67 @@ alter table rating
         foreign key fk_rating_congressman;
 
 
+
+create table bill (
+                      cmt_present_dt date,
+                      cmt_proc_dt date,
+                      committee_dt date,
+                      law_present_dt date,
+                      law_proc_dt date,
+                      law_submit_dt date,
+                      proc_dt date,
+                      propose_dt date,
+                      id bigint not null auto_increment,
+                      age varchar(255),
+                      bill_id varchar(255) not null,
+                      bill_name varchar(255) not null,
+                      bill_no varchar(255) not null,
+                      cmt_proc_result_cd varchar(255),
+                      committee varchar(255),
+                      committee_id varchar(255),
+                      detail_link varchar(255),
+                      law_proc_result_cd varchar(255),
+                      proc_result varchar(255),
+                      primary key (id)
+) engine=InnoDB;
+
+create table bill_summary (
+                              bill_id bigint,
+                              id bigint not null auto_increment,
+                              category varchar(255),
+                              content varchar(255),
+                              expected varchar(255),
+                              reason varchar(255),
+                              primary key (id)
+) engine=InnoDB;
+
+create table congressman_bill (
+                                  bill_id bigint,
+                                  congressman_id bigint,
+                                  id bigint not null auto_increment,
+                                  primary key (id)
+) engine=InnoDB;
+
+alter table bill
+    add constraint unique_bill_id unique (bill_id);
+
+alter table bill
+    add constraint unique_bill_no unique (bill_no);
+
+alter table bill_summary
+    add constraint unique_bill_id_bill_summary unique (bill_id);
+
+alter table bill_summary
+    add constraint fk_bill_id_bill_summary
+        foreign key (bill_id)
+            references bill (id);
+
+alter table congressman_bill
+    add constraint fk_bill_id_congressman_bill
+        foreign key (bill_id)
+            references bill (id);
+
+alter table congressman_bill
+    add constraint fk_congressman_id_congressman_bill
+        foreign key (congressman_id)
+            references congressman (id);
