@@ -277,5 +277,9 @@ public class CongressmanService {
                 (recentCongressman.getSex() == null ? dbCongressman.getSex() == null : recentCongressman.getSex().equals(dbCongressman.getSex())) &&
                 (recentCongressman.getImageUrl() == null ? dbCongressman.getImageUrl() == null : recentCongressman.getImageUrl().equals(dbCongressman.getImageUrl()));
     }
+
+    public List<Congressman> findAll() {
+        return congressmanRepository.findAll();
+    }
 }
 

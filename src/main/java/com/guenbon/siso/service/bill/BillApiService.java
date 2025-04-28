@@ -45,9 +45,6 @@ public class BillApiService {
             extractBillsFromApiResponse(billRowNodeList, billProposerMap, apiBillList);
         }
 
-        log.info("api 요청 후 발의안 목록 가져오기 완료");
-
-
         return billService.syncBill(apiBillList, billProposerMap);
     }
 

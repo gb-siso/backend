@@ -4,10 +4,9 @@ import com.guenbon.siso.dto.bill.response.BillBatchResultDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
-import com.guenbon.siso.exception.CustomException;
-import com.guenbon.siso.exception.errorCode.CongressmanErrorCode;
 import com.guenbon.siso.repository.bill.BillRepository;
 import com.guenbon.siso.repository.congressman.CongressmanRepository;
+import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +27,7 @@ public class BillService {
     private final AESUtil aesUtil;
     private final BillRepository billRepository;
     private final CongressmanRepository congressmanRepository;
+    private final CongressmanService congressmanService;
 
     public List<Bill> getAllBillList() {
         return billRepository.findAll();
@@ -69,23 +69,29 @@ public class BillService {
 
         int count = 0;
 
+        // 국회의원을 전부 찾아서 map 에 넣어놓고 get 으로 가져다 쓰기  (이름 - 엔티티 맵)
+        List<Congressman> congressmanList = congressmanService.findAll();
+        // 이름을 key로 하고 Congressman 엔티티를 value로 하는 Map 생성
+        Map<String, Congressman> congressmanMap = congressmanList.stream()
+                .collect(Collectors.toMap(Congressman::getName, Function.identity()));
+
+
         for (Bill bill : insertList) {
             for (String congressmanName : billProposerNameMap.get(bill.getBillId())) {
-                final CongressmanBill congressmanBill = CongressmanBill.of(congressmanRepository.findByName(congressmanName).orElseThrow(() -> new CustomException(CongressmanErrorCode.NOT_EXISTS)), bill);
+                // 중간 엔티티 CongressmanBill 생성하면서 연관관계 설정
+                CongressmanBill.of(congressmanMap.get(congressmanName), bill);
             }
-            billRepository.save(bill);
-            log.info("bill 삽입 완료 : {}", ++count);
         }
 
-        log.info("syncBill 메서드 insert 처리 완료");
+        // bill batch insert 하면서 CongressmanBill 도 insert 됨
+        billRepository.saveAll(insertList);
 
         List<Bill> deleteList = dbBillList.stream()
                 .filter(dbBill -> !apiBillMap.containsKey(dbBill.getBillId()))
                 .collect(Collectors.toList());
 
-        for (Bill bill : deleteList) {
-            deleteBill(bill);
-        }
+        // 배치 delete 처리
+        billRepository.deleteAll(deleteList);
 
         List<Bill> updateList = dbBillList.stream()
                 .filter(dbBill -> {
@@ -94,6 +100,7 @@ public class BillService {
                 })
                 .collect(Collectors.toList());
 
+        // 변경감지에 의해 update
         for (Bill bill : updateList) {
             final Bill apiBill = apiBillMap.get(bill.getBillId());
             bill.updateFrom(apiBill);
