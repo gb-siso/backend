@@ -2,9 +2,13 @@ package com.guenbon.siso.service.bill;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
+import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.dto.bill.response.BillBatchResultDTO;
+import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
 import com.guenbon.siso.entity.bill.Bill;
+import com.guenbon.siso.entity.bill.BillSummary;
 import com.guenbon.siso.factory.BillFactory;
+import com.guenbon.siso.service.billsummary.BillSummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,16 +27,27 @@ public class BillApiService {
 
     private final CongressApiClient congressApiClient;
     private final BillService billService;
+    private final BillSummaryService billSummaryService;
 
-    public BillBatchResultDTO fetchAndSyncBill() {
+    public BillBatchResultDTO fetchAndSyncBillAndBillSummary() {
+        SyncBillResultDTO syncBillResultDTO = fetchAndSyncBill();
+        syncBillSummaries(syncBillResultDTO);
+        return BillBatchResultDTO.of(syncBillResultDTO);
+    }
+
+
+    /**
+     * 국회 api 에서 22대 국회 발의안 전체 목록을 가져와 db와 동기화한다
+     *
+     * @return
+     */
+    public SyncBillResultDTO fetchAndSyncBill() {
         List<Bill> apiBillList = new ArrayList<>();
         Map<String, List<String>> billProposerMap = new HashMap<>();
 
         int page = 1;
 
         while (true) {
-            log.info("page  : {}", page);
-
             final JsonNode jsonNode = congressApiClient.getBillResponse(page++);
 
             if (congressApiClient.isApiResponseError(jsonNode)) {
@@ -91,5 +106,34 @@ public class BillApiService {
         }
 
         return proposerList;
+    }
+
+    public void syncBillSummaries(SyncBillResultDTO syncBillResultDTO) {
+        // 요약 api -> BillSummary 삽입
+
+        List<BillSummary> insertList = new ArrayList<>();
+
+        for (Bill bill : syncBillResultDTO.getInsertList()) {
+            // 상세 링크에서 스크랩해온 내용
+            String data = billService.scrapData(bill.getDetailLink());
+            // 스크랩해온 내용으로 요약 api 쏘기
+            BillSummaryDTO billSummaryDTO = congressApiClient.getBillSummaryResponse(data);
+            insertList.add(BillSummary.of(billSummaryDTO, bill));
+        }
+
+        // 배치 삽입
+        billSummaryService.saveAll(insertList);
+
+        Map<Long, BillSummary> billSummaryMap = billSummaryService.getBillSummaryMap();
+        // 요약 api -> BillSummary 업데이트
+        for (Bill bill : syncBillResultDTO.getUpdateList()) {
+            // 상세 링크에서 스크랩해온 내용
+            String data = billService.scrapData(bill.getDetailLink());
+            // 스크랩해온 내용으로 요약 api 쏘기
+            BillSummaryDTO billSummaryDTO = congressApiClient.getBillSummaryResponse(data);
+            // 수정하기
+            BillSummary billSummary = billSummaryMap.get(bill.getId());
+            billSummaryService.updateFrom(billSummary, billSummaryDTO);
+        }
     }
 }

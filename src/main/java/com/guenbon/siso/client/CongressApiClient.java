@@ -1,12 +1,15 @@
 package com.guenbon.siso.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
+import com.guenbon.siso.util.PromptBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,7 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.guenbon.siso.exception.errorCode.CongressApiErrorCode.NO_DATA_FOUND;
@@ -26,6 +30,8 @@ public class CongressApiClient {
     public static final int PAGE_MAX_SIZE = 1000;
     @Value("${api.bill.key}")
     private String billApikey;
+    @Value("${api.perplexity.key}")
+    private String summaryApiKey;
 
     private static final WebClient webClient = WebClient.builder()
             .exchangeStrategies(ExchangeStrategies.builder()
@@ -44,25 +50,25 @@ public class CongressApiClient {
                 .block();
     }
 
-//    @Transactional(propagation = Propagation.NEVER)
-//    public BillSummaryDTO getBillSummaryResponse(final String baseUrl, final String apiKey, final String userContent) throws JsonProcessingException {
-//        String stringResponse = webClient.post()
-//                .uri(baseUrl)
-//                .header("Authorization", "Bearer " + apiKey)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(Map.of(
-//                        "model", "sonar",
-//                        "messages", List.of(
-//                                Map.of("role", "system", "content", PromptBuilder.getBillSummaryPrompt()),
-//                                Map.of("role", "user", "content", userContent)
-//                        ),
-//                        "max_tokens", 500
-//                ))
-//                .retrieve()
-//                .bodyToMono(String.class)
-//                .block();// 응답 JSON을 문자열로 받음
-//        return JsonParserUtil.parseBillSummary(stringResponse);
-//    }
+    @Transactional(propagation = Propagation.NEVER)
+    public BillSummaryDTO getBillSummaryResponse(final String userContent) {
+        String stringResponse = webClient.post()
+                .uri(SUMMARY_URL)
+                .header("Authorization", "Bearer " + summaryApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of(
+                        "model", "sonar",
+                        "messages", List.of(
+                                Map.of("role", "system", "content", PromptBuilder.getBillSummaryPrompt()),
+                                Map.of("role", "user", "content", userContent)
+                        ),
+                        "max_tokens", 500
+                ))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();// 응답 JSON을 문자열로 받음
+        return JsonParserUtil.parseBillSummary(stringResponse);
+    }
 
     private void logResponse(final String responseBody) {
         log.info("API Response Body: {}", responseBody);

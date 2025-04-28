@@ -3,6 +3,7 @@ package com.guenbon.siso.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -53,19 +54,25 @@ public class JsonParserUtil {
         return rootNode.path(errorCodePath).asText();
     }
 
-//    public static BillSummaryDTO parseBillSummary(String stringResponse) throws JsonProcessingException {
-//        final JsonNode root = objectMapper.readTree(stringResponse);
-//        final String content = root
-//                .path("choices")
-//                .get(0)
-//                .path("message")
-//                .path("content")
-//                .asText();
-//        return parseBillSummaryFromContent(content);
-//    }
+    public static BillSummaryDTO parseBillSummary(String stringResponse) {
+        final JsonNode root;
+        try {
+            root = objectMapper.readTree(stringResponse);
+        } catch (JsonProcessingException e) {
+            // todo 예외, 에러코드
+            throw new RuntimeException(e);
+        }
+        final String content = root
+                .path("choices")
+                .get(0)
+                .path("message")
+                .path("content")
+                .asText();
+        return parseBillSummaryFromContent(content);
+    }
 
-//    public static BillSummaryDTO parseBillSummaryFromContent(final String content) {
-//        final String[] lines = content.split("\n");
-//        return new BillSummaryDTO(lines[0], lines[1], lines[2], lines[3]);
-//    }
+    public static BillSummaryDTO parseBillSummaryFromContent(final String content) {
+        final String[] lines = content.split("\n");
+        return new BillSummaryDTO(lines[0], lines[1], lines[2], lines[3]);
+    }
 }

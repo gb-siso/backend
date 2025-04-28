@@ -63,6 +63,10 @@ public class Bill {
     @Builder.Default
     private List<CongressmanBill> congressmanBills = new ArrayList<>();
 
+    @Setter
+    @OneToOne(mappedBy = "bill", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private BillSummary billSummary;
+
     public void updateFrom(Bill from) {
         this.billId = from.billId; // BILL_ID 업데이트
         this.billNo = from.billNo; // BILL_NO 업데이트

@@ -1,6 +1,6 @@
 package com.guenbon.siso.service.bill;
 
-import com.guenbon.siso.dto.bill.response.BillBatchResultDTO;
+import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
@@ -10,9 +10,13 @@ import com.guenbon.siso.service.congressman.CongressmanService;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +58,7 @@ public class BillService {
     }
 
     @Transactional
-    public BillBatchResultDTO syncBill(List<Bill> apiBillList, Map<String, List<String>> billProposerNameMap) {
+    public SyncBillResultDTO syncBill(List<Bill> apiBillList, Map<String, List<String>> billProposerNameMap) {
         final List<Bill> dbBillList = getAllBillList();
         final Map<String, Bill> dbBillMap = dbBillList.stream()
                 .collect(Collectors.toMap(Bill::getBillId, Function.identity()));
@@ -64,10 +68,6 @@ public class BillService {
         List<Bill> insertList = apiBillList.stream()
                 .filter(apiBill -> !dbBillMap.containsKey(apiBill.getBillId()))
                 .collect(Collectors.toList());
-
-        log.info("syncBill 메서드 insertList : {}", insertList.size());
-
-        int count = 0;
 
         // 국회의원을 전부 찾아서 map 에 넣어놓고 get 으로 가져다 쓰기  (이름 - 엔티티 맵)
         List<Congressman> congressmanList = congressmanService.findAll();
@@ -90,7 +90,7 @@ public class BillService {
                 .filter(dbBill -> !apiBillMap.containsKey(dbBill.getBillId()))
                 .collect(Collectors.toList());
 
-        // 배치 delete 처리
+        // 배치 delete 처리 (BillSummary 자동 삭제)
         billRepository.deleteAll(deleteList);
 
         List<Bill> updateList = dbBillList.stream()
@@ -106,7 +106,7 @@ public class BillService {
             bill.updateFrom(apiBill);
         }
 
-        return BillBatchResultDTO.of(insertList, deleteList, updateList);
+        return SyncBillResultDTO.of(insertList, deleteList, updateList);
     }
 
     /**
@@ -135,6 +135,24 @@ public class BillService {
                 !Objects.equals(a.getProcDt(), b.getProcDt()) ||
                 !Objects.equals(a.getCommitteeId(), b.getCommitteeId()) ||
                 !Objects.equals(a.getLawProcResultCd(), b.getLawProcResultCd());
+    }
+
+    /**
+     * 링크에서 summaryContentDiv 의 텍스트를 스크랩해온다
+     *
+     * @param detailLink
+     * @return
+     */
+    @Transactional(propagation = Propagation.NEVER)
+    public String scrapData(String detailLink) {
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(detailLink).get();
+        } catch (IOException e) {
+            // todo : 예외 , 에러코드 수정 필요
+            throw new RuntimeException(e);
+        }
+        return doc.getElementById("summaryContentDiv").text();
     }
 }
 
