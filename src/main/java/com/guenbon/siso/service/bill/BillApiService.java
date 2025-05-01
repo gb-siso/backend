@@ -2,15 +2,18 @@ package com.guenbon.siso.service.bill;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
-import com.guenbon.siso.dto.bill.BillSummaryDTO;
+import com.guenbon.siso.dto.bill.BillScrapResult;
+import com.guenbon.siso.dto.bill.BillSummaryParseResult;
 import com.guenbon.siso.dto.bill.response.BillBatchResultDTO;
 import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
+import com.guenbon.siso.dto.bill.response.SyncBillSummaryResultDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.bill.BillSummary;
 import com.guenbon.siso.factory.BillFactory;
 import com.guenbon.siso.service.billsummary.BillSummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,14 +28,16 @@ import static com.guenbon.siso.support.constants.ApiConstants.BILL_API_PATH;
 @Slf4j
 public class BillApiService {
 
+    @Value("${bill.api.maxpage}")
+    private int billApiMaxPage;
     private final CongressApiClient congressApiClient;
     private final BillService billService;
     private final BillSummaryService billSummaryService;
 
     public BillBatchResultDTO fetchAndSyncBillAndBillSummary() {
         SyncBillResultDTO syncBillResultDTO = fetchAndSyncBill();
-        syncBillSummaries(syncBillResultDTO);
-        return BillBatchResultDTO.of(syncBillResultDTO);
+        SyncBillSummaryResultDTO syncBillSummaryResultDTO = syncBillSummaries(syncBillResultDTO);
+        return BillBatchResultDTO.of(syncBillResultDTO, syncBillSummaryResultDTO);
     }
 
 
@@ -47,7 +52,7 @@ public class BillApiService {
 
         int page = 1;
 
-        while (true) {
+        while (page < billApiMaxPage) { // 혹시 모를 무한루프 방지
             final JsonNode jsonNode = congressApiClient.getBillResponse(page++);
 
             if (congressApiClient.isApiResponseError(jsonNode)) {
@@ -108,32 +113,49 @@ public class BillApiService {
         return proposerList;
     }
 
-    public void syncBillSummaries(SyncBillResultDTO syncBillResultDTO) {
-        // 요약 api -> BillSummary 삽입
-
+    public SyncBillSummaryResultDTO syncBillSummaries(SyncBillResultDTO syncBillResultDTO) {
         List<BillSummary> insertList = new ArrayList<>();
+        int count = 0;
 
         for (Bill bill : syncBillResultDTO.getInsertList()) {
-            // 상세 링크에서 스크랩해온 내용
-            String data = billService.scrapData(bill.getDetailLink());
-            // 스크랩해온 내용으로 요약 api 쏘기
-            BillSummaryDTO billSummaryDTO = congressApiClient.getBillSummaryResponse(data);
-            insertList.add(BillSummary.of(billSummaryDTO, bill));
+            BillScrapResult scrapResult = billService.scrapData(bill.getDetailLink());
+
+            if (scrapResult.isSuccess()) {
+                BillSummaryParseResult billSummaryParseResult = congressApiClient.getBillSummaryResponse(scrapResult.getContent());
+                if (billSummaryParseResult.isSuccess()) {
+                    insertList.add(BillSummary.of(billSummaryParseResult.getSummary(), bill));
+                    log.info("[BillSummary 삽입] {} 번째 bill {} 요약 api 호출 성공", ++count, bill.getId());
+                }
+            } else {
+                log.info("[BillSummary 삽입] {} 번째 bill {} 요약 api 호출 실패. 사유 : {}", ++count, bill.getId(), scrapResult.getErrorMessage());
+            }
         }
 
-        // 배치 삽입
         billSummaryService.saveAll(insertList);
 
         Map<Long, BillSummary> billSummaryMap = billSummaryService.getBillSummaryMap();
-        // 요약 api -> BillSummary 업데이트
+        List<BillSummary> updateList = new ArrayList<>();
         for (Bill bill : syncBillResultDTO.getUpdateList()) {
-            // 상세 링크에서 스크랩해온 내용
-            String data = billService.scrapData(bill.getDetailLink());
-            // 스크랩해온 내용으로 요약 api 쏘기
-            BillSummaryDTO billSummaryDTO = congressApiClient.getBillSummaryResponse(data);
-            // 수정하기
-            BillSummary billSummary = billSummaryMap.get(bill.getId());
-            billSummaryService.updateFrom(billSummary, billSummaryDTO);
+            BillScrapResult scrapResult = billService.scrapData(bill.getDetailLink());
+
+            if (scrapResult.isSuccess()) {
+                BillSummaryParseResult result = congressApiClient.getBillSummaryResponse(scrapResult.getContent());
+                if (result.isSuccess()) {
+                    BillSummary billSummary = billSummaryMap.get(bill.getId());
+                    BillSummary updatedBillSummary = billSummaryService.updateFrom(billSummary, result.getSummary());
+                    updateList.add(updatedBillSummary);
+                    log.info("[BillSummary 수정] {} 번째 bill {} 요약 api 호출 성공", ++count, bill.getId());
+                }
+            } else {
+                log.info("[BillSummary 수정] {} 번째 bill {} 요약 api 호출 실패. 사유 : {}", ++count, bill.getId(), scrapResult.getErrorMessage());
+            }
         }
+
+        // 트랜잭션 내에서 update
+        billSummaryService.saveAll(updateList);
+
+        // 삭제 : CASCADE 에 의해 처리
+
+        return SyncBillSummaryResultDTO.of(insertList, updateList);
     }
 }

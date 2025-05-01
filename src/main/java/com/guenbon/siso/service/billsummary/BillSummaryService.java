@@ -41,7 +41,7 @@ public class BillSummaryService {
     }
 
     @Transactional
-    public void updateFrom(BillSummary billSummary, BillSummaryDTO billSummaryDTO) {
-        billSummary.updateFrom(billSummaryDTO);
+    public BillSummary updateFrom(BillSummary billSummary, BillSummaryDTO billSummaryDTO) {
+        return billSummary.updateFrom(billSummaryDTO);
     }
 }

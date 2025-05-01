@@ -1,7 +1,7 @@
 package com.guenbon.siso.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.guenbon.siso.dto.bill.BillSummaryDTO;
+import com.guenbon.siso.dto.bill.BillSummaryParseResult;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
@@ -27,7 +27,8 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @Component
 public class CongressApiClient {
 
-    public static final int PAGE_MAX_SIZE = 1000;
+    @Value("${page.max.size}")
+    private int pageMaxSize;
     @Value("${api.bill.key}")
     private String billApikey;
     @Value("${api.perplexity.key}")
@@ -51,7 +52,7 @@ public class CongressApiClient {
     }
 
     @Transactional(propagation = Propagation.NEVER)
-    public BillSummaryDTO getBillSummaryResponse(final String userContent) {
+    public BillSummaryParseResult getBillSummaryResponse(final String userContent) {
         String stringResponse = webClient.post()
                 .uri(SUMMARY_URL)
                 .header("Authorization", "Bearer " + summaryApiKey)
@@ -67,11 +68,7 @@ public class CongressApiClient {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();// 응답 JSON을 문자열로 받음
-        return JsonParserUtil.parseBillSummary(stringResponse);
-    }
-
-    private void logResponse(final String responseBody) {
-        log.info("API Response Body: {}", responseBody);
+        return JsonParserUtil.parseBillSummarySafe(stringResponse);
     }
 
     // 특정 필드값 추출하는 메서드
@@ -113,7 +110,7 @@ public class CongressApiClient {
                 .queryParam(KEY, billApikey)
                 .queryParam(TYPE, "json")
                 .queryParam(P_INDEX, page)
-                .queryParam(P_SIZE, PAGE_MAX_SIZE);
+                .queryParam(P_SIZE, pageMaxSize);
 
         String uriString = uriBuilder.build(false).toUriString();
 

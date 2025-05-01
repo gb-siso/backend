@@ -9,13 +9,18 @@ import lombok.*;
 @ToString
 @Builder
 public class BillBatchResultDTO {
-    private int insertCount;
-    private int updateCount;
-    private int deleteCount;
+    private int billInsertCount;
+    private int billUpdateCount;
+    private int billDeleteCount;
+    private int billSummaryInsertCount;
+    private int billSummaryUpdateCount;
 
-    public static BillBatchResultDTO of(SyncBillResultDTO syncBillResultDTO) {
-        return BillBatchResultDTO.builder().insertCount(syncBillResultDTO.getInsertList().size())
-                .deleteCount(syncBillResultDTO.getDeleteList().size())
-                .updateCount(syncBillResultDTO.getUpdateList().size()).build();
+    public static BillBatchResultDTO of(SyncBillResultDTO syncBillResultDTO, SyncBillSummaryResultDTO syncBillSummaryResultDTO) {
+        return BillBatchResultDTO.builder().billInsertCount(syncBillResultDTO.getInsertList().size())
+                .billDeleteCount(syncBillResultDTO.getDeleteList().size())
+                .billUpdateCount(syncBillResultDTO.getUpdateList().size())
+                .billSummaryInsertCount(syncBillSummaryResultDTO.getInsertList().size())
+                .billSummaryUpdateCount(syncBillSummaryResultDTO.getUpdateList().size())
+                .build();
     }
 }

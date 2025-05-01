@@ -34,10 +34,11 @@ public class BillSummary {
                 .build();
     }
 
-    public void updateFrom(BillSummaryDTO billSummaryDTO) {
+    public BillSummary updateFrom(BillSummaryDTO billSummaryDTO) {
         this.category = billSummaryDTO.getCategory();
         this.content = billSummaryDTO.getContent();
         this.reason = billSummaryDTO.getReason();
         this.expected = billSummaryDTO.getExpected();
+        return this;
     }
 }

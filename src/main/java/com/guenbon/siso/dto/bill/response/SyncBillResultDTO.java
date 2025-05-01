@@ -16,7 +16,7 @@ public class SyncBillResultDTO {
     private List<Bill> updateList;
     private List<Bill> deleteList;
 
-    public static SyncBillResultDTO of(List<Bill> insertList, List<Bill> deleteList, List<Bill> updateList) {
+    public static SyncBillResultDTO of(List<Bill> insertList, List<Bill> updateList, List<Bill> deleteList) {
         return SyncBillResultDTO.builder().insertList(insertList).deleteList(deleteList).updateList(updateList).build();
     }
 }

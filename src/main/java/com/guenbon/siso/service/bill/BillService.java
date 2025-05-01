@@ -1,17 +1,17 @@
 package com.guenbon.siso.service.bill;
 
+import com.guenbon.siso.dto.bill.BillScrapResult;
 import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
 import com.guenbon.siso.repository.bill.BillRepository;
-import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.service.congressman.CongressmanService;
-import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +28,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BillService {
-    private final AESUtil aesUtil;
+    public static final String BILL_CONTENT_DIV = "summaryContentDiv";
     private final BillRepository billRepository;
-    private final CongressmanRepository congressmanRepository;
     private final CongressmanService congressmanService;
 
     public List<Bill> getAllBillList() {
@@ -106,7 +105,7 @@ public class BillService {
             bill.updateFrom(apiBill);
         }
 
-        return SyncBillResultDTO.of(insertList, deleteList, updateList);
+        return SyncBillResultDTO.of(insertList, updateList, deleteList);
     }
 
     /**
@@ -144,15 +143,24 @@ public class BillService {
      * @return
      */
     @Transactional(propagation = Propagation.NEVER)
-    public String scrapData(String detailLink) {
-        Document doc = null;
+    public BillScrapResult scrapData(String detailLink) {
+        if (detailLink == null) {
+            return BillScrapResult.failure("발의안 detailLink 가 없어서 스크랩 할 수 없음");
+        }
+
+        final Document doc;
         try {
             doc = Jsoup.connect(detailLink).get();
         } catch (IOException e) {
-            // todo : 예외 , 에러코드 수정 필요
-            throw new RuntimeException(e);
+            return BillScrapResult.failure("스크랩 요청 중 IOException 발생: " + e.getMessage());
         }
-        return doc.getElementById("summaryContentDiv").text();
+
+        Element summaryContentDiv = doc.getElementById(BILL_CONTENT_DIV);
+        if (summaryContentDiv == null) {
+            return BillScrapResult.failure("발의안 내용 스크랩 시 스크랩 하려는 요소가 없음");
+        }
+
+        return BillScrapResult.success(summaryContentDiv.text());
     }
 }
 
