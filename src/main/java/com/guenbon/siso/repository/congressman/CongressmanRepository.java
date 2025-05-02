@@ -1,5 +1,6 @@
 package com.guenbon.siso.repository.congressman;
 
+import com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO;
 import com.guenbon.siso.entity.congressman.Congressman;
 import io.micrometer.common.lang.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,5 +27,12 @@ public interface CongressmanRepository extends JpaRepository<Congressman, Long>,
     @Query("DELETE FROM Congressman c WHERE c.id IN :idList")
     int batchDelete(@Param("idList") List<Long> idList);
 
-    Optional<Congressman> findByName(String name);
+
+    @Query("""
+    SELECT new com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO(c.id, c.name)
+    FROM Congressman c
+    JOIN c.congressmanBills cb
+    WHERE cb.bill.id = :billId
+    """)
+    List<CongressmanBillListDTO> findCongressmanByBillId(@Param("billId") Long billId);
 }

@@ -1,22 +1,31 @@
 package com.guenbon.siso.service.bill;
 
+import com.guenbon.siso.dto.bill.BillDTO;
+import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.bill.BillScrapResult;
+import com.guenbon.siso.dto.bill.projection.BillListProjectionDTO;
 import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
+import com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
 import com.guenbon.siso.repository.bill.BillRepository;
+import com.guenbon.siso.repository.congressman.CongressmanRepository;
 import com.guenbon.siso.service.congressman.CongressmanService;
+import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +40,8 @@ public class BillService {
     public static final String BILL_CONTENT_DIV = "summaryContentDiv";
     private final BillRepository billRepository;
     private final CongressmanService congressmanService;
+    private final AESUtil aesUtil;
+    private final CongressmanRepository congressmanRepository;
 
     public List<Bill> getAllBillList() {
         return billRepository.findAll();
@@ -161,6 +172,28 @@ public class BillService {
         }
 
         return BillScrapResult.success(summaryContentDiv.text());
+    }
+
+    public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) throws IOException {
+        // 페이지에 해당하는 발의안 리스트 가져오기
+        Page<BillListProjectionDTO> page = billRepository.getBillListByCongressman(aesUtil.decrypt(encryptedCongressmanId), pageable);
+
+        List<BillListProjectionDTO> content = page.getContent();
+
+        List<BillDTO> billDTOList = new ArrayList<>();
+
+        // 발의안별로 국회의원 목록 조회하기
+        for (BillListProjectionDTO billListProjectionDTO : content) {
+            Long billId = billListProjectionDTO.getBillId();
+            List<CongressmanBillListDTO> congressmanBillListDTOList = congressmanRepository.findCongressmanByBillId(billId);
+            BillDTO billDTO = new BillDTO(billListProjectionDTO, congressmanBillListDTOList);
+            billDTOList.add(billDTO);
+        }
+
+        return BillListDTO.builder().billList(billDTOList)
+                .lastPage(page.getTotalPages()) // 마지막 페이지
+                .page(page.getNumber()) // 현재 페이지
+                .build();
     }
 }
 

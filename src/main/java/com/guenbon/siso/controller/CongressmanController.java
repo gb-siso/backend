@@ -1,6 +1,5 @@
 package com.guenbon.siso.controller;
 
-import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
@@ -17,9 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
-import static com.guenbon.siso.support.constants.SortProperty.*;
+import static com.guenbon.siso.support.constants.SortProperty.RATE;
+import static com.guenbon.siso.support.constants.SortProperty.REG_DATE;
 
 @Slf4j
 @RestController
@@ -52,12 +50,6 @@ public class CongressmanController {
     public ResponseEntity<NewsListDTO> newsList(@PathVariable String congressmanId,
                                                 @PageConfig(allowedSorts = REG_DATE, defaultSort = "regDate, DESC") Pageable pageable) {
         return ResponseEntity.ok(congressmanApiService.findNewsList(congressmanId, pageable));
-    }
-
-    @GetMapping("/bills/{congressmanId}")
-    public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
-                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC") Pageable pageable) throws IOException {
-        return ResponseEntity.ok(congressmanApiService.findBillList(congressmanId, pageable));
     }
 
     @Login(role = MemberRole.ADMIN)

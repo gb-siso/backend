@@ -2,8 +2,6 @@ package com.guenbon.siso.service.congressman;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.guenbon.siso.client.CongressApiClient;
-import com.guenbon.siso.dto.bill.BillDTO;
-import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.SyncCongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.news.NewsListDTO;
@@ -14,16 +12,12 @@ import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -64,43 +58,6 @@ public class CongressmanApiService {
 
         int lastPage = calculateTotalPages(extractTotalCount(jsonNode, NEWS_API_PATH), pageable.getPageSize());
         return NewsListDTO.of(getContent(jsonNode, NEWS_API_PATH), lastPage);
-    }
-
-    public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) throws IOException {
-        Congressman congressman = congressmanService.getCongressman(encryptedCongressmanId);
-        // 발의안 목록 api 요청 및 파싱
-        BillListDTO billListDTO = fetchBillList(pageable, congressman);
-//        // 발의안 스크랩 + 요약 및 파싱
-//        scrapAndSummaryBillContent(billListDTO);
-        return billListDTO;
-    }
-
-    private BillListDTO fetchBillList(Pageable pageable, Congressman congressman) {
-        Map<String, String> params = Map.of(
-                AGE, "22",
-                PROPOSER, congressman.getName() + "의원"
-        );
-        JsonNode jsonNode = fetchApiResponse(pageable, API_BILL_URL, billApikey, params);
-        int totalPage = calculateTotalPages(extractTotalCount(jsonNode, BILL_API_PATH), pageable.getPageSize());
-        BillListDTO billListDTO = BillListDTO.of(getContent(jsonNode, BILL_API_PATH), totalPage);
-        return billListDTO;
-    }
-
-//    private void scrapAndSummaryBillContent(BillListDTO billListDTO) throws IOException {
-//        for (BillDTO billDTO : billListDTO.getBillList()) {
-//            // 스크랩
-//            String text = scrapBillContent(billDTO);
-//            // 요약 - api 요청
-//            billDTO.setBillSummary(congressApiClient.getBillSummaryResponse(SUMMARY_URL, perplexityApikey, text));
-//        }
-//    }
-
-    private static String scrapBillContent(BillDTO billDTO) throws IOException {
-        String link = billDTO.getLink();
-        Document doc = Jsoup.connect(link).get(); // HTML 가져오기
-        Element summary = doc.getElementById("summaryContentDiv"); // ID로 요소 찾기
-        String text = summary.text();
-        return text;
     }
 
     private JsonNode fetchApiResponse(final Pageable pageable, final String apiUrl, final String apiKey, final Map<String, String> params) {
