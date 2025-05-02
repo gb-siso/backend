@@ -1,10 +1,12 @@
 package com.guenbon.siso.dto.bill.projection;
 
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
 @Getter
+@ToString
 public class BillListProjectionDTO {
 
     // 발의안 내용

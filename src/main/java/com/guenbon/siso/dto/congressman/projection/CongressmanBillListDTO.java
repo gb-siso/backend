@@ -1,5 +1,8 @@
 package com.guenbon.siso.dto.congressman.projection;
 
+import lombok.ToString;
+
+@ToString
 public class CongressmanBillListDTO {
     private Long id;
     private String name;

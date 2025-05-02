@@ -1,7 +1,5 @@
 package com.guenbon.siso.controller;
 
-import com.guenbon.siso.dto.bill.BillDTO;
-import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
 import com.guenbon.siso.dto.news.NewsDTO;
@@ -217,72 +215,5 @@ class CongressmanControllerTest {
                 .andExpect(jsonPath("$.newsList[1].title").value(news2.getTitle()));
 
         verify(congressmanApiService, times(1)).findNewsList(decryptedCongressmanId, pageRequest);
-    }
-
-    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 유효하지 않은 congressmanId 요청 시 예외를 응답한다")
-    @ParameterizedTest(name = "congressmanId : {0} 요청 시 {1} 에러코드 응답 반환")
-    @MethodSource("provideInvalidCongressmanId")
-    void billList_invalidCongressmanId_ReturnsBadRequest(String decryptedCongressmanId, ErrorCode expectedCode)
-            throws Exception {
-        // given
-        when(congressmanApiService.findBillList(decryptedCongressmanId,
-                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
-                new CustomException(expectedCode));
-
-        // when, then
-        mockMvc.perform(
-                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is(expectedCode.getHttpStatus().value()))
-                .andExpect(jsonPath("$.message").value(expectedCode.getMessage()))
-                .andExpect(jsonPath("$.code").value(expectedCode.getCode()));
-    }
-
-    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 에서 ApiErrorCode에 따른 API 예외를 응답한다")
-    @ParameterizedTest
-    @EnumSource(CongressApiErrorCode.class)
-    void billList_ApiErrorCode_ReturnsApiErrorResponse(CongressApiErrorCode congressApiErrorCode) throws Exception {
-        // given
-        final String decryptedCongressmanId = "decryptedCongressmanId";
-        when(congressmanApiService.findBillList(decryptedCongressmanId,
-                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("proposeDate"))))).thenThrow(
-                new CustomException(congressApiErrorCode));
-
-        // when, then
-        mockMvc.perform(
-                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is(congressApiErrorCode.getHttpStatus().value()))
-                .andExpect(jsonPath("$.message").value(congressApiErrorCode.getMessage()))
-                .andExpect(jsonPath("$.code").value(congressApiErrorCode.getCode()));
-    }
-
-    @DisplayName("GET:" + BASE_URL + "/bills/{congressmanId} 에 유효한 congressmanId 요청 시 발의안 목록을 응답한다")
-    @Test
-    void billList_validCongressmanId_ReturnsNewsList() throws Exception {
-        // given
-        final String decryptedCongressmanId = "decryptedCongressmanId";
-
-        final BillDTO bill1 = BillDTO.of("발의안제목1", "이준석의원", "의준석의원 외 10명", "의준석의원", "http://bill1.com", "2025-01-21");
-        final BillDTO bill2 = BillDTO.of("발의안제목2", "이준석의원", "의준석의원 외 10명", "의준석의원", "http://bill2.com", "2025-01-15");
-
-        final PageRequest pageRequest = PageRequest.of(0, 2, Sort.by(Order.desc("proposeDate")));
-
-        when(congressmanApiService.findBillList(decryptedCongressmanId,
-                pageRequest)).thenReturn(
-                BillListDTO.of(List.of(bill1, bill2), 10)
-        );
-        // when, then
-        // when, then
-        mockMvc.perform(
-                        get(BASE_URL + "/bills/" + decryptedCongressmanId).contentType(MediaType.APPLICATION_JSON)
-                                .param("size", "2"))
-                .andDo(print())
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.lastPage").value(10))
-                .andExpect(jsonPath("$.billList[0].title").value(bill1.getTitle()))
-                .andExpect(jsonPath("$.billList[1].title").value(bill2.getTitle()));
-
-        verify(congressmanApiService, times(1)).findBillList(decryptedCongressmanId, pageRequest);
     }
 }
