@@ -162,8 +162,7 @@ public class CongressmanApiService {
         return jsonNode.path(apiPath).get(1).path("row");
     }
 
-    // 매일 05 시 스프링 스케쥴러로 호출
-    @Scheduled(cron = "0 0 5 * * *")
+    @Scheduled(cron = "0 0 3 ? * MON")
     public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
         log.info("국회의원 동기화 fetchAndSyncCongressmen 메서드 호출 -> {}", LocalDateTime.now());
         List<SyncCongressmanDTO> recentSyncList = fetchRecentCongressmanList();
