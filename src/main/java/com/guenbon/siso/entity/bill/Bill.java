@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,10 +62,12 @@ public class Bill {
     @Setter
     @OneToMany(mappedBy = "bill", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @Builder.Default
+    @ToString.Exclude
     private List<CongressmanBill> congressmanBills = new ArrayList<>();
 
     @Setter
     @OneToOne(mappedBy = "bill", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private BillSummary billSummary;
 
     public void updateFrom(Bill from) {
