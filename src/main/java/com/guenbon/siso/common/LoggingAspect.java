@@ -63,8 +63,7 @@ public class LoggingAspect {
 
     private void logResponseInfo(ContentCachingResponseWrapper response) {
         try {
-            String body = getResponseBody(response);
-            log.info("<== 응답: 상태코드={} | Body={}", response.getStatus(), body);
+            log.info("<== 응답: 상태코드={}", response.getStatus());
             response.copyBodyToResponse(); // 중요: 원본 응답 복사
         } catch (Exception e) {
             log.warn("응답 로깅 중 오류 발생", e);
