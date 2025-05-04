@@ -2,7 +2,6 @@ package com.guenbon.siso.service.bill;
 
 import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
-import com.guenbon.siso.dto.bill.BillScrapResult;
 import com.guenbon.siso.dto.bill.projection.BillListProjectionDTO;
 import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
 import com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO;
@@ -154,24 +153,11 @@ public class BillService {
      * @return
      */
     @Transactional(propagation = Propagation.NEVER)
-    public BillScrapResult scrapData(String detailLink) {
-        if (detailLink == null) {
-            return BillScrapResult.failure("발의안 detailLink 가 없어서 스크랩 할 수 없음");
-        }
-
+    public String scrapData(String detailLink) throws IOException {
         final Document doc;
-        try {
-            doc = Jsoup.connect(detailLink).get();
-        } catch (IOException e) {
-            return BillScrapResult.failure("스크랩 요청 중 IOException 발생: " + e.getMessage());
-        }
-
+        doc = Jsoup.connect(detailLink).get();
         Element summaryContentDiv = doc.getElementById(BILL_CONTENT_DIV);
-        if (summaryContentDiv == null) {
-            return BillScrapResult.failure("발의안 내용 스크랩 시 스크랩 하려는 요소가 없음");
-        }
-
-        return BillScrapResult.success(summaryContentDiv.text());
+        return summaryContentDiv.text();
     }
 
     public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) throws IOException {

@@ -1,11 +1,13 @@
 package com.guenbon.siso.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.guenbon.siso.dto.bill.BillSummaryParseResult;
+import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
 import com.guenbon.siso.util.PromptBuilder;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,8 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @Component
 public class CongressApiClient {
 
+    @Value("${perplexity.max.token}")
+    private int maxToken;
     @Value("${page.max.size}")
     private int pageMaxSize;
     @Value("${api.bill.key}")
@@ -51,9 +56,10 @@ public class CongressApiClient {
                 .block();
     }
 
+    @SneakyThrows
     @Transactional(propagation = Propagation.NEVER)
-    public BillSummaryParseResult getBillSummaryResponse(final String userContent) {
-        String stringResponse = webClient.post()
+    public Mono<BillSummaryDTO> getBillSummaryResponse(final String userContent) {
+        return webClient.post()
                 .uri(SUMMARY_URL)
                 .header("Authorization", "Bearer " + summaryApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -63,13 +69,19 @@ public class CongressApiClient {
                                 Map.of("role", "system", "content", PromptBuilder.getBillSummaryPrompt()),
                                 Map.of("role", "user", "content", userContent)
                         ),
-                        "max_tokens", 500
+                        "max_tokens", maxToken
                 ))
                 .retrieve()
                 .bodyToMono(String.class)
-                .block();// 응답 JSON을 문자열로 받음
-        return JsonParserUtil.parseBillSummarySafe(stringResponse);
+                .map(str -> {
+                    try {
+                        return JsonParserUtil.parseBillSummary(str);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("JSON 파싱 실패", e);
+                    }
+                });
     }
+
 
     // 특정 필드값 추출하는 메서드
     public String getFieldValue(final JsonNode rootNode, final String... fieldNames) {

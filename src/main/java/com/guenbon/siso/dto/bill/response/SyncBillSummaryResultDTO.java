@@ -13,9 +13,8 @@ import java.util.List;
 @Builder
 public class SyncBillSummaryResultDTO {
     private List<BillSummary> insertList;
-    private List<BillSummary> updateList;
 
-    public static SyncBillSummaryResultDTO of(List<BillSummary> insertList, List<BillSummary> updateList) {
-        return SyncBillSummaryResultDTO.builder().insertList(insertList).updateList(updateList).build();
+    public static SyncBillSummaryResultDTO of(List<BillSummary> insertList) {
+        return SyncBillSummaryResultDTO.builder().insertList(insertList).build();
     }
 }

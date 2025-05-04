@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.siso.dto.bill.BillSummaryDTO;
-import com.guenbon.siso.dto.bill.BillSummaryParseResult;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -55,14 +54,15 @@ public class JsonParserUtil {
         return rootNode.path(errorCodePath).asText();
     }
 
-    public static BillSummaryParseResult parseBillSummarySafe(String stringResponse) {
-        try {
+    /**
+     * 발의안 요약 api 호출 결과를 파싱
+     * @param stringResponse 요약 api 호출 결과
+     * @return BillSummaryParseResult 파싱 결과 dto. 예외 여부도 담고, 예외 발생시 예외메세지도 담음
+     */
+    public static BillSummaryDTO parseBillSummary(String stringResponse) throws JsonProcessingException {
             JsonNode root = objectMapper.readTree(stringResponse);
             String content = root.path("choices").get(0).path("message").path("content").asText();
             String[] lines = content.split("\n");
-            return BillSummaryParseResult.success(new BillSummaryDTO(lines[0], lines[1], lines[2], lines[3]));
-        } catch (Exception e) {
-            return BillSummaryParseResult.failure(e.getMessage());
-        }
+            return BillSummaryDTO.of(lines[0], lines[1], lines[2], lines[3]);
     }
 }
