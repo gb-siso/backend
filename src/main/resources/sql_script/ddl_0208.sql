@@ -4,6 +4,9 @@ drop table if exists rating;
 drop table if exists congressman;
 drop table if exists member;
 drop table if exists assembly_session;
+drop table if exists congressman_bill;
+drop table if exists bill;
+drop table if exists bill_summary;
 
 create table congressman
 (
@@ -135,45 +138,48 @@ alter table rating
 
 
 
-create table bill (
-                      cmt_present_dt date,
-                      cmt_proc_dt date,
-                      committee_dt date,
-                      law_present_dt date,
-                      law_proc_dt date,
-                      law_submit_dt date,
-                      proc_dt date,
-                      propose_dt date,
-                      id bigint not null auto_increment,
-                      age varchar(255),
-                      bill_id varchar(255) not null,
-                      bill_name varchar(255) not null,
-                      bill_no varchar(255) not null,
-                      cmt_proc_result_cd varchar(255),
-                      committee varchar(255),
-                      committee_id varchar(255),
-                      detail_link varchar(255),
-                      law_proc_result_cd varchar(255),
-                      proc_result varchar(255),
-                      primary key (id)
-) engine=InnoDB;
+create table bill
+(
+    cmt_present_dt     date,
+    cmt_proc_dt        date,
+    committee_dt       date,
+    law_present_dt     date,
+    law_proc_dt        date,
+    law_submit_dt      date,
+    proc_dt            date,
+    propose_dt         date,
+    id                 bigint       not null auto_increment,
+    age                varchar(255),
+    bill_id            varchar(255) not null,
+    bill_name          varchar(255) not null,
+    bill_no            varchar(255) not null,
+    cmt_proc_result_cd varchar(255),
+    committee          varchar(255),
+    committee_id       varchar(255),
+    detail_link        varchar(255),
+    law_proc_result_cd varchar(255),
+    proc_result        varchar(255),
+    primary key (id)
+) engine = InnoDB;
 
-create table bill_summary (
-                              bill_id bigint,
-                              id bigint not null auto_increment,
-                              category varchar(255),
-                              content varchar(255),
-                              expected varchar(255),
-                              reason varchar(255),
-                              primary key (id)
-) engine=InnoDB;
+create table bill_summary
+(
+    bill_id  bigint,
+    id       bigint not null auto_increment,
+    category varchar(255),
+    content  varchar(255),
+    expected varchar(255),
+    reason   varchar(255),
+    primary key (id)
+) engine = InnoDB;
 
-create table congressman_bill (
-                                  bill_id bigint,
-                                  congressman_id bigint,
-                                  id bigint not null auto_increment,
-                                  primary key (id)
-) engine=InnoDB;
+create table congressman_bill
+(
+    bill_id        bigint,
+    congressman_id bigint,
+    id             bigint not null auto_increment,
+    primary key (id)
+) engine = InnoDB;
 
 alter table bill
     add constraint unique_bill_id unique (bill_id);
