@@ -11,6 +11,8 @@ import com.guenbon.siso.factory.BillFactory;
 import com.guenbon.siso.service.billsummary.BillSummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.guenbon.siso.support.constants.ApiConstants.BILL_API_PATH;
 
@@ -30,6 +31,8 @@ import static com.guenbon.siso.support.constants.ApiConstants.BILL_API_PATH;
 @RequiredArgsConstructor
 @Slf4j
 public class BillApiService {
+
+    private static final Logger schedulerLogger = LoggerFactory.getLogger("SCHEDULER_LOGGER");
 
     @Value("${bill.api.maxpage}")
     private int billApiMaxPage;
@@ -41,8 +44,15 @@ public class BillApiService {
 
     @Scheduled(cron = "0 0 3 ? * MON")
     public BillBatchResultDTO fetchAndSyncBillAndBillSummary() {
+
+        schedulerLogger.info("[Bill 동기화] 시작 : {}", LocalDate.now());
         SyncBillResultDTO syncBillResultDTO = fetchAndSyncBill();
+        schedulerLogger.info("[Bill 동기화] 끝 : {}", LocalDate.now());
+
+        schedulerLogger.info("[BillSummary 동기화] 시작 : {}", LocalDate.now());
         SyncBillSummaryResultDTO syncBillSummaryResultDTO = syncBillSummaries(syncBillResultDTO).block();
+        schedulerLogger.info("[BillSummary 동기화] 끝 : {}", LocalDate.now());
+
         return BillBatchResultDTO.of(syncBillResultDTO, syncBillSummaryResultDTO);
     }
 
@@ -52,6 +62,7 @@ public class BillApiService {
      * @return
      */
     private SyncBillResultDTO fetchAndSyncBill() {
+
         List<Bill> apiBillList = new ArrayList<>();
         Map<String, List<String>> billProposerMap = new HashMap<>();
 
@@ -126,27 +137,27 @@ public class BillApiService {
     }
 
     private Mono<SyncBillSummaryResultDTO> syncBillSummaries(SyncBillResultDTO syncBillResultDTO) {
-        AtomicInteger count = new AtomicInteger(0);
+//        AtomicInteger count = new AtomicInteger(0);
 
         return Flux.fromIterable(syncBillResultDTO.getInsertList())
                 .flatMap(bill -> {
-                    int current = count.incrementAndGet();
+//                    int current = count.incrementAndGet();
 
                     try {
                         String scrapResult = billService.scrapData(bill.getDetailLink());
 
                         return congressApiClient.getBillSummaryResponse(scrapResult)
                                 .map(dto -> {
-                                    log.info("[{}] bill {} 요약 api 성공", current, bill.getId());
+                                    schedulerLogger.info("[BillSummary 동기화] billId : {} 요약 api 성공", bill.getId());
                                     return BillSummary.of(dto, bill);
                                 })
                                 .onErrorResume(e -> {
-                                    log.error("[{}] bill {} 요약 api 실패: {}", current, bill.getId(), e.getMessage());
+                                    schedulerLogger.error("[BillSummary 동기화] billId : {} 요약 api 실패: {}", bill.getId(), e.getMessage());
                                     return Mono.empty();
                                 });
 
                     } catch (Exception e) {
-                        log.error("[{}] bill {} 처리 중 예외 발생: {}", current, bill.getId(), e.getMessage());
+                        log.error("[BillSummary 동기화] billId : {} 처리 중 예외 발생: {}", bill.getId(), e.getMessage());
                         return Mono.empty();
                     }
                 })
@@ -156,7 +167,7 @@ public class BillApiService {
                         billSummaryService.saveAll(batch); // 저장
                         return Flux.fromIterable(batch);   // 다시 풀어서 내려보냄
                     } catch (Exception e) {
-                        log.error("batch 저장 실패: {}", e.getMessage());
+                        schedulerLogger.error("[BillSummary 동기화] batch 저장 실패: {}", e.getMessage());
                         return Flux.empty(); // 실패 시 그냥 버림
                     }
                 })

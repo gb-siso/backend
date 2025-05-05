@@ -12,6 +12,8 @@ import com.guenbon.siso.exception.errorCode.CongressApiErrorCode;
 import com.guenbon.siso.util.JsonParserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @RequiredArgsConstructor
 @Slf4j
 public class CongressmanApiService {
+    private static final Logger schedulerLogger = LoggerFactory.getLogger("SCHEDULER_LOGGER");
 
     public static final String ASSEMBLY_SESSION_NOW = "제22대";
 
@@ -87,6 +90,8 @@ public class CongressmanApiService {
                 // 외부 api 에 의한 예외가 아니라 내가 정한 최대 횟수 초과 예외이므로 CustomException 처리
                 throw new CustomException(MAX_REQUEST_LIMIT_EXCEEDED);
             }
+
+            schedulerLogger.info("[국회의원 동기화] : 국회 api {} 페이지 호출", page);
 
             String apiResponse = congressApiClient.getApiResponse(PageRequest.of(page, SIZE), API_CONGRESSMAN_INFO_URL, infoApikey, null);
             JsonNode jsonNode = JsonParserUtil.parseJson(apiResponse);
@@ -164,10 +169,10 @@ public class CongressmanApiService {
 
     @Scheduled(cron = "0 0 3 ? * MON")
     public CongressmanBatchResultDTO fetchAndSyncCongressmen() {
-        log.info("국회의원 동기화 fetchAndSyncCongressmen 메서드 호출 -> {}", LocalDateTime.now());
+        schedulerLogger.info("[국회의원 동기화] fetchAndSyncCongressmen 메서드 호출 -> {}", LocalDateTime.now());
         List<SyncCongressmanDTO> recentSyncList = fetchRecentCongressmanList();
         CongressmanBatchResultDTO congressmanBatchResultDTO = congressmanService.syncCongressman(recentSyncList);
-        log.info("국회의원 동기화 fetchAndSyncCongressmen 메서드 완료 -> {}", congressmanBatchResultDTO.getTime());
+        schedulerLogger.info("[국회의원 동기화] fetchAndSyncCongressmen 메서드 완료 -> {}", congressmanBatchResultDTO.getTime());
         return congressmanBatchResultDTO;
     }
 }

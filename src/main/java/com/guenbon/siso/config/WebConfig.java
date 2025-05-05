@@ -3,6 +3,7 @@ package com.guenbon.siso.config;
 import com.guenbon.siso.argumentresolver.CustomPageableResolver;
 import com.guenbon.siso.argumentresolver.LoginIdArgumentResolver;
 import com.guenbon.siso.interceptor.AuthInterceptor;
+import com.guenbon.siso.interceptor.LoggingInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -19,6 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final AuthInterceptor authInterceptor;
     private final LoginIdArgumentResolver loginIdArgumentResolver;
     private final CustomPageableResolver customPageableResolver;
+    private final LoggingInterceptor loggingInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -28,11 +30,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loggingInterceptor)
+                .addPathPatterns("/**");
+
         registry.addInterceptor(authInterceptor)
                 .excludePathPatterns();
     }
 
-    // ✅ CORS 설정 추가
+    // CORS 설정 추가
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 모든 엔드포인트에서 CORS 허용

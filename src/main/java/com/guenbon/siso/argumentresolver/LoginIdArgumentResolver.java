@@ -6,6 +6,8 @@ import com.guenbon.siso.service.auth.JwtTokenProvider;
 import com.guenbon.siso.support.annotation.LoginId;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -13,6 +15,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LoginIdArgumentResolver implements HandlerMethodArgumentResolver {
@@ -41,6 +44,9 @@ public class LoginIdArgumentResolver implements HandlerMethodArgumentResolver {
             }
             return null;
         }
-        return jwtTokenProvider.getMemberId(accessToken);
+
+        final Long memberId = jwtTokenProvider.getMemberId(accessToken);
+        MDC.put("memberId", String.valueOf(memberId)); // ✅ MDC에 memberId 저장
+        return memberId;
     }
 }

@@ -9,6 +9,8 @@ import com.guenbon.siso.util.JsonParserUtil;
 import com.guenbon.siso.util.PromptBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -29,6 +31,8 @@ import static com.guenbon.siso.support.constants.ApiConstants.*;
 @Slf4j
 @Component
 public class CongressApiClient {
+
+    private static final Logger schedulerLogger = LoggerFactory.getLogger("SCHEDULER_LOGGER");
 
     @Value("${perplexity.max.token}")
     private int maxToken;
@@ -115,7 +119,7 @@ public class CongressApiClient {
     @Transactional(propagation = Propagation.NEVER)
     public JsonNode getBillResponse(int page) {
 
-        log.info("## getBillResponse 메서드 page : {}", page);
+        schedulerLogger.info("[Bill 동기화] 국회 api 발의안 요청 메서드 page : {}", page);
 
         final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(API_BILL_URL)
                 .queryParam(AGE, "22") // 22 대만

@@ -1,6 +1,5 @@
 package com.guenbon.siso.controller;
 
-
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.guenbon.siso.dto.error.ApiErrorResponse;
 import com.guenbon.siso.dto.error.ErrorResponse;
@@ -9,7 +8,9 @@ import com.guenbon.siso.exception.ApiException;
 import com.guenbon.siso.exception.CustomException;
 import com.guenbon.siso.exception.errorCode.CommonErrorCode;
 import com.guenbon.siso.exception.errorCode.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -35,10 +36,9 @@ import static com.guenbon.siso.exception.errorCode.InternalServerErrorCode.INTER
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public static final String TYPE_MISMATCH_ERROR_MESSAGE_FORMAT = "입력값 %s 를 %s 타입으로 변환할 수 없습니다.";
 
-    // 놓친 예외 INTERNAL_SERVER_ERROR 로 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
-        e.printStackTrace();
+    public ResponseEntity<ErrorResponse> handleAllException(Exception e, HttpServletRequest request) {
+        logStructuredException("UnhandledException", e, request);
         return handleExceptionInternal(e);
     }
 
@@ -50,10 +50,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ErrorResponse.builder().code(INTERNAL_SERVER_ERROR.name()).message(exception.getMessage()).build();
     }
 
-    // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
-        e.printStackTrace();
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e, HttpServletRequest request) {
+        logStructuredException("CustomException", e, request);
         return handleExceptionInternal(e);
     }
 
@@ -65,10 +64,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ErrorResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage()).build();
     }
 
-    // 외부 api 예외 처리
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ApiErrorResponse> handleApiException(ApiException e) {
-        e.printStackTrace();
+    public ResponseEntity<ApiErrorResponse> handleApiException(ApiException e, HttpServletRequest request) {
+        logStructuredException("ApiException", e, request);
         return handleExceptionInternal(e);
     }
 
@@ -76,13 +74,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiErrorResponse.from(e.getErrorCode()));
     }
 
-    // @Vaild 필드 검증 실패 처리
-    // @ModelAttribute 자료형 불일치로 바인딩 실패 처리 (isBindingFailure = true)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status,
                                                                   WebRequest request) {
-        ex.printStackTrace();
+        log.error("[Validation Error] {}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
         return handleExceptionInternal(ex, CommonErrorCode.INVALID_INPUT_VALUE);
     }
 
@@ -94,14 +90,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         List<ValidationError> validationErrorList = e.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> {
                     if (fieldError.isBindingFailure()) {
-                        // 바인딩 실패
                         return ValidationError.of(
                                 fieldError, String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT,
                                         fieldError.getRejectedValue(),
                                         fieldError.getField().getClass().getSimpleName())
                         );
                     } else {
-                        // Validation 실패
                         return ValidationError.from(fieldError);
                     }
                 })
@@ -111,10 +105,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .errors(validationErrorList).build();
     }
 
-    // @PathVariable, @RequestParam 자료형 불일치로 바인딩 실패 처리
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
-            MethodArgumentTypeMismatchException e) {
+            MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+        logStructuredException("TypeMismatchException", e, request);
         return handleExceptionInternal(e);
     }
 
@@ -127,11 +121,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(TYPE_MISMATCH.getHttpStatus()).body(errorResponse);
     }
 
-    // @RequestBody json 형식 예외 처리
-    // @ReqeustBdoy 자료형 불일치로 바인딩 실패 처리
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("[InvalidRequestBody] {}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
         return handleExceptionInternal(ex);
     }
 
@@ -143,10 +136,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(makeErrorResponse(INVALID_REQUEST_BODY_FORMAT));
     }
 
-    // @RequestBody 바인딩 에러 (타입 불일치)
     private ResponseEntity<Object> handleInvalidFormatException(HttpMessageNotReadableException e) {
         InvalidFormatException cause = (InvalidFormatException) e.getCause();
-        // 상세 메시지 생성
         String customMessage = String.format(TYPE_MISMATCH_ERROR_MESSAGE_FORMAT, cause.getValue().toString(),
                 cause.getTargetType().getSimpleName());
         return ResponseEntity.status(INVALID_REQUEST_BODY_FORMAT.getHttpStatus())
@@ -158,7 +149,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ErrorResponse> handleMissingCookieException(MissingRequestCookieException e) {
+    public ResponseEntity<ErrorResponse> handleMissingCookieException(MissingRequestCookieException e, HttpServletRequest request) {
+        logStructuredException("MissingCookie", e, request);
         return ResponseEntity.status(MISSING_COOKIE.getHttpStatus())
                 .body(makeErrorResponse(e));
     }
@@ -167,5 +159,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ErrorResponse.builder()
                 .code(MISSING_COOKIE.getCode())
                 .message(String.format("%s %s", MISSING_COOKIE.getMessage(), e.getCookieName())).build();
+    }
+
+    private void logStructuredException(String type, Exception e, HttpServletRequest request) {
+        log.error("""
+                        [EXCEPTION]
+                        ├─ Type    : {}
+                        ├─ Message : {}
+                        ├─ URI     : {}
+                        ├─ Method  : {}
+                        └─ Member  : {}
+                        """,
+                type,
+                e.getMessage(),
+                request.getRequestURI(),
+                request.getMethod(),
+                MDC.get("memberId") != null ? MDC.get("memberId") : "로그인 정보 X",
+                e);
     }
 }

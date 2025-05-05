@@ -14,6 +14,8 @@ import com.guenbon.siso.service.assemblysession.AssemblySessionService;
 import com.guenbon.siso.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CongressmanService {
+
+    private static final Logger schedulerLogger = LoggerFactory.getLogger("SCHEDULER_LOGGER");
+
     private final AESUtil aesUtil;
     private final CongressmanRepository congressmanRepository;
     private final AssemblySessionService assemblySessionService;
@@ -122,7 +127,7 @@ public class CongressmanService {
 
     private List<Congressman> batchInsertCongressman(List<Congressman> toInsertAndUpdate) {
         if (toInsertAndUpdate.isEmpty()) {
-            log.info("no congressman to insert");
+            schedulerLogger.info("[국회의원 동기화] 배치 삽입 대상 국회의원 없음");
             return new ArrayList<>();
         }
         return congressmanRepository.saveAll(toInsertAndUpdate);
@@ -161,6 +166,7 @@ public class CongressmanService {
 
 
             if (dbSyncDTO == null) {
+                schedulerLogger.info("[국회의원 동기화] insert 대상 국회의원 추가 : code = {}", recentCongressman.getCode());
                 toInsert.add(recentCongressman);
                 codeSessionMapToInsert.put(recentCongressman.getCode(), recentAssemblySessions);
             } else {
@@ -169,6 +175,7 @@ public class CongressmanService {
                 Set<Integer> dbAssemblySessions = dbSyncDTO.getAssemblySessions();
 
                 if (!equalsWithoutId(recentCongressman, dbCongressman)) {
+                    schedulerLogger.info("[국회의원 동기화] update 대상 국회의원 업데이트 처리 : code = {}", recentCongressman.getCode());
                     // 변경감지에 의해 update 됨
                     dbCongressman.updateFieldsFrom(recentCongressman);
                     updateCount++;
