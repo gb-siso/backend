@@ -1,6 +1,5 @@
 package com.guenbon.siso.service.billsummary;
 
-import com.guenbon.siso.dto.bill.BillSummaryDTO;
 import com.guenbon.siso.entity.bill.BillSummary;
 import com.guenbon.siso.repository.billsummary.BillSummaryRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +37,5 @@ public class BillSummaryService {
                         billSummary -> billSummary.getBill().getId(), // key: bill의 id
                         Function.identity()
                 ));
-    }
-
-    @Transactional
-    public BillSummary updateFrom(BillSummary billSummary, BillSummaryDTO billSummaryDTO) {
-        return billSummary.updateFrom(billSummaryDTO);
     }
 }

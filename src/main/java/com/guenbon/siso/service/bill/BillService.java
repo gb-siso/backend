@@ -66,6 +66,12 @@ public class BillService {
         billRepository.delete(bill);
     }
 
+    /**
+     * Bill 엔티티 최신 데이터와 비교해서 insert, update, delete 처리
+     * @param apiBillList
+     * @param billProposerNameMap
+     * @return
+     */
     @Transactional
     public SyncBillResultDTO syncBill(List<Bill> apiBillList, Map<String, List<String>> billProposerNameMap) {
         final List<Bill> dbBillList = getAllBillList();

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,13 @@ public class BillApiService {
     private void extractBillsFromApiResponse(JsonNode billRowNodeList, Map<String, List<String>> billProposerMap, List<Bill> apiBillList) {
         for (JsonNode billNode : billRowNodeList) {
             final Bill bill = BillFactory.from(billNode);
+
+            // 2025-01-01 이후 데이터만 관리 (나머지 폐기)
+            LocalDate proposeDt = bill.getProposeDt();
+            if (proposeDt != null && proposeDt.isBefore(LocalDate.of(2025, 1, 1))) {
+                continue;
+            }
+
             final List<String> proposerNameList = getProposerNameList(billNode);
             billProposerMap.put(bill.getBillId(), proposerNameList);
             apiBillList.add(bill);
