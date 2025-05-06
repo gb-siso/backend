@@ -68,6 +68,7 @@ public class BillService {
 
     /**
      * Bill 엔티티 최신 데이터와 비교해서 insert, update, delete 처리
+     *
      * @param apiBillList
      * @param billProposerNameMap
      * @return
@@ -166,7 +167,7 @@ public class BillService {
         return summaryContentDiv.text();
     }
 
-    public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) throws IOException {
+    public BillListDTO findBillList(final String encryptedCongressmanId, final Pageable pageable) {
         // 페이지에 해당하는 발의안 리스트 가져오기
         Page<BillListProjectionDTO> page = billRepository.getBillListByCongressman(aesUtil.decrypt(encryptedCongressmanId), pageable);
 
@@ -186,6 +187,10 @@ public class BillService {
                 .lastPage(page.getTotalPages()) // 마지막 페이지
                 .page(page.getNumber()) // 현재 페이지
                 .build();
+    }
+
+    public List<Bill> getBillsWithoutSummary() {
+        return billRepository.getBillsWithoutSummary();
     }
 }
 

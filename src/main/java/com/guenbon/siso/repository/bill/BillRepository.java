@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface BillRepository extends JpaRepository<Bill, Long> {
 
@@ -27,4 +29,6 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
             """)
     Page<BillListProjectionDTO> getBillListByCongressman(@Param("congressmanId") Long congressmanId, Pageable pageable);
 
+    @Query("SELECT b FROM Bill b WHERE b.id NOT IN (SELECT bs.bill.id FROM BillSummary bs)")
+    List<Bill> getBillsWithoutSummary();
 }

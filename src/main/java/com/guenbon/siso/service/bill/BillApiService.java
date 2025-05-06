@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class BillApiService {
         schedulerLogger.info("[Bill 동기화] 끝 : {}", LocalDate.now());
 
         schedulerLogger.info("[BillSummary 동기화] 시작 : {}", LocalDate.now());
-        SyncBillSummaryResultDTO syncBillSummaryResultDTO = syncBillSummaries(syncBillResultDTO).block();
+        SyncBillSummaryResultDTO syncBillSummaryResultDTO = syncBillSummaries().block();
         schedulerLogger.info("[BillSummary 동기화] 끝 : {}", LocalDate.now());
 
         return BillBatchResultDTO.of(syncBillResultDTO, syncBillSummaryResultDTO);
@@ -136,13 +137,14 @@ public class BillApiService {
         return proposerList;
     }
 
-    private Mono<SyncBillSummaryResultDTO> syncBillSummaries(SyncBillResultDTO syncBillResultDTO) {
-//        AtomicInteger count = new AtomicInteger(0);
+    private Mono<SyncBillSummaryResultDTO> syncBillSummaries() {
 
-        return Flux.fromIterable(syncBillResultDTO.getInsertList())
+        // 삽입 : Bill 중 BillSummary 가 없는 Bill 들
+        List<Bill> billsWithoutSummary = billService.getBillsWithoutSummary();
+
+        return Flux.fromIterable(billsWithoutSummary)
+                .delayElements(Duration.ofMillis(1333)) // 분당 45건 = 1.333초 간격
                 .flatMap(bill -> {
-//                    int current = count.incrementAndGet();
-
                     try {
                         String scrapResult = billService.scrapData(bill.getDetailLink());
 
