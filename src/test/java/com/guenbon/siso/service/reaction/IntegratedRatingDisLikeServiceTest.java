@@ -39,8 +39,6 @@ class IntegratedRatingDisLikeServiceTest {
     private RatingRepository ratingRepository;
     @Autowired
     private CongressmanRepository congressmanRepository;
-    @Autowired
-    private RatingLikeService ratingLikeService;
 
     @Test
     @DisplayName("좋아요 누른 평가에 대해 create 호출할 경우 좋아요를 삭제하고 싫어요를 생성한다.")
