@@ -4,9 +4,7 @@ import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.bill.response.BillBatchResultDTO;
 import com.guenbon.siso.service.bill.BillApiService;
 import com.guenbon.siso.service.bill.BillService;
-import com.guenbon.siso.service.congressman.CongressmanApiService;
 import com.guenbon.siso.support.annotation.Login;
-import com.guenbon.siso.support.annotation.LoginId;
 import com.guenbon.siso.support.annotation.page.PageConfig;
 import com.guenbon.siso.support.constants.MemberRole;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +24,12 @@ import static com.guenbon.siso.support.constants.SortProperty.PROPOSE_DATE;
 public class BillController {
 
     private final BillApiService billApiService;
-    private final CongressmanApiService congressmanApiService;
     private final BillService billService;
 
     // 발의안 동기화
     @Login(role = MemberRole.ADMIN)
     @PostMapping("/sync")
-    public ResponseEntity<BillBatchResultDTO> congressmanSync(@LoginId String encryptedId) {
+    public ResponseEntity<BillBatchResultDTO> billSync() {
         return ResponseEntity.ok(billApiService.fetchAndSyncBillAndBillSummary());
     }
 
@@ -46,7 +43,7 @@ public class BillController {
      */
     @GetMapping("/{congressmanId}")
     public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
-                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDt, DESC") Pageable pageable) throws IOException {
+                                                @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDt, DESC") Pageable pageable) {
         return ResponseEntity.ok().body(billService.findBillList(congressmanId, pageable));
     }
 }
