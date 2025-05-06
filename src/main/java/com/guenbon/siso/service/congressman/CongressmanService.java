@@ -5,6 +5,7 @@ import com.guenbon.siso.dto.congressman.SyncCongressmanDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanBatchResultDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO;
 import com.guenbon.siso.dto.congressman.response.CongressmanListDTO.CongressmanDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanListForBillDTO;
 import com.guenbon.siso.entity.congressman.AssemblySession;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.exception.CustomException;
@@ -287,6 +288,11 @@ public class CongressmanService {
 
     public List<Congressman> findAll() {
         return congressmanRepository.findAll();
+    }
+
+    public List<CongressmanListForBillDTO> findCongressmanByBillId(Long billId) {
+        return congressmanRepository.findCongressmanByBillId(billId).stream()
+                .map(dto -> CongressmanListForBillDTO.from(aesUtil.encrypt(dto.getId()), dto.getName())).toList();
     }
 }
 

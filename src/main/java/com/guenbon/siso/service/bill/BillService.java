@@ -4,7 +4,7 @@ import com.guenbon.siso.dto.bill.BillDTO;
 import com.guenbon.siso.dto.bill.BillListDTO;
 import com.guenbon.siso.dto.bill.projection.BillListProjectionDTO;
 import com.guenbon.siso.dto.bill.response.SyncBillResultDTO;
-import com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanListForBillDTO;
 import com.guenbon.siso.entity.bill.Bill;
 import com.guenbon.siso.entity.congressman.Congressman;
 import com.guenbon.siso.entity.congressmanbill.CongressmanBill;
@@ -178,7 +178,7 @@ public class BillService {
         // 발의안별로 국회의원 목록 조회하기
         for (BillListProjectionDTO billListProjectionDTO : content) {
             Long billId = billListProjectionDTO.getBillId();
-            List<CongressmanBillListDTO> congressmanBillListDTOList = congressmanRepository.findCongressmanByBillId(billId);
+            List<CongressmanListForBillDTO> congressmanBillListDTOList = congressmanService.findCongressmanByBillId(billId);
             BillDTO billDTO = new BillDTO(billListProjectionDTO, congressmanBillListDTOList);
             billDTOList.add(billDTO);
         }

@@ -1,7 +1,7 @@
 package com.guenbon.siso.dto.bill;
 
 import com.guenbon.siso.dto.bill.projection.BillListProjectionDTO;
-import com.guenbon.siso.dto.congressman.projection.CongressmanBillListDTO;
+import com.guenbon.siso.dto.congressman.response.CongressmanListForBillDTO;
 import lombok.*;
 
 import java.util.List;
@@ -13,5 +13,5 @@ import java.util.List;
 @ToString
 public class BillDTO {
     private BillListProjectionDTO billListProjectionDTO;
-    private List<CongressmanBillListDTO> congressmanBillListDTOList;
+    private List<CongressmanListForBillDTO> congressmanBillListDTOList;
 }
