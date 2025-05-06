@@ -44,7 +44,7 @@ public class BillController {
      * @return
      * @throws IOException
      */
-    @GetMapping("/bills/{congressmanId}")
+    @GetMapping("/{congressmanId}")
     public ResponseEntity<BillListDTO> billList(@PathVariable String congressmanId,
                                                 @PageConfig(allowedSorts = PROPOSE_DATE, defaultSort = "proposeDate, DESC", defaultPage = 0) Pageable pageable) throws IOException {
         return ResponseEntity.ok().body(billService.findBillList(congressmanId, pageable));
