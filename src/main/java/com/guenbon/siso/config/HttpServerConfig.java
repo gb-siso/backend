@@ -8,11 +8,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class HttpServerConfig {
+
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         return factory -> {
             Connector httpConnector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-            httpConnector.setPort(8080); // HTTP용 포트
+            httpConnector.setScheme("http");
+            httpConnector.setPort(8080);
+            httpConnector.setSecure(false);
             factory.addAdditionalTomcatConnectors(httpConnector);
         };
     }
