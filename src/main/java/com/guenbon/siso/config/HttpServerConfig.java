@@ -19,4 +19,9 @@ public class HttpServerConfig {
             factory.addAdditionalTomcatConnectors(httpConnector);
         };
     }
+
+    @Bean
+    public HttpServerConfig httpServerConfig() {
+        return new HttpServerConfig();
+    }
 }
