@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling // 스케줄링 활성화
 @SpringBootApplication
 public class SisoApplication {
-// test jenkins
+// test jenkins 2
     public static void main(String[] args) {
         SpringApplication.run(SisoApplication.class, args);
     }
