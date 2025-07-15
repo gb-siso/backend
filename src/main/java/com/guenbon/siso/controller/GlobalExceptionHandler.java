@@ -39,6 +39,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllException(Exception e, HttpServletRequest request) {
         logStructuredException("UnhandledException", e, request);
+        log.error("...", e);
         return handleExceptionInternal(e);
     }
 
@@ -53,6 +54,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e, HttpServletRequest request) {
         logStructuredException("CustomException", e, request);
+        log.error("...", e);
         return handleExceptionInternal(e);
     }
 
