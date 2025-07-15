@@ -56,4 +56,12 @@
         <appender-ref ref="SCHEDULER_APPENDER" />
     </logger>
 
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="COMMON_APPENDER"/>
+    </logger>
+
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+        <appender-ref ref="COMMON_APPENDER"/>
+    </logger>
+
 </configuration>

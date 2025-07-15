@@ -62,7 +62,11 @@ public class CongressmanService {
         int pageSize = pageable.getPageSize();
         List<CongressmanGetListDTO> initialList = congressmanRepository.getList(PageRequest.of(pageable.getPageNumber(), pageSize + 1, pageable.getSort()), cursorId, cursorRating, party, search);
         int initialListSize = initialList.size();
+
+        log.info("Initial list size: {}, pageSize : {}", initialListSize,pageSize);
+
         if (isAdditionalFetchNeeded(initialListSize, pageSize)) {
+            log.info("additional fetch needed");
             Long initialListCursorId = cursorId;
             if (!initialList.isEmpty()) {
                 initialListCursorId = initialList.get(initialListSize - 1).getId();
