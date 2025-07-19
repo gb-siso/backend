@@ -10,7 +10,7 @@ public class SisoApplication {
 
     public static void main(String[] args) {
 
-        System.out.println("test jenkins");
+        System.out.println("test jenkins work");
         SpringApplication.run(SisoApplication.class, args);
     }
 
