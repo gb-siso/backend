@@ -24,10 +24,13 @@ pipeline {
             }
         }
 
-        stage('Deploy (only on main)') {
-            when {
-                branch 'main'
+        stage('Debug Branch') {
+            steps {
+                echo "현재 브랜치: ${env.BRANCH_NAME}"
             }
+        }
+
+        stage('Deploy') {
             steps {
                 sshagent(['gcp-ssh-key-id']) {
                     sh """
