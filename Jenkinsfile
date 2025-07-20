@@ -54,7 +54,7 @@ pipeline {
                         echo "[3] 원격 서버에서 배포 진행"
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
                             echo "→ 기존 프로세스 종료"
-                            PID=\$(pgrep -f "app.jar" || true)
+                            PID=\$(pgrep -u \$USER -f "app.jar" || true)
                             if [ ! -z "\$PID" ]; then
                                 kill -9 \$PID
                                 echo "✔️ 프로세스 종료: \$PID"
