@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-ssh', url: 'git@github.com:gb-siso/backend.git'
+                checkout scm
             }
         }
 
