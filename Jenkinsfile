@@ -26,7 +26,8 @@ pipeline {
 
         stage('Debug Branch') {
             steps {
-                echo "현재 브랜치: ${env.BRANCH_NAME}"
+        echo "env.BRANCH_NAME = ${env.BRANCH_NAME}"
+        echo "env.GIT_BRANCH  = ${env.GIT_BRANCH}"
             }
         }
 
