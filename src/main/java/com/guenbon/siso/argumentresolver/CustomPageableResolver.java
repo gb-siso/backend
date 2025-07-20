@@ -25,6 +25,7 @@ public class CustomPageableResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public boolean supportsParameter(final MethodParameter parameter) {
+        System.out.println("123123");
         return parameter.hasParameterAnnotation(PageConfig.class) && Pageable.class.isAssignableFrom(
                 parameter.getParameterType());
     }
