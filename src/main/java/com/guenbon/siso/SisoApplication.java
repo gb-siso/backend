@@ -19,6 +19,9 @@ public class SisoApplication {
         log.info("test jenkins work");
         log.info("test jenkins work");
         log.info("test jenkins work");
+        log.info("test jenkins work");
+        log.info("test jenkins work");
+        log.info("test jenkins work");
 
         SpringApplication.run(SisoApplication.class, args);
     }
