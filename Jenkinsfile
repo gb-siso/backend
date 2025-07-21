@@ -24,7 +24,7 @@ pipeline {
                     echo ">>> [Deploy] Running as user: $(whoami)"
                     cd /home/jidamine87593/shell
                     sh stop.sh
-                    sh start.sh
+                    sh start_jenkins.sh
                 '''
             }
         }
