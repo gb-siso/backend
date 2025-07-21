@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['gcp-ssh-key-id']) {
                     sh '''
-                        echo '[1] 최신 JAR 찾기'
+                        echo "[1] 최신 JAR 찾기"
                         JAR_FILE=$(find build/libs -name "*.jar" | sort | tail -n 1)
                         if [ -z "$JAR_FILE" ]; then
                             echo "JAR 파일이 존재하지 않습니다."
@@ -46,7 +46,7 @@ pipeline {
                         scp -o StrictHostKeyChecking=no "$JAR_FILE" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/app.jar.new
 
                         echo "[3] 원격 서버에서 배포 진행"
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} bash <<EOF
+                        ssh -o StrictHostKeyChecking=no -T ${DEPLOY_USER}@${DEPLOY_HOST} << 'EOSSH'
                             set -e
 
                             echo "→ 기존 프로세스 종료"
@@ -59,29 +59,29 @@ pipeline {
                             fi
 
                             echo "→ 로그 디렉토리 생성"
-                            mkdir -p ${DEPLOY_DIR}/logs
+                            mkdir -p /home/jidamine87593/app/logs
 
                             echo "→ 새 JAR 적용"
-                            mv ${DEPLOY_DIR}/app.jar.new ${DEPLOY_DIR}/app.jar
+                            mv /home/jidamine87593/app/app.jar.new /home/jidamine87593/app/app.jar
 
                             echo "→ 애플리케이션 기동"
                             nohup java -Duser.timezone=Asia/Seoul -Dspring.profiles.active=prod \\
-                                -jar ${DEPLOY_DIR}/app.jar > ${DEPLOY_DIR}/logs/console.log 2>&1 &
+                                -jar /home/jidamine87593/app/app.jar > /home/jidamine87593/app/logs/console.log 2>&1 &
 
                             echo "→ 로그 대기"
                             timeout=10
-                            while [ ! -f ${DEPLOY_DIR}/logs/console.log ] && [ $timeout -gt 0 ]; do
+                            while [ ! -f /home/jidamine87593/app/logs/console.log ] && [ $timeout -gt 0 ]; do
                                 sleep 1
                                 timeout=$((timeout - 1))
                             done
 
                             echo "→ 로그 출력"
-                            if [ -f ${DEPLOY_DIR}/logs/console.log ]; then
-                                tail -n 100 ${DEPLOY_DIR}/logs/console.log
+                            if [ -f /home/jidamine87593/app/logs/console.log ]; then
+                                tail -n 100 /home/jidamine87593/app/logs/console.log
                             else
                                 echo "⚠️ 로그 파일이 일정 시간 내에 생성되지 않았습니다."
                             fi
-                        EOF
+                        EOSSH
                     '''
                 }
             }
