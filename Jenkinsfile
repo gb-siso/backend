@@ -10,19 +10,21 @@ pipeline {
 
         stage('Build') {
             steps {
-        sh '''
-            chmod +x ./gradlew
-            ./gradlew clean build -x test
-        '''
+                sh '''
+                    echo ">>> [Build] Running as user: $(whoami)"
+                    chmod +x ./gradlew
+                    ./gradlew clean build -x test
+                '''
             }
         }
 
         stage('Deploy') {
-            steps{
+            steps {
                 sh '''
-                cd /home/jidamine87593/shell
-                sh stop.sh
-                sh start.sh
+                    echo ">>> [Deploy] Running as user: $(whoami)"
+                    cd /home/jidamine87593/shell
+                    sh stop.sh
+                    sh start.sh
                 '''
             }
         }
