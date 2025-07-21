@@ -25,9 +25,6 @@ stage('Deploy') {
             cd /home/jidamine87593/shell
             sh stop_jenkins.sh
             sh start_jenkins.sh
-
-            echo ">>> Showing last 30 lines of logs:"
-            tail -n 30 /home/jidamine87593/app/logs/console.log || true
         '''
     }
 }
