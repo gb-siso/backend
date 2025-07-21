@@ -31,35 +31,29 @@ pipeline {
             }
         }
 
-        // 조건 분기를 넣고 싶다면 아래와 같이 when 블록 사용
-        // stage('Deploy') {
-        //     when {
-        //         branch 'main'
-        //     }
-
         stage('Deploy') {
             steps {
                 sshagent(['gcp-ssh-key-id']) {
-                    sh """
+                    sh '''
                         echo '[1] 최신 JAR 찾기'
-                        JAR_FILE=\$(find build/libs -name "*.jar" | sort | tail -n 1)
-                        if [ -z "\$JAR_FILE" ]; then
+                        JAR_FILE=$(find build/libs -name "*.jar" | sort | tail -n 1)
+                        if [ -z "$JAR_FILE" ]; then
                             echo "JAR 파일이 존재하지 않습니다."
                             exit 1
                         fi
 
-                        echo "[2] JAR 파일 전송: \$JAR_FILE"
-                        scp -o StrictHostKeyChecking=no "\$JAR_FILE" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/app.jar.new
+                        echo "[2] JAR 파일 전송: $JAR_FILE"
+                        scp -o StrictHostKeyChecking=no "$JAR_FILE" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/app.jar.new
 
                         echo "[3] 원격 서버에서 배포 진행"
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
                             echo "→ 기존 프로세스 종료"
                             PID=$(pgrep -u $(whoami) -f "app.jar" || true)
-                            if [ ! -z "\$PID" ]; then
-                                kill -9 \$PID
-                                echo "✔프로세스 종료: \$PID"
+                            if [ ! -z "$PID" ]; then
+                                kill -9 $PID
+                                echo "✔️ 프로세스 종료: $PID"
                             else
-                                echo "종료할 기존 프로세스 없음"
+                                echo "ℹ️ 종료할 기존 프로세스 없음"
                             fi
 
                             echo "→ 로그 디렉토리 생성"
@@ -69,14 +63,14 @@ pipeline {
                             mv ${DEPLOY_DIR}/app.jar.new ${DEPLOY_DIR}/app.jar
 
                             echo "→ 애플리케이션 기동"
-                            nohup java -Duser.timezone=Asia/Seoul -Dspring.profiles.active=prod \\
+                            nohup java -Duser.timezone=Asia/Seoul -Dspring.profiles.active=prod \
                                 -jar ${DEPLOY_DIR}/app.jar > ${DEPLOY_DIR}/logs/console.log 2>&1 &
 
                             echo "→ 로그 대기"
                             timeout=10
-                            while [ ! -f ${DEPLOY_DIR}/logs/console.log ] && [ \$timeout -gt 0 ]; do
+                            while [ ! -f ${DEPLOY_DIR}/logs/console.log ] && [ $timeout -gt 0 ]; do
                                 sleep 1
-                                timeout=\$((timeout - 1))
+                                timeout=$((timeout - 1))
                             done
 
                             echo "→ 로그 출력"
@@ -86,7 +80,7 @@ pipeline {
                                 echo "⚠️ 로그 파일이 일정 시간 내에 생성되지 않았습니다."
                             fi
                         '
-                    """
+                    '''
                 }
             }
         }
