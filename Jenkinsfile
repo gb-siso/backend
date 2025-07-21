@@ -44,7 +44,7 @@ pipeline {
                         echo '[1] 최신 JAR 찾기'
                         JAR_FILE=\$(find build/libs -name "*.jar" | sort | tail -n 1)
                         if [ -z "\$JAR_FILE" ]; then
-                            echo "❌ JAR 파일이 존재하지 않습니다."
+                            echo "JAR 파일이 존재하지 않습니다."
                             exit 1
                         fi
 
@@ -54,12 +54,12 @@ pipeline {
                         echo "[3] 원격 서버에서 배포 진행"
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
                             echo "→ 기존 프로세스 종료"
-                            PID=\$(pgrep -u \$USER -f "app.jar" || true)
+                            PID=$(pgrep -u $(whoami) -f "app.jar" || true)
                             if [ ! -z "\$PID" ]; then
                                 kill -9 \$PID
-                                echo "✔️ 프로세스 종료: \$PID"
+                                echo "✔프로세스 종료: \$PID"
                             else
-                                echo "ℹ️ 종료할 기존 프로세스 없음"
+                                echo "종료할 기존 프로세스 없음"
                             fi
 
                             echo "→ 로그 디렉토리 생성"
