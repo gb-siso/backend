@@ -34,26 +34,26 @@ pipeline {
         stage('Deploy') {
             steps {
                 sshagent(credentials: ['gcp-ssh-key-id']) {
-                    sh """
+                    sh '''
                         echo '[1] 최신 JAR 찾기'
-                        JAR_FILE=\$(find build/libs -name "*.jar" | sort | tail -n 1)
-                        if [ -z "\$JAR_FILE" ]; then
+                        JAR_FILE=$(find build/libs -name "*.jar" | sort | tail -n 1)
+                        if [ -z "$JAR_FILE" ]; then
                             echo "JAR 파일이 존재하지 않습니다."
                             exit 1
                         fi
 
-                        echo "[2] JAR 파일 전송: \$JAR_FILE"
-                        scp -o StrictHostKeyChecking=no "\$JAR_FILE" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/app.jar.new
+                        echo "[2] JAR 파일 전송: $JAR_FILE"
+                        scp -o StrictHostKeyChecking=no "$JAR_FILE" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/app.jar.new
 
                         echo "[3] 원격 서버에서 배포 진행"
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} << 'EOF'
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} bash <<EOF
                             set -e
 
                             echo "→ 기존 프로세스 종료"
-                            PID=\$(pgrep -u \$(whoami) -f "app.jar" || true)
-                            if [ ! -z "\$PID" ]; then
-                                kill -9 \$PID
-                                echo "✔️ 프로세스 종료: \$PID"
+                            PID=$(pgrep -u $(whoami) -f "app.jar" || true)
+                            if [ ! -z "$PID" ]; then
+                                kill -9 $PID
+                                echo "✔️ 프로세스 종료: $PID"
                             else
                                 echo "ℹ️ 종료할 기존 프로세스 없음"
                             fi
@@ -70,9 +70,9 @@ pipeline {
 
                             echo "→ 로그 대기"
                             timeout=10
-                            while [ ! -f ${DEPLOY_DIR}/logs/console.log ] && [ \$timeout -gt 0 ]; do
+                            while [ ! -f ${DEPLOY_DIR}/logs/console.log ] && [ $timeout -gt 0 ]; do
                                 sleep 1
-                                timeout=\$((timeout - 1))
+                                timeout=$((timeout - 1))
                             done
 
                             echo "→ 로그 출력"
@@ -82,7 +82,7 @@ pipeline {
                                 echo "⚠️ 로그 파일이 일정 시간 내에 생성되지 않았습니다."
                             fi
                         EOF
-                    """
+                    '''
                 }
             }
         }
