@@ -12,6 +12,7 @@ pipeline {
             steps {
                 sh '''
                     echo ">>> [Build] Running as user: $(whoami)"
+                    cd /home/jidamine87593/siso/backend/build/libs
                     chmod +x ./gradlew
                     ./gradlew clean build -x test
                 '''
