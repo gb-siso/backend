@@ -12,23 +12,30 @@ pipeline {
             steps {
                 sh '''
                     echo ">>> [Build] Running as user: $(whoami)"
-                    cd /home/jidamine87593/siso/backend
                     chmod +x ./gradlew
                     ./gradlew clean build -x test
                 '''
             }
         }
 
-stage('Deploy') {
-    steps {
-        sh '''
-            echo ">>> [Deploy] Running as user: $(whoami)"
-            cd /home/jidamine87593/shell
-            sh stop_jenkins.sh
-            sh start_jenkins.sh
-        '''
-    }
-}
+        stage('Copy Built Jar') {
+            steps {
+                sh '''
+                    echo ">>> [Copy] Copying built JAR to /home/jidamine87593/siso/backend/build/libs"
+                    cp build/libs/siso-0.0.1-SNAPSHOT.jar /home/jidamine87593/siso/backend/build/libs/siso-0.0.1-SNAPSHOT.jar
+                '''
+            }
+        }
 
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo ">>> [Deploy] Running as user: $(whoami)"
+                    cd /home/jidamine87593/shell
+                    sh stop_jenkins.sh
+                    sh start_jenkins.sh
+                '''
+            }
+        }
     }
 }
