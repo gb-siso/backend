@@ -11,6 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
+                    cp /home/jidamine87593/siso/backend/src/main/resources/application-private.properties src/main/resources/
                     echo ">>> [Build] Running as user: $(whoami)"
                     chmod +x ./gradlew
                     ./gradlew clean build -x test
