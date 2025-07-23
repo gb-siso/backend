@@ -25,7 +25,7 @@ pipeline {
             steps {
                 sh '''
                     echo ">>> [Copy] Copying built JAR to /home/jidamine87593/siso/backend/build/libs"
-                    cp build/libs/siso-0.0.1-SNAPSHOT.jar /home/jidamine87593/siso/backend/build/libs/siso-0.0.1-SNAPSHOT.jar
+                    cp build/libs/siso-0.0.1-SNAPSHOT.jar /home/jidamine87593/app/jar/
                 '''
             }
         }
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 sh '''
                     echo ">>> [Deploy] Running as user: $(whoami)"
-                    cd /home/jidamine87593/shell
+                    cd /home/jidamine87593/app/shell
                     sh stop_jenkins.sh
                     sh start_jenkins.sh
                 '''
