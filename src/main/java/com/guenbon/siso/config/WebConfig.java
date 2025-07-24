@@ -41,7 +41,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000", "https://sisso.kr:3000", "https://localhost:8080")
+                .allowedOrigins(
+                        "https://siiso.kr",
+                        "https://www.siiso.kr"  // ← 이것 추가
+                )
                 .allowedMethods("GET", "POST", "DELETE", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
