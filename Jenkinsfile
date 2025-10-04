@@ -11,8 +11,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    cp /home/jidamine87593/siso/backend/src/main/resources/application-private.properties src/main/resources/
-                    cp /home/jidamine87593/siso/backend/src/main/resources/ssl/sisso-api.p12 src/main/resources/ssl/
+                    cp /home/jidamine87593/app/files/application-private.properties src/main/resources/
+                    cp /home/jidamine87593/app/files/sisso-api.p12 src/main/resources/ssl/
                     echo ">>> [Build] Running as user: $(whoami)"
                     chmod +x ./gradlew
                     ./gradlew clean build -x test
